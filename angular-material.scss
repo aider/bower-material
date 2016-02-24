@@ -1544,240 +1544,6 @@ md-bottom-sheet {
   }
 }
 
-$button-border-radius: 3px !default;
-$button-fab-border-radius: 50% !default;
-$button-icon-border-radius: $button-fab-border-radius;
-
-$button-line-height: rem(3.60) !default;
-$button-padding: 0 rem(0.600) !default;
-$button-margin: rem(0.600) rem(0.800) !default;
-$button-min-width: rem(8.800) !default;
-
-// Fab buttons
-$button-fab-line-height: rem(5.600) !default;
-$button-fab-mini-width: rem(4.00) !default;
-$button-fab-mini-height: rem(4.00) !default;
-$button-fab-mini-line-height: rem(4.00) !default;
-
-$button-fab-toast-offset: $button-fab-height * 0.75 !default;
-
-$icon-button-height: rem(4.000) !default;
-$icon-button-width: rem(4.000) !default;
-$icon-button-margin: rem(0.600) !default;
-
-// Fix issue causing buttons in Firefox to be 2px bigger than they should
-button.md-button::-moz-focus-inner {
-  border: 0;
-}
-
-.md-button {
-  border-radius: $button-border-radius;
-  box-sizing: border-box;
-  color: currentColor;
-
-  user-select: none;
-  position: relative; //for child absolute-positioned <canvas>
-
-  outline: none;
-  border: 0;
-  display: inline-block;
-  align-items: center;
-  padding: $button-padding;
-  margin: $button-margin;
-  line-height: $button-line-height;
-  min-height: $button-line-height;
-  background: transparent;
-  white-space: nowrap;
-  // override for FAB, icon buttons, etc.
-  min-width: $button-min-width;
-
-  text-align: center;
-
-  // Always uppercase buttons
-  text-transform: uppercase;
-  font-weight: 500;
-  font-size: $body-font-size-base;
-  font-style: inherit;
-  font-variant: inherit;
-  font-family: inherit;
-  text-decoration: none;
-
-  cursor: pointer;
-  overflow: hidden;   // for ink containment
-
-  transition: box-shadow $swift-ease-out-duration $swift-ease-out-timing-function,
-              background-color $swift-ease-out-duration $swift-ease-out-timing-function;
-
-  &:focus {
-    outline: none;
-  }
-
-  &:hover, &:focus {
-    text-decoration: none;
-  }
-
-  &.ng-hide, &.ng-leave {
-    transition: none;
-  }
-
-  &.md-cornered {
-    border-radius: 0;
-  }
-
-  &.md-icon {
-    padding: 0;
-    background: none;
-  }
-
-  &.md-raised {
-    &:not([disabled]) {
-      @include md-shadow-bottom-z-1();
-    }
-  }
-
-  &.md-icon-button {
-    margin: 0 $icon-button-margin;
-    height: $icon-button-height;
-    min-width: 0;
-    line-height: $icon-size;
-    padding: $baseline-grid;
-    width: $icon-button-width;
-    border-radius: $button-icon-border-radius;
-    .md-ripple-container {
-      border-radius: $button-icon-border-radius;
-      background-clip: padding-box;
-      overflow: hidden;
-      // The following hack causes Safari/Chrome to respect overflow hidden for ripples
-      -webkit-mask-image: url('data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAIAAACQd1PeAAAAGXRFWHRTb2Z0d2FyZQBBZG9iZSBJbWFnZVJlYWR5ccllPAAAAA5JREFUeNpiYGBgAAgwAAAEAAGbA+oJAAAAAElFTkSuQmCC');
-    }
-  }
-
-  &.md-fab {
-
-    // Include the top/left/bottom/right fab positions
-    @include fab-all-positions();
-
-    z-index: $z-index-fab;
-
-    line-height: $button-fab-line-height;
-    min-width: 0;
-    width: $button-fab-width;
-    height: $button-fab-height;
-    vertical-align: middle;
-
-    @include md-shadow-bottom-z-1();
-    border-radius: $button-fab-border-radius;
-    background-clip: padding-box;
-    overflow: hidden;
-
-    transition: $swift-ease-in;
-    transition-property: background-color, box-shadow, transform;
-    .md-ripple-container {
-      border-radius: $button-fab-border-radius;
-      background-clip: padding-box;
-      overflow: hidden;
-      // The following hack causes Safari/Chrome to respect overflow hidden for ripples
-      -webkit-mask-image: url('data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAIAAACQd1PeAAAAGXRFWHRTb2Z0d2FyZQBBZG9iZSBJbWFnZVJlYWR5ccllPAAAAA5JREFUeNpiYGBgAAgwAAAEAAGbA+oJAAAAAElFTkSuQmCC');
-    }
-
-    &.md-mini {
-      line-height: $button-fab-mini-line-height;
-      width: $button-fab-mini-width;
-      height: $button-fab-mini-height;
-    }
-
-    &.ng-hide, &.ng-leave {
-      transition: none;
-    }
-  }
-
-  &:not([disabled]) {
-    &.md-raised,
-    &.md-fab {
-      &.md-focused {
-        @include md-shadow-bottom-z-1();
-      }
-      &:active {
-        @include md-shadow-bottom-z-2();
-      }
-    }
-  }
-
-  .md-ripple-container {
-    border-radius: $button-border-radius;
-    background-clip: padding-box;
-    overflow: hidden;
-    // The following hack causes Safari/Chrome to respect overflow hidden for ripples
-    -webkit-mask-image: url('data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAIAAACQd1PeAAAAGXRFWHRTb2Z0d2FyZQBBZG9iZSBJbWFnZVJlYWR5ccllPAAAAA5JREFUeNpiYGBgAAgwAAAEAAGbA+oJAAAAAElFTkSuQmCC');
-  }
-}
-
-.md-toast-open-top {
-  .md-button.md-fab-top-left,
-  .md-button.md-fab-top-right {
-    transition: $swift-ease-out;
-    transform: translate3d(0, $button-fab-toast-offset, 0);
-    &:not([disabled]) {
-      &.md-focused,
-      &:hover {
-        transform: translate3d(0, $button-fab-toast-offset - 1, 0);
-      }
-    }
-  }
-}
-
-.md-toast-open-bottom {
-  .md-button.md-fab-bottom-left,
-  .md-button.md-fab-bottom-right {
-    transition: $swift-ease-out;
-    transform: translate3d(0, -$button-fab-toast-offset, 0);
-    &:not([disabled]) {
-      &.md-focused,
-      &:hover {
-        transform: translate3d(0, -$button-fab-toast-offset - 1, 0);
-      }
-    }
-  }
-}
-
-.md-button-group {
-  display: flex;
-  flex: 1;
-  width: 100%;
-}
-
-.md-button-group > .md-button {
-  flex: 1;
-
-  display: block;
-
-  overflow: hidden;
-
-  width: 0;
-
-  border-width: 1px 0px 1px 1px;
-  border-radius: 0;
-
-  text-align: center;
-  text-overflow: ellipsis;
-  white-space: nowrap;
-
-  &:first-child {
-    border-radius: 2px 0px 0px 2px;
-  }
-  &:last-child {
-    border-right-width: 1px;
-    border-radius: 0px 2px 2px 0px;
-  }
-}
-// IE only
-@media screen and (-ms-high-contrast: active) {
-  .md-button.md-raised,
-  .md-button.md-fab {
-    border: 1px solid #fff;
-  }
-}
-
 $card-padding: 16px !default;
 $card-box-shadow: $whiteframe-shadow-1dp !default;
 
@@ -2149,6 +1915,240 @@ md-checkbox {
   }
 }
 
+$button-border-radius: 3px !default;
+$button-fab-border-radius: 50% !default;
+$button-icon-border-radius: $button-fab-border-radius;
+
+$button-line-height: rem(3.60) !default;
+$button-padding: 0 rem(0.600) !default;
+$button-margin: rem(0.600) rem(0.800) !default;
+$button-min-width: rem(8.800) !default;
+
+// Fab buttons
+$button-fab-line-height: rem(5.600) !default;
+$button-fab-mini-width: rem(4.00) !default;
+$button-fab-mini-height: rem(4.00) !default;
+$button-fab-mini-line-height: rem(4.00) !default;
+
+$button-fab-toast-offset: $button-fab-height * 0.75 !default;
+
+$icon-button-height: rem(4.000) !default;
+$icon-button-width: rem(4.000) !default;
+$icon-button-margin: rem(0.600) !default;
+
+// Fix issue causing buttons in Firefox to be 2px bigger than they should
+button.md-button::-moz-focus-inner {
+  border: 0;
+}
+
+.md-button {
+  border-radius: $button-border-radius;
+  box-sizing: border-box;
+  color: currentColor;
+
+  user-select: none;
+  position: relative; //for child absolute-positioned <canvas>
+
+  outline: none;
+  border: 0;
+  display: inline-block;
+  align-items: center;
+  padding: $button-padding;
+  margin: $button-margin;
+  line-height: $button-line-height;
+  min-height: $button-line-height;
+  background: transparent;
+  white-space: nowrap;
+  // override for FAB, icon buttons, etc.
+  min-width: $button-min-width;
+
+  text-align: center;
+
+  // Always uppercase buttons
+  text-transform: uppercase;
+  font-weight: 500;
+  font-size: $body-font-size-base;
+  font-style: inherit;
+  font-variant: inherit;
+  font-family: inherit;
+  text-decoration: none;
+
+  cursor: pointer;
+  overflow: hidden;   // for ink containment
+
+  transition: box-shadow $swift-ease-out-duration $swift-ease-out-timing-function,
+              background-color $swift-ease-out-duration $swift-ease-out-timing-function;
+
+  &:focus {
+    outline: none;
+  }
+
+  &:hover, &:focus {
+    text-decoration: none;
+  }
+
+  &.ng-hide, &.ng-leave {
+    transition: none;
+  }
+
+  &.md-cornered {
+    border-radius: 0;
+  }
+
+  &.md-icon {
+    padding: 0;
+    background: none;
+  }
+
+  &.md-raised {
+    &:not([disabled]) {
+      @include md-shadow-bottom-z-1();
+    }
+  }
+
+  &.md-icon-button {
+    margin: 0 $icon-button-margin;
+    height: $icon-button-height;
+    min-width: 0;
+    line-height: $icon-size;
+    padding: $baseline-grid;
+    width: $icon-button-width;
+    border-radius: $button-icon-border-radius;
+    .md-ripple-container {
+      border-radius: $button-icon-border-radius;
+      background-clip: padding-box;
+      overflow: hidden;
+      // The following hack causes Safari/Chrome to respect overflow hidden for ripples
+      -webkit-mask-image: url('data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAIAAACQd1PeAAAAGXRFWHRTb2Z0d2FyZQBBZG9iZSBJbWFnZVJlYWR5ccllPAAAAA5JREFUeNpiYGBgAAgwAAAEAAGbA+oJAAAAAElFTkSuQmCC');
+    }
+  }
+
+  &.md-fab {
+
+    // Include the top/left/bottom/right fab positions
+    @include fab-all-positions();
+
+    z-index: $z-index-fab;
+
+    line-height: $button-fab-line-height;
+    min-width: 0;
+    width: $button-fab-width;
+    height: $button-fab-height;
+    vertical-align: middle;
+
+    @include md-shadow-bottom-z-1();
+    border-radius: $button-fab-border-radius;
+    background-clip: padding-box;
+    overflow: hidden;
+
+    transition: $swift-ease-in;
+    transition-property: background-color, box-shadow, transform;
+    .md-ripple-container {
+      border-radius: $button-fab-border-radius;
+      background-clip: padding-box;
+      overflow: hidden;
+      // The following hack causes Safari/Chrome to respect overflow hidden for ripples
+      -webkit-mask-image: url('data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAIAAACQd1PeAAAAGXRFWHRTb2Z0d2FyZQBBZG9iZSBJbWFnZVJlYWR5ccllPAAAAA5JREFUeNpiYGBgAAgwAAAEAAGbA+oJAAAAAElFTkSuQmCC');
+    }
+
+    &.md-mini {
+      line-height: $button-fab-mini-line-height;
+      width: $button-fab-mini-width;
+      height: $button-fab-mini-height;
+    }
+
+    &.ng-hide, &.ng-leave {
+      transition: none;
+    }
+  }
+
+  &:not([disabled]) {
+    &.md-raised,
+    &.md-fab {
+      &.md-focused {
+        @include md-shadow-bottom-z-1();
+      }
+      &:active {
+        @include md-shadow-bottom-z-2();
+      }
+    }
+  }
+
+  .md-ripple-container {
+    border-radius: $button-border-radius;
+    background-clip: padding-box;
+    overflow: hidden;
+    // The following hack causes Safari/Chrome to respect overflow hidden for ripples
+    -webkit-mask-image: url('data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAIAAACQd1PeAAAAGXRFWHRTb2Z0d2FyZQBBZG9iZSBJbWFnZVJlYWR5ccllPAAAAA5JREFUeNpiYGBgAAgwAAAEAAGbA+oJAAAAAElFTkSuQmCC');
+  }
+}
+
+.md-toast-open-top {
+  .md-button.md-fab-top-left,
+  .md-button.md-fab-top-right {
+    transition: $swift-ease-out;
+    transform: translate3d(0, $button-fab-toast-offset, 0);
+    &:not([disabled]) {
+      &.md-focused,
+      &:hover {
+        transform: translate3d(0, $button-fab-toast-offset - 1, 0);
+      }
+    }
+  }
+}
+
+.md-toast-open-bottom {
+  .md-button.md-fab-bottom-left,
+  .md-button.md-fab-bottom-right {
+    transition: $swift-ease-out;
+    transform: translate3d(0, -$button-fab-toast-offset, 0);
+    &:not([disabled]) {
+      &.md-focused,
+      &:hover {
+        transform: translate3d(0, -$button-fab-toast-offset - 1, 0);
+      }
+    }
+  }
+}
+
+.md-button-group {
+  display: flex;
+  flex: 1;
+  width: 100%;
+}
+
+.md-button-group > .md-button {
+  flex: 1;
+
+  display: block;
+
+  overflow: hidden;
+
+  width: 0;
+
+  border-width: 1px 0px 1px 1px;
+  border-radius: 0;
+
+  text-align: center;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+
+  &:first-child {
+    border-radius: 2px 0px 0px 2px;
+  }
+  &:last-child {
+    border-right-width: 1px;
+    border-radius: 0px 2px 2px 0px;
+  }
+}
+// IE only
+@media screen and (-ms-high-contrast: active) {
+  .md-button.md-raised,
+  .md-button.md-fab {
+    border: 1px solid #fff;
+  }
+}
+
 $chip-font-size: rem(1.6) !default;
 $chip-height: rem(3.2) !default;
 $chip-padding: 0 rem(1.2) 0 rem(1.2) !default;
@@ -2373,6 +2373,136 @@ md-content {
 }
 
 
+
+$dialog-padding: $baseline-grid * 3;
+
+.md-dialog-is-showing {
+  max-height: 100%;
+}
+.md-dialog-container {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  z-index: $z-index-dialog;
+  overflow: hidden;
+}
+
+md-dialog {
+
+  &.md-transition-in {
+    opacity: 1;
+    transition: $swift-ease-out;
+    transform: translate3d(0,0,0) scale(1.0);
+  }
+  &.md-transition-out {
+    opacity: 0;
+    transition: $swift-ease-out;
+    transform: translate3d(0,100%,0) scale(0.2);
+  }
+
+  opacity: 0;
+  min-width: 240px;
+  max-width: 80%;
+  max-height: 80%;
+  position: relative;
+  overflow: auto; // stop content from leaking out of dialog parent and fix IE
+
+  box-shadow: $whiteframe-shadow-13dp;
+
+  display: flex;
+  flex-direction: column;
+
+  &> form {
+    display: flex;
+    flex-direction: column;
+    overflow: auto;
+  }
+
+  .md-dialog-content {
+    padding: $dialog-padding;
+  }
+
+  md-dialog-content {
+    order: 1;
+    flex-direction: column;
+    overflow: auto;
+    -webkit-overflow-scrolling: touch;
+
+    &:not([layout=row]) > *:first-child:not(.md-subheader) {
+      margin-top: 0;
+    }
+
+    &:focus {
+      outline: none;
+    }
+
+    .md-subheader {
+      margin: 0;
+
+      &.sticky-clone {
+        box-shadow: 0 2px 4px 0 rgba(0, 0, 0, 0.16);
+      }
+    }
+    &.sticky-container {
+      padding: 0;
+
+      &> div {
+        padding: $dialog-padding;
+        padding-top: 0;
+      }
+    }
+
+    .md-dialog-content-body {
+      width:100%;
+    }
+  }
+
+  .md-actions, md-dialog-actions {
+    display: flex;
+    order: 2;
+    box-sizing: border-box;
+    align-items: center;
+    justify-content: flex-end;
+    margin-bottom: 0;
+    padding-right: $baseline-grid;
+    padding-left: $baseline-grid * 2;
+    min-height: $baseline-grid * 6.5;
+    overflow: hidden;
+
+    .md-button {
+      margin-bottom: $baseline-grid;
+      margin-left: $baseline-grid;
+      margin-right: 0;
+      margin-top: $baseline-grid;
+    }
+  }
+  &.md-content-overflow {
+    .md-actions, md-dialog-actions {
+      border-top-width: 1px;
+      border-top-style: solid;
+    }
+  }
+
+}
+
+@media screen and (-ms-high-contrast: active) {
+  md-dialog {
+    border: 1px solid #fff;
+  }
+}
+
+@media (max-width: $layout-breakpoint-sm - 1) {
+  md-dialog.md-dialog-fullscreen {
+    min-height: 100%;
+    min-width: 100%;
+    border-radius: 0;
+  }
+}
 
 /** Styles for mdCalendar. */
 $md-calendar-cell-size: 44px !default;
@@ -2727,136 +2857,6 @@ md-datepicker[disabled] {
 
   &.md-pane-open .md-calendar {
     transform: translateY(0);
-  }
-}
-
-$dialog-padding: $baseline-grid * 3;
-
-.md-dialog-is-showing {
-  max-height: 100%;
-}
-.md-dialog-container {
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  position: absolute;
-  top: 0;
-  left: 0;
-  width: 100%;
-  height: 100%;
-  z-index: $z-index-dialog;
-  overflow: hidden;
-}
-
-md-dialog {
-
-  &.md-transition-in {
-    opacity: 1;
-    transition: $swift-ease-out;
-    transform: translate3d(0,0,0) scale(1.0);
-  }
-  &.md-transition-out {
-    opacity: 0;
-    transition: $swift-ease-out;
-    transform: translate3d(0,100%,0) scale(0.2);
-  }
-
-  opacity: 0;
-  min-width: 240px;
-  max-width: 80%;
-  max-height: 80%;
-  position: relative;
-  overflow: auto; // stop content from leaking out of dialog parent and fix IE
-
-  box-shadow: $whiteframe-shadow-13dp;
-
-  display: flex;
-  flex-direction: column;
-
-  &> form {
-    display: flex;
-    flex-direction: column;
-    overflow: auto;
-  }
-
-  .md-dialog-content {
-    padding: $dialog-padding;
-  }
-
-  md-dialog-content {
-    order: 1;
-    flex-direction: column;
-    overflow: auto;
-    -webkit-overflow-scrolling: touch;
-
-    &:not([layout=row]) > *:first-child:not(.md-subheader) {
-      margin-top: 0;
-    }
-
-    &:focus {
-      outline: none;
-    }
-
-    .md-subheader {
-      margin: 0;
-
-      &.sticky-clone {
-        box-shadow: 0 2px 4px 0 rgba(0, 0, 0, 0.16);
-      }
-    }
-    &.sticky-container {
-      padding: 0;
-
-      &> div {
-        padding: $dialog-padding;
-        padding-top: 0;
-      }
-    }
-
-    .md-dialog-content-body {
-      width:100%;
-    }
-  }
-
-  .md-actions, md-dialog-actions {
-    display: flex;
-    order: 2;
-    box-sizing: border-box;
-    align-items: center;
-    justify-content: flex-end;
-    margin-bottom: 0;
-    padding-right: $baseline-grid;
-    padding-left: $baseline-grid * 2;
-    min-height: $baseline-grid * 6.5;
-    overflow: hidden;
-
-    .md-button {
-      margin-bottom: $baseline-grid;
-      margin-left: $baseline-grid;
-      margin-right: 0;
-      margin-top: $baseline-grid;
-    }
-  }
-  &.md-content-overflow {
-    .md-actions, md-dialog-actions {
-      border-top-width: 1px;
-      border-top-style: solid;
-    }
-  }
-
-}
-
-@media screen and (-ms-high-contrast: active) {
-  md-dialog {
-    border: 1px solid #fff;
-  }
-}
-
-@media (max-width: $layout-breakpoint-sm - 1) {
-  md-dialog.md-dialog-fullscreen {
-    min-height: 100%;
-    min-width: 100%;
-    border-radius: 0;
   }
 }
 
@@ -3908,100 +3908,6 @@ md-list-item.md-3-line > .md-no-style {
   }
 }
 
-md-toolbar.md-menu-toolbar {
-  h2.md-toolbar-tools {
-    line-height: 1rem;
-    height: auto;
-    padding: 3.5 * $baseline-grid;
-    padding-bottom: 1.5 * $baseline-grid;
-  }
-}
-
-md-menu-bar {
-  padding: 0 2.5 * $baseline-grid;
-  display: block;
-  position: relative;
-  z-index: 2;
-  .md-menu {
-    display: inline-block;
-    padding: 0;
-    position: relative;
-  }
-  button {
-    font-size: rem(1.4);
-    padding: 0 1.25 * $baseline-grid;
-    margin: 0;
-    border: 0;
-    background-color: transparent;
-    height: 5 * $baseline-grid;
-  }
-
-  md-backdrop.md-menu-backdrop {
-    z-index: -2;
-  }
-}
-
-md-menu-content.md-menu-bar-menu.md-dense {
-  max-height: none;
-  padding: 2 * $baseline-grid 0;
-  md-menu-item.md-indent {
-    position: relative;
-    > md-icon {
-      position: absolute;
-      padding: 0;
-      width: 24px;
-      top: 0.75 * $baseline-grid;
-      left: 3 * $baseline-grid;
-    }
-    > .md-button, .md-menu > .md-button {
-      padding: 0 4 * $baseline-grid 0 8 * $baseline-grid;
-    }
-  }
-  .md-button {
-    min-height: 0;
-    height: 4 * $baseline-grid;
-    display: flex;
-    span {
-      flex-grow: 1;
-    }
-    span.md-alt-text {
-      flex-grow: 0;
-      align-self: flex-end;
-      margin: 0 $baseline-grid;
-    }
-  }
-  md-menu-divider {
-    margin: $baseline-grid 0;
-  }
-
-  md-menu-item > .md-button, .md-menu > .md-button {
-    text-align: left;
-    text-align: start;
-  }
-
-  .md-menu {
-    padding: 0;
-    > .md-button {
-      position: relative;
-      margin: 0;
-      width: 100%;
-      text-transform: none;
-      font-weight: normal;
-      border-radius: 0px;
-      padding-left: 2 * $baseline-grid;
-      &:after {
-        display: block;
-        content: '\25BC';
-        position: absolute;
-        top: 0px;
-        speak: none;
-        transform: rotate(270deg) scaleY(0.45) scaleX(0.9);
-        right: 3.5 * $baseline-grid;
-      }
-    }
-  }
-}
-
 $menu-border-radius: 2px;
 $max-visible-items: 6;
 $menu-item-height: 6 * $baseline-grid;
@@ -4155,6 +4061,100 @@ md-toolbar {
   }
 }
 
+
+md-toolbar.md-menu-toolbar {
+  h2.md-toolbar-tools {
+    line-height: 1rem;
+    height: auto;
+    padding: 3.5 * $baseline-grid;
+    padding-bottom: 1.5 * $baseline-grid;
+  }
+}
+
+md-menu-bar {
+  padding: 0 2.5 * $baseline-grid;
+  display: block;
+  position: relative;
+  z-index: 2;
+  .md-menu {
+    display: inline-block;
+    padding: 0;
+    position: relative;
+  }
+  button {
+    font-size: rem(1.4);
+    padding: 0 1.25 * $baseline-grid;
+    margin: 0;
+    border: 0;
+    background-color: transparent;
+    height: 5 * $baseline-grid;
+  }
+
+  md-backdrop.md-menu-backdrop {
+    z-index: -2;
+  }
+}
+
+md-menu-content.md-menu-bar-menu.md-dense {
+  max-height: none;
+  padding: 2 * $baseline-grid 0;
+  md-menu-item.md-indent {
+    position: relative;
+    > md-icon {
+      position: absolute;
+      padding: 0;
+      width: 24px;
+      top: 0.75 * $baseline-grid;
+      left: 3 * $baseline-grid;
+    }
+    > .md-button, .md-menu > .md-button {
+      padding: 0 4 * $baseline-grid 0 8 * $baseline-grid;
+    }
+  }
+  .md-button {
+    min-height: 0;
+    height: 4 * $baseline-grid;
+    display: flex;
+    span {
+      flex-grow: 1;
+    }
+    span.md-alt-text {
+      flex-grow: 0;
+      align-self: flex-end;
+      margin: 0 $baseline-grid;
+    }
+  }
+  md-menu-divider {
+    margin: $baseline-grid 0;
+  }
+
+  md-menu-item > .md-button, .md-menu > .md-button {
+    text-align: left;
+    text-align: start;
+  }
+
+  .md-menu {
+    padding: 0;
+    > .md-button {
+      position: relative;
+      margin: 0;
+      width: 100%;
+      text-transform: none;
+      font-weight: normal;
+      border-radius: 0px;
+      padding-left: 2 * $baseline-grid;
+      &:after {
+        display: block;
+        content: '\25BC';
+        position: absolute;
+        top: 0px;
+        speak: none;
+        transform: rotate(270deg) scaleY(0.45) scaleX(0.9);
+        right: 3.5 * $baseline-grid;
+      }
+    }
+  }
+}
 
 $progress-circular-ease-in-out : cubic-bezier(0.35, 0, 0.25, 1) !default;
 $progress-circular-duration : 5.25s !default;
@@ -5593,244 +5593,272 @@ md-switch {
 $checkBoxWidth: 18px;
 
 #details-body h1.md-toolbar-tools {
-  color: #222;
+    color: #222;
 }
 
-
 .mdtTable {
-  box-shadow: none;
-  font-size: 15px;
-  /* 12sp Roboto Medium, 54% black */
-  /* optional animation of sort icons: add class 'animate-sort-icon' to mdt-header-row to activate animation */
-  /* 64dp card header height */
-  /* 56do for last row */
-  /* column padding */
-  /* 48dp row height */
-  /* 13sp Roboto Regular, 87% black */
-  /* border separation color */
-  /* INTERACTION */
-  /* default icon color */
-  table {
-    width: 100%;
-    &:focus {
-      outline: none;
-    }
-    tr {
-      @extend .noselect;
-      cursor: default;
-      &:focus {
-        outline: none;
-      }
-    }
-    td, th {
-      padding: 0;
-      margin: 0;
-    }
-
-    th {
-      font-size: 12px;
-      font-weight: 500;
-      color: #666666;
-      cursor: pointer;
-      white-space: nowrap;
-      position: relative;
-
-      &[disabled] {
-        cursor: auto;
-      }
-
-      &:focus {
-        outline: none;
-      }
-
-      &:hover .hoverSortIcons ng-md-icon {
-        visibility: visible;
-      }
-
-      .hoverSortIcons ng-md-icon {
-        visibility: hidden;
-        width: 16px;
-        height: 16px;
-        fill: #b3b3b3;
-      }
-      .hoverSortIcons ng-md-icon svg {
-        -webkit-transform: rotate(90deg);
-        transform: rotate(90deg);
-      }
-    }
-
-    .column-container {
-      position: relative;
-      width: 100%;
-      height: 100%;
-
-      .column-header-body {
-        overflow: hidden;
-        position: absolute;
-        top: 20px;
-        left: 0;
-        right: 0;
-        bottom: 0;
+    box-shadow: none;
+    font-size: 15px;
+    /* 12sp Roboto Medium, 54% black */
+    /* optional animation of sort icons: add class 'animate-sort-icon' to mdt-header-row to activate animation */
+    /* 64dp card header height */
+    /* 56do for last row */
+    /* column padding */
+    /* 48dp row height */
+    /* 13sp Roboto Regular, 87% black */
+    /* border separation color */
+    /* INTERACTION */
+    /* default icon color */
+    table {
         width: 100%;
-        max-height: 25px;
-        text-overflow: ellipsis;
-        white-space: nowrap;
-      }
-      .column-body {
-        overflow: hidden;
-        position: absolute;
-        top: 13px;
-        left: 0;
-        right: 0;
-        bottom: 0;
-        width: 100%;
-        max-height: 25px;
-        text-overflow: ellipsis;
-        white-space: nowrap;
-      }
-    }
-  }
+        &:focus {
+            outline: none;
+        }
+        tr {
+            @extend .noselect;
+            cursor: default;
+            &:focus {
+                outline: none;
+            }
+        }
+        td, th {
+            padding: 0;
+            margin: 0;
+        }
 
-  #visible-header {
-    background-color: #FAFAFA;
-    border-bottom: 1px solid #eeeeee;
-    th:hover {
-      background-color: #EEEEEE;
-      color: #404040;
-    }
-  }
+        th {
+            font-size: 12px;
+            font-weight: 500;
+            color: #666666;
+            cursor: pointer;
+            white-space: nowrap;
+            position: relative;
 
-  .noselect {
-    -webkit-touch-callout: none;
-    -webkit-user-select: none;
-    -khtml-user-select: none;
-    -moz-user-select: none;
-    -ms-user-select: none;
-    user-select: none;
-  }
+            &[disabled] {
+                cursor: auto;
+            }
+
+            &:focus {
+                outline: none;
+            }
+
+            &:hover .hoverSortIcons ng-md-icon {
+                visibility: visible;
+            }
+
+            .hoverSortIcons ng-md-icon {
+                visibility: hidden;
+                width: 16px;
+                height: 16px;
+                fill: #b3b3b3;
+            }
+            .hoverSortIcons ng-md-icon svg {
+                -webkit-transform: rotate(90deg);
+                transform: rotate(90deg);
+            }
+        }
+
+        .column-container {
+            position: relative;
+            width: 100%;
+            height: 100%;
+
+            .column-header-body {
+                overflow: hidden;
+                position: absolute;
+                top: 20px;
+                left: 0;
+                right: 0;
+                bottom: 0;
+                width: 100%;
+                max-height: 25px;
+                text-overflow: ellipsis;
+                white-space: nowrap;
+            }
+            .column-body {
+                overflow: hidden;
+                position: absolute;
+                top: 13px;
+                left: 0;
+                right: 0;
+                bottom: 0;
+                width: 100%;
+                max-height: 25px;
+                text-overflow: ellipsis;
+                white-space: nowrap;
+            }
+        }
+    }
+
+    #visible-header {
+        background-color: #FAFAFA;
+        border-bottom: 1px solid #eeeeee;
+        th:hover {
+            background-color: #EEEEEE;
+            color: #404040;
+        }
+    }
+
+    .noselect {
+        -webkit-touch-callout: none;
+        -webkit-user-select: none;
+        -khtml-user-select: none;
+        -moz-user-select: none;
+        -ms-user-select: none;
+        user-select: none;
+    }
 
 }
 
 .mdtTable th .sortedColumn {
-  /* when hoverSortIcons on a sorted column*/
-  /* sort icon rotated -90 degrees for descending sort */
+    /* when hoverSortIcons on a sorted column*/
+    /* sort icon rotated -90 degrees for descending sort */
 }
 
 .mdtTable th .sortedColumn .hoverSortIcons ng-md-icon {
-  display: none;
+    display: none;
 }
 
 .mdtTable th .sortedColumn ng-md-icon {
-  /* specified 16px is a fix now cause angular materia generates a 24x24 icon even the passed value is 16  */
-  width: 16px;
-  height: 16px;
-  fill: #212121;
-  /* sort icon rotated 90 degrees for ascending sort (default) */
+    /* specified 16px is a fix now cause angular materia generates a 24x24 icon even the passed value is 16  */
+    width: 16px;
+    height: 16px;
+    fill: #212121;
+    /* sort icon rotated 90 degrees for ascending sort (default) */
 }
 
 .mdtTable th .sortedColumn ng-md-icon svg {
-  -webkit-transform: rotate(90deg);
-  transform: rotate(90deg);
+    -webkit-transform: rotate(90deg);
+    transform: rotate(90deg);
 }
 
 .mdtTable th .sortedColumn.descending ng-md-icon > svg {
-  -webkit-transform: rotate(-90deg);
-  transform: rotate(-90deg);
+    -webkit-transform: rotate(-90deg);
+    transform: rotate(-90deg);
 }
 
 .mdtTable thead tr.animate-sort-icon .sortedColumn ng-md-icon svg {
-  -webkit-transition: 0.3s linear all;
-  transition: 0.3s linear all;
+    -webkit-transition: 0.3s linear all;
+    transition: 0.3s linear all;
 }
 
 .mdtTable .mdt-header, .mdtTable .mdt-header-alternate {
-  height: 64px;
-  padding-left: 16px;
-  padding-right: 14px;
+    height: 64px;
+    padding-left: 16px;
+    padding-right: 14px;
 }
 
 .mdtTable .mdt-header md-button, .mdtTable .mdt-header-alternate md-button {
-  margin-left: 16px;
+    margin-left: 16px;
 }
 
 .mdtTable .mdt-header ng-md-icon, .mdtTable .mdt-header-alternate ng-md-icon {
-  fill: #757575;
+    fill: #757575;
 }
 
 .mdtTable .mdt-header-alternate {
-  background-color: #e3edfd;
+    background-color: #e3edfd;
 }
 
 .mdtTable .mdt-header-alternate .alternate-text {
-  color: #0D47A1;
+    color: #0D47A1;
 }
 
 .mdtTable .mdt-footer, .mdtTable tr th {
-  height: 56px;
+    height: 56px;
 }
 
 .mdtTable .mdt-footer .mdt-pagination, .mdtTable tr th .mdt-pagination {
-  font-size: 12px;
-  color: #757575;
+    font-size: 12px;
+    color: #757575;
 }
 
 .mdtTable .mdt-footer .mdt-pagination md-input-container, .mdtTable tr th .mdt-pagination md-input-container {
-  margin-top: 0;
-  margin-bottom: 0;
+    margin-top: 0;
+    margin-bottom: 0;
 }
 
 .mdtTable .checkboxCell {
-  width: $checkBoxWidth;
-  /*the next cell should not have just 24px padding */
+    width: $checkBoxWidth;
+    /*the next cell should not have just 24px padding */
 }
 
 .mdtTable .checkboxCell md-checkbox {
-  margin: 0;
-  padding: 0;
+    margin: 0;
+    padding: 0;
 }
 
 .mdtTable .checkboxCell + td, .mdtTable .checkboxCell + th {
-  padding-left:16px;
+    padding-left: 16px;
 }
 
 .mdtTable tr td {
-  padding: 0;
-  height: 48px;
-  font-size: 13px;
+    padding: 0;
+    height: 48px;
+    font-size: 13px;
 }
 
 .mdtTable td:first-child, .mdtTable th:first-child {
-  padding: 0 0 0 16px;
+    padding: 0 0 0 16px;
 }
 
 .mdtTable td:last-child, .mdtTable th:last-child {
-  padding-right: 16px;
+    padding-right: 16px;
 }
 
 .mdtTable .column {
-  padding-left: 56px;
+    padding-left: 56px;
 }
 
 .mdtTable .leftAlignedColumn {
-  text-align: left;
+    text-align: left;
 }
 
 .mdtTable .rightAlignedColumn {
-  text-align: right;
+    text-align: right;
 }
 
 .mdtTable tr th {
-  color: #212121;
-  border-bottom: 0;
+    color: #212121;
+    border-bottom: 0;
 }
 
 .mdtTable tr td {
-  border-bottom: solid 1px #DDDDDD;
+    border-bottom: solid 1px #DDDDDD;
 }
 
 .mdtTable ng-md-icon {
-  fill: #757575;
+    fill: #757575;
 }
+
+/*context-menu*/
+mtd-dropdown.context-menu {
+    background-color: white;
+    position: fixed;
+    z-index: 51;
+    min-width: 250px;
+}
+
+.mdt-dropdown-menu-item {
+    overflow: hidden;
+    margin: 0;
+    display: block;
+    text-align: left;
+    padding: 5px 10px 5px 20px;
+    text-transform: none;
+    font-size: 14px;
+    font-weight: normal;
+
+    md-icon {
+        font-size: 20px;
+        font-weight: normal;
+    }
+
+    .name {
+        padding-left: 10px;
+    }
+}
+
 
 $tabs-paginator-width: $baseline-grid * 4 !default;
 $tabs-tab-width: $baseline-grid * 12 !default;
@@ -6549,6 +6577,63 @@ md-tooltip {
   }
 }
 
+$virtual-repeat-scrollbar-width: 16px;
+
+.md-virtual-repeat-container {
+  box-sizing: border-box;
+  display: block;
+  margin: 0;
+  overflow: hidden;
+  padding: 0;
+  position: relative;
+
+  .md-virtual-repeat-scroller {
+    bottom: 0;
+    box-sizing: border-box;
+    left: 0;
+    margin: 0;
+    overflow-x: hidden;
+    padding: 0;
+    position: absolute;
+    right: 0;
+    top: 0;
+  }
+
+  .md-virtual-repeat-sizer {
+    box-sizing: border-box;
+    height: 1px;
+    display: block;
+    margin: 0;
+    padding: 0;
+    width: 1px;
+  }
+
+  .md-virtual-repeat-offsetter {
+    box-sizing: border-box;
+    left: 0;
+    margin: 0;
+    padding: 0;
+    position: absolute;
+    right: 0;
+    top: 0;
+  }
+}
+
+.md-virtual-repeat-container.md-orient-horizontal {
+  .md-virtual-repeat-scroller {
+    overflow-x: auto;
+    overflow-y: hidden;
+  }
+
+  .md-virtual-repeat-offsetter {
+    // Leave room for the scroll bar.
+    // TODO: Will probably need to perform measurements at runtime.
+    bottom: $virtual-repeat-scrollbar-width;
+    right: auto;
+    white-space: nowrap;
+  }
+}
+
 .md-whiteframe-1dp, .md-whiteframe-z1 {
   box-shadow: $whiteframe-shadow-1dp;
 }
@@ -6625,62 +6710,5 @@ md-tooltip {
 @media screen and (-ms-high-contrast: active) {
   md-whiteframe {
     border: 1px solid #fff;
-  }
-}
-
-$virtual-repeat-scrollbar-width: 16px;
-
-.md-virtual-repeat-container {
-  box-sizing: border-box;
-  display: block;
-  margin: 0;
-  overflow: hidden;
-  padding: 0;
-  position: relative;
-
-  .md-virtual-repeat-scroller {
-    bottom: 0;
-    box-sizing: border-box;
-    left: 0;
-    margin: 0;
-    overflow-x: hidden;
-    padding: 0;
-    position: absolute;
-    right: 0;
-    top: 0;
-  }
-
-  .md-virtual-repeat-sizer {
-    box-sizing: border-box;
-    height: 1px;
-    display: block;
-    margin: 0;
-    padding: 0;
-    width: 1px;
-  }
-
-  .md-virtual-repeat-offsetter {
-    box-sizing: border-box;
-    left: 0;
-    margin: 0;
-    padding: 0;
-    position: absolute;
-    right: 0;
-    top: 0;
-  }
-}
-
-.md-virtual-repeat-container.md-orient-horizontal {
-  .md-virtual-repeat-scroller {
-    overflow-x: auto;
-    overflow-y: hidden;
-  }
-
-  .md-virtual-repeat-offsetter {
-    // Leave room for the scroll bar.
-    // TODO: Will probably need to perform measurements at runtime.
-    bottom: $virtual-repeat-scrollbar-width;
-    right: auto;
-    white-space: nowrap;
   }
 }
