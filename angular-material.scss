@@ -2878,130 +2878,6 @@ md-divider {
     border-right-style: solid;
   }
 }
-$button-fab-width: rem(5.600) !default;
-$icon-button-margin: rem(0.600) !default;
-
-md-fab-toolbar {
-  $icon-delay: 200ms;
-
-  // Include the top/left/bottom/right fab positions
-  @include fab-all-positions();
-
-  display: block;
-
-  /*
-   * Closed styling
-   */
-  .md-fab-toolbar-wrapper {
-    display: block;
-    position: relative;
-    overflow: hidden;
-
-    // Account for the size of the trigger plus it's margin/shadow
-    height: $button-fab-width + ($icon-button-margin * 2);
-  }
-
-  md-fab-trigger {
-    position: absolute;
-    z-index: $z-index-fab;
-
-    button {
-      overflow: visible !important;
-    }
-
-    .md-fab-toolbar-background {
-      display: block;
-      position: absolute;
-      z-index: $z-index-fab + 1;
-
-      opacity: 1;
-      transition: $swift-ease-in;
-    }
-
-    md-icon {
-      position: relative;
-      z-index: $z-index-fab + 2;
-
-      opacity: 1;
-
-      // Hide the icon very quickly
-      transition: all $icon-delay ease-in;
-    }
-  }
-
-  &.md-left {
-    md-fab-trigger {
-      right: 0;
-    }
-
-    .md-toolbar-tools {
-      flex-direction: row-reverse;
-
-      > .md-button:first-child {
-        margin-right: 0.6rem;
-      }
-
-      > .md-button:first-child {
-        margin-left: -0.8rem;
-      }
-
-
-      > .md-button:last-child {
-        margin-right: 8px;
-      }
-
-    }
-  }
-
-  &.md-right {
-    md-fab-trigger {
-      left: 0;
-    }
-
-    .md-toolbar-tools {
-      flex-direction: row;
-    }
-  }
-
-  md-toolbar {
-    background-color: transparent !important;
-    pointer-events: none;
-    z-index: $z-index-fab + 3;
-
-    .md-toolbar-tools {
-      // Fix some spacing issues with the icons and the trigger
-      padding: 0 20px;
-      margin-top: 3px;
-    }
-
-    .md-fab-action-item {
-      opacity: 0;
-      transform: scale(0);
-      transition: $swift-ease-in;
-
-      // Cut the action item's animation time in half since we delay it in the JS
-      transition-duration: $swift-ease-in-duration / 2;
-    }
-  }
-
-  /*
-   * Hover styling
-   */
-  &.md-is-open {
-    md-fab-trigger > button {
-      box-shadow: none;
-
-      md-icon {
-        opacity: 0;
-      }
-    }
-
-    .md-fab-action-item {
-      opacity: 1;
-      transform: scale(1);
-    }
-  }
-}
 md-fab-speed-dial {
   position: relative;
   display: flex;
@@ -3147,6 +3023,130 @@ md-fab-speed-dial {
   }
 }
 
+$button-fab-width: rem(5.600) !default;
+$icon-button-margin: rem(0.600) !default;
+
+md-fab-toolbar {
+  $icon-delay: 200ms;
+
+  // Include the top/left/bottom/right fab positions
+  @include fab-all-positions();
+
+  display: block;
+
+  /*
+   * Closed styling
+   */
+  .md-fab-toolbar-wrapper {
+    display: block;
+    position: relative;
+    overflow: hidden;
+
+    // Account for the size of the trigger plus it's margin/shadow
+    height: $button-fab-width + ($icon-button-margin * 2);
+  }
+
+  md-fab-trigger {
+    position: absolute;
+    z-index: $z-index-fab;
+
+    button {
+      overflow: visible !important;
+    }
+
+    .md-fab-toolbar-background {
+      display: block;
+      position: absolute;
+      z-index: $z-index-fab + 1;
+
+      opacity: 1;
+      transition: $swift-ease-in;
+    }
+
+    md-icon {
+      position: relative;
+      z-index: $z-index-fab + 2;
+
+      opacity: 1;
+
+      // Hide the icon very quickly
+      transition: all $icon-delay ease-in;
+    }
+  }
+
+  &.md-left {
+    md-fab-trigger {
+      right: 0;
+    }
+
+    .md-toolbar-tools {
+      flex-direction: row-reverse;
+
+      > .md-button:first-child {
+        margin-right: 0.6rem;
+      }
+
+      > .md-button:first-child {
+        margin-left: -0.8rem;
+      }
+
+
+      > .md-button:last-child {
+        margin-right: 8px;
+      }
+
+    }
+  }
+
+  &.md-right {
+    md-fab-trigger {
+      left: 0;
+    }
+
+    .md-toolbar-tools {
+      flex-direction: row;
+    }
+  }
+
+  md-toolbar {
+    background-color: transparent !important;
+    pointer-events: none;
+    z-index: $z-index-fab + 3;
+
+    .md-toolbar-tools {
+      // Fix some spacing issues with the icons and the trigger
+      padding: 0 20px;
+      margin-top: 3px;
+    }
+
+    .md-fab-action-item {
+      opacity: 0;
+      transform: scale(0);
+      transition: $swift-ease-in;
+
+      // Cut the action item's animation time in half since we delay it in the JS
+      transition-duration: $swift-ease-in-duration / 2;
+    }
+  }
+
+  /*
+   * Hover styling
+   */
+  &.md-is-open {
+    md-fab-trigger > button {
+      box-shadow: none;
+
+      md-icon {
+        opacity: 0;
+      }
+    }
+
+    .md-fab-action-item {
+      opacity: 1;
+      transform: scale(1);
+    }
+  }
+}
 md-grid-list {
   box-sizing: border-box;
   display: block;
@@ -4156,6 +4156,173 @@ md-toolbar {
 }
 
 
+$progress-circular-ease-in-out : cubic-bezier(0.35, 0, 0.25, 1) !default;
+$progress-circular-duration : 5.25s !default;
+$progress-circular-circle-duration : $progress-circular-duration * 0.25 !default;
+$progress-circular-outer-duration : $progress-circular-duration * (5 / 9) !default;
+$progress-circular-sporadic-duration : $progress-circular-duration !default;
+$progress-border-width : 10px;
+$progress-circular-size : 10 * $progress-border-width !default;
+
+md-progress-circular {
+  display: block;
+  position: relative;
+
+  width: $progress-circular-size;
+  height: $progress-circular-size;
+
+  padding-top: 0 !important;
+  margin-bottom: 0 !important;
+
+  z-index: $z-index-progress-circular; // Used to fix a Chrome bug with spinner animation
+
+  .md-spinner-wrapper {
+    display:block;
+    position: absolute;
+    overflow: hidden;
+    top: 50%;
+    left: 50%;
+
+    .md-inner {
+       width: $progress-circular-size;
+       height: $progress-circular-size;
+       position: relative;
+       .md-gap {
+         position: absolute;
+         left: $progress-circular-size * 0.5 - 1;
+         right: $progress-circular-size * 0.5 - 1;
+         top: 0;
+         bottom: 0;
+         border-top-width: $progress-border-width;
+         border-top-style: solid;
+         box-sizing: border-box;
+       }
+       .md-left, .md-right {
+         position: absolute;
+         top: 0;
+         height: $progress-circular-size;
+         width: $progress-circular-size * 0.50;
+         overflow: hidden;
+         .md-half-circle {
+           position: absolute;
+           top: 0;
+           width: $progress-circular-size;
+           height: $progress-circular-size;
+           box-sizing: border-box;
+           border-width: $progress-border-width;
+           border-style: solid;
+           border-bottom-color: transparent;
+           border-radius: 50%;
+         }
+       }
+       .md-left {
+         left: 0;
+         .md-half-circle {
+           left: 0;
+           border-right-color: transparent;
+         }
+       }
+       .md-right {
+         right: 0;
+         .md-half-circle {
+           right: 0;
+           border-left-color: transparent;
+         }
+       }
+     }
+  }
+
+
+  .md-mode-indeterminate .md-spinner-wrapper {
+    animation: outer-rotate $progress-circular-outer-duration linear infinite;
+    .md-inner {
+      animation: sporadic-rotate $progress-circular-sporadic-duration $progress-circular-ease-in-out infinite;
+      .md-left, .md-right {
+        .md-half-circle {
+          animation-iteration-count: infinite;
+          animation-duration: ($progress-circular-duration * 0.25);
+          animation-timing-function: $progress-circular-ease-in-out;
+        }
+      }
+      .md-left {
+        .md-half-circle {
+          animation-name: left-wobble;
+        }
+      }
+      .md-right {
+        .md-half-circle {
+          animation-name: right-wobble;
+        }
+      }
+    }
+  }
+
+  md-progress-circular.ng-hide {
+    .md-spinner-wrapper  {
+      animation: none;
+      .md-inner {
+        animation: none;
+        .md-left {
+          .md-half-circle {
+            animation-name: none;
+          }
+        }
+        .md-right {
+          .md-half-circle {
+            animation-name: none;
+          }
+        }
+      }
+    }
+  }
+
+  .md-spinner-wrapper.ng-hide {
+    animation: none;
+    .md-inner {
+      animation: none;
+      .md-left {
+        .md-half-circle {
+          animation-name: none;
+        }
+      }
+      .md-right {
+        .md-half-circle {
+          animation-name: none;
+        }
+      }
+    }
+  }
+
+}
+
+
+//
+// Keyframe animation for the Indeterminate Progress
+//
+@keyframes outer-rotate {
+  0%       { transform: rotate(0deg) scale(0.5); }
+  100%     { transform: rotate(360deg) scale(0.5); }
+}
+@keyframes left-wobble {
+  0%, 100% { transform: rotate(130deg); }
+  50%      { transform: rotate( -5deg); }
+}
+@keyframes right-wobble {
+  0%, 100% { transform: rotate(-130deg); }
+  50%      { transform: rotate(   5deg); }
+}
+@keyframes sporadic-rotate {
+  12.5%    { transform: rotate( 135deg); }
+  25%      { transform: rotate( 270deg); }
+  37.5%    { transform: rotate( 405deg); }
+  50%      { transform: rotate( 540deg); }
+  62.5%    { transform: rotate( 675deg); }
+  75%      { transform: rotate( 810deg); }
+  87.5%    { transform: rotate( 945deg); }
+  100%     { transform: rotate(1080deg); }
+}
+
+
 $progress-linear-bar-height: 5px !default;
 
 md-progress-linear {
@@ -4359,173 +4526,6 @@ md-progress-linear {
   }
 }
 
-
-
-$progress-circular-ease-in-out : cubic-bezier(0.35, 0, 0.25, 1) !default;
-$progress-circular-duration : 5.25s !default;
-$progress-circular-circle-duration : $progress-circular-duration * 0.25 !default;
-$progress-circular-outer-duration : $progress-circular-duration * (5 / 9) !default;
-$progress-circular-sporadic-duration : $progress-circular-duration !default;
-$progress-border-width : 10px;
-$progress-circular-size : 10 * $progress-border-width !default;
-
-md-progress-circular {
-  display: block;
-  position: relative;
-
-  width: $progress-circular-size;
-  height: $progress-circular-size;
-
-  padding-top: 0 !important;
-  margin-bottom: 0 !important;
-
-  z-index: $z-index-progress-circular; // Used to fix a Chrome bug with spinner animation
-
-  .md-spinner-wrapper {
-    display:block;
-    position: absolute;
-    overflow: hidden;
-    top: 50%;
-    left: 50%;
-
-    .md-inner {
-       width: $progress-circular-size;
-       height: $progress-circular-size;
-       position: relative;
-       .md-gap {
-         position: absolute;
-         left: $progress-circular-size * 0.5 - 1;
-         right: $progress-circular-size * 0.5 - 1;
-         top: 0;
-         bottom: 0;
-         border-top-width: $progress-border-width;
-         border-top-style: solid;
-         box-sizing: border-box;
-       }
-       .md-left, .md-right {
-         position: absolute;
-         top: 0;
-         height: $progress-circular-size;
-         width: $progress-circular-size * 0.50;
-         overflow: hidden;
-         .md-half-circle {
-           position: absolute;
-           top: 0;
-           width: $progress-circular-size;
-           height: $progress-circular-size;
-           box-sizing: border-box;
-           border-width: $progress-border-width;
-           border-style: solid;
-           border-bottom-color: transparent;
-           border-radius: 50%;
-         }
-       }
-       .md-left {
-         left: 0;
-         .md-half-circle {
-           left: 0;
-           border-right-color: transparent;
-         }
-       }
-       .md-right {
-         right: 0;
-         .md-half-circle {
-           right: 0;
-           border-left-color: transparent;
-         }
-       }
-     }
-  }
-
-
-  .md-mode-indeterminate .md-spinner-wrapper {
-    animation: outer-rotate $progress-circular-outer-duration linear infinite;
-    .md-inner {
-      animation: sporadic-rotate $progress-circular-sporadic-duration $progress-circular-ease-in-out infinite;
-      .md-left, .md-right {
-        .md-half-circle {
-          animation-iteration-count: infinite;
-          animation-duration: ($progress-circular-duration * 0.25);
-          animation-timing-function: $progress-circular-ease-in-out;
-        }
-      }
-      .md-left {
-        .md-half-circle {
-          animation-name: left-wobble;
-        }
-      }
-      .md-right {
-        .md-half-circle {
-          animation-name: right-wobble;
-        }
-      }
-    }
-  }
-
-  md-progress-circular.ng-hide {
-    .md-spinner-wrapper  {
-      animation: none;
-      .md-inner {
-        animation: none;
-        .md-left {
-          .md-half-circle {
-            animation-name: none;
-          }
-        }
-        .md-right {
-          .md-half-circle {
-            animation-name: none;
-          }
-        }
-      }
-    }
-  }
-
-  .md-spinner-wrapper.ng-hide {
-    animation: none;
-    .md-inner {
-      animation: none;
-      .md-left {
-        .md-half-circle {
-          animation-name: none;
-        }
-      }
-      .md-right {
-        .md-half-circle {
-          animation-name: none;
-        }
-      }
-    }
-  }
-
-}
-
-
-//
-// Keyframe animation for the Indeterminate Progress
-//
-@keyframes outer-rotate {
-  0%       { transform: rotate(0deg) scale(0.5); }
-  100%     { transform: rotate(360deg) scale(0.5); }
-}
-@keyframes left-wobble {
-  0%, 100% { transform: rotate(130deg); }
-  50%      { transform: rotate( -5deg); }
-}
-@keyframes right-wobble {
-  0%, 100% { transform: rotate(-130deg); }
-  50%      { transform: rotate(   5deg); }
-}
-@keyframes sporadic-rotate {
-  12.5%    { transform: rotate( 135deg); }
-  25%      { transform: rotate( 270deg); }
-  37.5%    { transform: rotate( 405deg); }
-  50%      { transform: rotate( 540deg); }
-  62.5%    { transform: rotate( 675deg); }
-  75%      { transform: rotate( 810deg); }
-  87.5%    { transform: rotate( 945deg); }
-  100%     { transform: rotate(1080deg); }
-}
 
 
 $radio-width: 20px !default;
@@ -5832,207 +5832,6 @@ $checkBoxWidth: 18px;
   fill: #757575;
 }
 
-// See height set globally, depended on by buttons
-
-md-toast {
-  position: absolute;
-  z-index: $z-index-toast;
-
-  box-sizing: border-box;
-  cursor: default;
-  overflow: hidden;
-
-  // Add some padding to the outer toast container so that the wrapper's box shadow is visible
-  padding: $toast-margin;
-
-  // Setup opacity transition on whole toast
-  opacity: 1;
-  transition: $swift-ease-out;
-
-  .md-toast-content {
-    display: flex;
-    align-items: center;
-
-    height: 0;
-    max-height: 7 * $toast-height;
-    max-width: 100%;
-    min-height: 48px;
-    padding-left: 24px;
-    padding-right: 24px;
-
-    box-shadow: 0 2px 5px 0 rgba(0, 0, 0, 0.26);
-    border-radius: 2px;
-    font-size: 14px;
-
-    overflow: hidden;
-
-    // Setup for transform transitions on inner content
-    transform: translate3d(0, 0, 0) rotateZ(0deg);
-    transition: $swift-ease-out;
-  }
-
-  &.md-capsule {
-    border-radius: 24px;
-
-    .md-toast-content {
-      border-radius: 24px;
-    }
-  }
-
-  &.ng-leave-active {
-    .md-toast-content {
-      transition: $swift-ease-in;
-    }
-  }
-
-  /* Transition differently when swiping */
-  &.md-swipeleft,
-  &.md-swiperight,
-  &.md-swipeup,
-  &.md-swipedown {
-    .md-toast-content {
-      transition: $swift-ease-out;
-    }
-  }
-
-  &.ng-enter {
-    opacity: 0;
-    .md-toast-content {
-      transform: translate3d(0, 100%, 0);
-    }
-    &.md-top {
-      .md-toast-content {
-        transform: translate3d(0, -100%, 0);
-      }
-    }
-    &.ng-enter-active {
-      opacity: 1;
-      .md-toast-content {
-        transform: translate3d(0, 0, 0);
-      }
-    }
-  }
-  /*
-   * When the toast doesn't take up the whole screen,
-   * make it rotate when the user swipes it away
-   */
-  &.ng-leave.ng-leave-active {
-    .md-toast-content {
-      opacity: 0;
-      transform: translate3d(0, 100%, 0);
-    }
-
-    &.md-swipeup {
-      .md-toast-content {
-        transform: translate3d(0, -50%, 0);
-      }
-    }
-    &.md-swipedown {
-      .md-toast-content {
-        transform: translate3d(0, 50%, 0);
-      }
-    }
-    &.md-top {
-      .md-toast-content {
-        transform: translate3d(0, -100%, 0);
-      }
-    }
-  }
-
-  .md-action {
-    line-height: 19px;
-    margin-left: 24px;
-    margin-right: 0;
-    cursor: pointer;
-    text-transform: uppercase;
-    float: right;
-
-    &.md-button {
-      min-width: 0;
-    }
-  }
-}
-
-@media (max-width: $layout-breakpoint-sm - 1) {
-  md-toast {
-    left: 0;
-    right: 0;
-    width: 100%;
-    max-width: 100%;
-    min-width: 0;
-    border-radius: 0;
-    bottom: 0;
-
-    &.ng-leave.ng-leave-active {
-      &.md-swipeup {
-        .md-toast-content {
-          transform: translate3d(0, -50%, 0);
-        }
-      }
-      &.md-swipedown {
-        .md-toast-content {
-          transform: translate3d(0, 50%, 0);
-        }
-      }
-    }
-  }
-}
-
-@media (min-width: $layout-breakpoint-sm) {
-  md-toast {
-    min-width: 288px + $toast-margin * 2;
-    &.md-bottom {
-      bottom: 0;
-    }
-    &.md-left {
-      left: 0;
-    }
-    &.md-right {
-      right: 0;
-    }
-    &.md-top {
-      top: 0;
-    }
-
-    /*
-   * When the toast doesn't take up the whole screen,
-   * make it rotate when the user swipes it away
-   */
-    &.ng-leave.ng-leave-active {
-      &.md-swipeleft {
-        .md-toast-content {
-          transform: translate3d(-50%, 0, 0);
-        }
-      }
-      &.md-swiperight {
-        .md-toast-content {
-          transform: translate3d(50%, 0, 0);
-        }
-      }
-    }
-  }
-}
-
-@media (min-width: $layout-breakpoint-lg) {
-  md-toast {
-    .md-toast-content {
-      max-width: $baseline-grid * 71;
-    }
-  }
-}
-
-@media screen and (-ms-high-contrast: active) {
-  md-toast {
-    border: 1px solid #fff;
-  }
-}
-
-
-// While animating, set the toast parent's overflow to hidden so scrollbars do not appear
-.md-toast-animating {
-  overflow: hidden !important;
-}
-
 $tabs-paginator-width: $baseline-grid * 4 !default;
 $tabs-tab-width: $baseline-grid * 12 !default;
 $tabs-header-height: 48px !default;
@@ -6318,77 +6117,205 @@ md-toolbar + md-tabs {
   border-top-right-radius: 0;
 }
 
-$tooltip-fontsize-lg: rem(1);
-$tooltip-fontsize-sm: rem(1.4);
-$tooltip-height-lg: rem(2.2);
-$tooltip-height-sm: rem(3.2);
-$tooltip-top-margin-lg: rem(1.4);
-$tooltip-top-margin-sm: rem(2.4);
-$tooltip-lr-padding-lg: rem(0.8);
-$tooltip-lr-padding-sm: rem(1.6);
-$tooltip-max-width: rem(3.20);
+// See height set globally, depended on by buttons
 
-md-tooltip {
+md-toast {
   position: absolute;
-  z-index: $z-index-tooltip;
-  overflow: hidden;
-  pointer-events: none;
-  border-radius: 4px;
+  z-index: $z-index-toast;
 
-  font-weight: 500;
-  font-size: $tooltip-fontsize-sm;
-  @media screen and (min-width: $layout-breakpoint-sm) {
-    font-size: $tooltip-fontsize-lg;
+  box-sizing: border-box;
+  cursor: default;
+  overflow: hidden;
+
+  // Add some padding to the outer toast container so that the wrapper's box shadow is visible
+  padding: $toast-margin;
+
+  // Setup opacity transition on whole toast
+  opacity: 1;
+  transition: $swift-ease-out;
+
+  .md-toast-content {
+    display: flex;
+    align-items: center;
+
+    height: 0;
+    max-height: 7 * $toast-height;
+    max-width: 100%;
+    min-height: 48px;
+    padding-left: 24px;
+    padding-right: 24px;
+
+    box-shadow: 0 2px 5px 0 rgba(0, 0, 0, 0.26);
+    border-radius: 2px;
+    font-size: 14px;
+
+    overflow: hidden;
+
+    // Setup for transform transitions on inner content
+    transform: translate3d(0, 0, 0) rotateZ(0deg);
+    transition: $swift-ease-out;
   }
 
-  .md-content {
-    position: relative;
-    white-space: nowrap;
-    overflow: hidden;
-    text-overflow: ellipsis;
-    transform-origin: center top;
-    transform: scale(0);
+  &.md-capsule {
+    border-radius: 24px;
+
+    .md-toast-content {
+      border-radius: 24px;
+    }
+  }
+
+  &.ng-leave-active {
+    .md-toast-content {
+      transition: $swift-ease-in;
+    }
+  }
+
+  /* Transition differently when swiping */
+  &.md-swipeleft,
+  &.md-swiperight,
+  &.md-swipeup,
+  &.md-swipedown {
+    .md-toast-content {
+      transition: $swift-ease-out;
+    }
+  }
+
+  &.ng-enter {
     opacity: 0;
-    height: $tooltip-height-sm;
-    line-height: $tooltip-height-sm;
-    padding-left: $tooltip-lr-padding-sm;
-    padding-right: $tooltip-lr-padding-sm;
-    @media screen and (min-width: $layout-breakpoint-sm) {
-      height: $tooltip-height-lg;
-      line-height: $tooltip-height-lg;
-      padding-left: $tooltip-lr-padding-lg;
-      padding-right: $tooltip-lr-padding-lg;
+    .md-toast-content {
+      transform: translate3d(0, 100%, 0);
     }
-    &.md-show-add {
-      transition: $swift-ease-out;
-      transition-duration: .2s;
-      transform: scale(0);
-      opacity: 0;
+    &.md-top {
+      .md-toast-content {
+        transform: translate3d(0, -100%, 0);
+      }
     }
-    &.md-show, &.md-show-add-active {
-      transform: scale(1);
+    &.ng-enter-active {
       opacity: 1;
-      transform-origin: center top;
+      .md-toast-content {
+        transform: translate3d(0, 0, 0);
+      }
     }
-    &.md-show-remove {
-      transition: $swift-ease-out;
-      transition-duration: .2s;
-      &.md-show-remove-active {
-        transform: scale(0);
-        opacity: 0;
+  }
+  /*
+   * When the toast doesn't take up the whole screen,
+   * make it rotate when the user swipes it away
+   */
+  &.ng-leave.ng-leave-active {
+    .md-toast-content {
+      opacity: 0;
+      transform: translate3d(0, 100%, 0);
+    }
+
+    &.md-swipeup {
+      .md-toast-content {
+        transform: translate3d(0, -50%, 0);
+      }
+    }
+    &.md-swipedown {
+      .md-toast-content {
+        transform: translate3d(0, 50%, 0);
+      }
+    }
+    &.md-top {
+      .md-toast-content {
+        transform: translate3d(0, -100%, 0);
       }
     }
   }
 
-  &.md-hide {
-    transition: $swift-ease-in;
-  }
+  .md-action {
+    line-height: 19px;
+    margin-left: 24px;
+    margin-right: 0;
+    cursor: pointer;
+    text-transform: uppercase;
+    float: right;
 
-  &.md-show {
-    transition: $swift-ease-out;
-    pointer-events: auto;
-    will-change: opacity, height, width;
+    &.md-button {
+      min-width: 0;
+    }
   }
+}
+
+@media (max-width: $layout-breakpoint-sm - 1) {
+  md-toast {
+    left: 0;
+    right: 0;
+    width: 100%;
+    max-width: 100%;
+    min-width: 0;
+    border-radius: 0;
+    bottom: 0;
+
+    &.ng-leave.ng-leave-active {
+      &.md-swipeup {
+        .md-toast-content {
+          transform: translate3d(0, -50%, 0);
+        }
+      }
+      &.md-swipedown {
+        .md-toast-content {
+          transform: translate3d(0, 50%, 0);
+        }
+      }
+    }
+  }
+}
+
+@media (min-width: $layout-breakpoint-sm) {
+  md-toast {
+    min-width: 288px + $toast-margin * 2;
+    &.md-bottom {
+      bottom: 0;
+    }
+    &.md-left {
+      left: 0;
+    }
+    &.md-right {
+      right: 0;
+    }
+    &.md-top {
+      top: 0;
+    }
+
+    /*
+   * When the toast doesn't take up the whole screen,
+   * make it rotate when the user swipes it away
+   */
+    &.ng-leave.ng-leave-active {
+      &.md-swipeleft {
+        .md-toast-content {
+          transform: translate3d(-50%, 0, 0);
+        }
+      }
+      &.md-swiperight {
+        .md-toast-content {
+          transform: translate3d(50%, 0, 0);
+        }
+      }
+    }
+  }
+}
+
+@media (min-width: $layout-breakpoint-lg) {
+  md-toast {
+    .md-toast-content {
+      max-width: $baseline-grid * 71;
+    }
+  }
+}
+
+@media screen and (-ms-high-contrast: active) {
+  md-toast {
+    border: 1px solid #fff;
+  }
+}
+
+
+// While animating, set the toast parent's overflow to hidden so scrollbars do not appear
+.md-toast-animating {
+  overflow: hidden !important;
 }
 
 // Standard/Desktop Heights
@@ -6549,60 +6476,76 @@ md-toolbar {
 }
 
 
-$virtual-repeat-scrollbar-width: 16px;
+$tooltip-fontsize-lg: rem(1);
+$tooltip-fontsize-sm: rem(1.4);
+$tooltip-height-lg: rem(2.2);
+$tooltip-height-sm: rem(3.2);
+$tooltip-top-margin-lg: rem(1.4);
+$tooltip-top-margin-sm: rem(2.4);
+$tooltip-lr-padding-lg: rem(0.8);
+$tooltip-lr-padding-sm: rem(1.6);
+$tooltip-max-width: rem(3.20);
 
-.md-virtual-repeat-container {
-  box-sizing: border-box;
-  display: block;
-  margin: 0;
+md-tooltip {
+  position: absolute;
+  z-index: $z-index-tooltip;
   overflow: hidden;
-  padding: 0;
-  position: relative;
+  pointer-events: none;
+  border-radius: 4px;
 
-  .md-virtual-repeat-scroller {
-    bottom: 0;
-    box-sizing: border-box;
-    left: 0;
-    margin: 0;
-    overflow-x: hidden;
-    padding: 0;
-    position: absolute;
-    right: 0;
-    top: 0;
+  font-weight: 500;
+  font-size: $tooltip-fontsize-sm;
+  @media screen and (min-width: $layout-breakpoint-sm) {
+    font-size: $tooltip-fontsize-lg;
   }
 
-  .md-virtual-repeat-sizer {
-    box-sizing: border-box;
-    height: 1px;
-    display: block;
-    margin: 0;
-    padding: 0;
-    width: 1px;
-  }
-
-  .md-virtual-repeat-offsetter {
-    box-sizing: border-box;
-    left: 0;
-    margin: 0;
-    padding: 0;
-    position: absolute;
-    right: 0;
-    top: 0;
-  }
-}
-
-.md-virtual-repeat-container.md-orient-horizontal {
-  .md-virtual-repeat-scroller {
-    overflow-x: auto;
-    overflow-y: hidden;
-  }
-
-  .md-virtual-repeat-offsetter {
-    // Leave room for the scroll bar.
-    // TODO: Will probably need to perform measurements at runtime.
-    bottom: $virtual-repeat-scrollbar-width;
-    right: auto;
+  .md-content {
+    position: relative;
     white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    transform-origin: center top;
+    transform: scale(0);
+    opacity: 0;
+    height: $tooltip-height-sm;
+    line-height: $tooltip-height-sm;
+    padding-left: $tooltip-lr-padding-sm;
+    padding-right: $tooltip-lr-padding-sm;
+    @media screen and (min-width: $layout-breakpoint-sm) {
+      height: $tooltip-height-lg;
+      line-height: $tooltip-height-lg;
+      padding-left: $tooltip-lr-padding-lg;
+      padding-right: $tooltip-lr-padding-lg;
+    }
+    &.md-show-add {
+      transition: $swift-ease-out;
+      transition-duration: .2s;
+      transform: scale(0);
+      opacity: 0;
+    }
+    &.md-show, &.md-show-add-active {
+      transform: scale(1);
+      opacity: 1;
+      transform-origin: center top;
+    }
+    &.md-show-remove {
+      transition: $swift-ease-out;
+      transition-duration: .2s;
+      &.md-show-remove-active {
+        transform: scale(0);
+        opacity: 0;
+      }
+    }
+  }
+
+  &.md-hide {
+    transition: $swift-ease-in;
+  }
+
+  &.md-show {
+    transition: $swift-ease-out;
+    pointer-events: auto;
+    will-change: opacity, height, width;
   }
 }
 
@@ -6682,5 +6625,62 @@ $virtual-repeat-scrollbar-width: 16px;
 @media screen and (-ms-high-contrast: active) {
   md-whiteframe {
     border: 1px solid #fff;
+  }
+}
+
+$virtual-repeat-scrollbar-width: 16px;
+
+.md-virtual-repeat-container {
+  box-sizing: border-box;
+  display: block;
+  margin: 0;
+  overflow: hidden;
+  padding: 0;
+  position: relative;
+
+  .md-virtual-repeat-scroller {
+    bottom: 0;
+    box-sizing: border-box;
+    left: 0;
+    margin: 0;
+    overflow-x: hidden;
+    padding: 0;
+    position: absolute;
+    right: 0;
+    top: 0;
+  }
+
+  .md-virtual-repeat-sizer {
+    box-sizing: border-box;
+    height: 1px;
+    display: block;
+    margin: 0;
+    padding: 0;
+    width: 1px;
+  }
+
+  .md-virtual-repeat-offsetter {
+    box-sizing: border-box;
+    left: 0;
+    margin: 0;
+    padding: 0;
+    position: absolute;
+    right: 0;
+    top: 0;
+  }
+}
+
+.md-virtual-repeat-container.md-orient-horizontal {
+  .md-virtual-repeat-scroller {
+    overflow-x: auto;
+    overflow-y: hidden;
+  }
+
+  .md-virtual-repeat-offsetter {
+    // Leave room for the scroll bar.
+    // TODO: Will probably need to perform measurements at runtime.
+    bottom: $virtual-repeat-scrollbar-width;
+    right: auto;
+    white-space: nowrap;
   }
 }
