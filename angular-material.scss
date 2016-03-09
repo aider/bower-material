@@ -2730,6 +2730,24 @@ md-datepicker[disabled] {
   }
 }
 
+md-divider {
+  display: block;
+  border-top-width: 1px;
+  border-top-style: solid;
+  margin: 0;
+
+  &[md-inset] {
+    margin-left: $baseline-grid * 10;
+  }
+}
+
+.layout-row {
+  & > md-divider {
+    border-top-width: 0;
+    border-right-width: 1px;
+    border-right-style: solid;
+  }
+}
 $dialog-padding: $baseline-grid * 3;
 
 .md-dialog-is-showing {
@@ -3005,148 +3023,6 @@ md-fab-speed-dial {
   }
 }
 
-md-divider {
-  display: block;
-  border-top-width: 1px;
-  border-top-style: solid;
-  margin: 0;
-
-  &[md-inset] {
-    margin-left: $baseline-grid * 10;
-  }
-}
-
-.layout-row {
-  & > md-divider {
-    border-top-width: 0;
-    border-right-width: 1px;
-    border-right-style: solid;
-  }
-}
-$button-fab-width: rem(5.600) !default;
-$icon-button-margin: rem(0.600) !default;
-
-md-fab-toolbar {
-  $icon-delay: 200ms;
-
-  // Include the top/left/bottom/right fab positions
-  @include fab-all-positions();
-
-  display: block;
-
-  /*
-   * Closed styling
-   */
-  .md-fab-toolbar-wrapper {
-    display: block;
-    position: relative;
-    overflow: hidden;
-
-    // Account for the size of the trigger plus it's margin/shadow
-    height: $button-fab-width + ($icon-button-margin * 2);
-  }
-
-  md-fab-trigger {
-    position: absolute;
-    z-index: $z-index-fab;
-
-    button {
-      overflow: visible !important;
-    }
-
-    .md-fab-toolbar-background {
-      display: block;
-      position: absolute;
-      z-index: $z-index-fab + 1;
-
-      opacity: 1;
-      transition: $swift-ease-in;
-    }
-
-    md-icon {
-      position: relative;
-      z-index: $z-index-fab + 2;
-
-      opacity: 1;
-
-      // Hide the icon very quickly
-      transition: all $icon-delay ease-in;
-    }
-  }
-
-  &.md-left {
-    md-fab-trigger {
-      right: 0;
-    }
-
-    .md-toolbar-tools {
-      flex-direction: row-reverse;
-
-      > .md-button:first-child {
-        margin-right: 0.6rem;
-      }
-
-      > .md-button:first-child {
-        margin-left: -0.8rem;
-      }
-
-
-      > .md-button:last-child {
-        margin-right: 8px;
-      }
-
-    }
-  }
-
-  &.md-right {
-    md-fab-trigger {
-      left: 0;
-    }
-
-    .md-toolbar-tools {
-      flex-direction: row;
-    }
-  }
-
-  md-toolbar {
-    background-color: transparent !important;
-    pointer-events: none;
-    z-index: $z-index-fab + 3;
-
-    .md-toolbar-tools {
-      // Fix some spacing issues with the icons and the trigger
-      padding: 0 20px;
-      margin-top: 3px;
-    }
-
-    .md-fab-action-item {
-      opacity: 0;
-      transform: scale(0);
-      transition: $swift-ease-in;
-
-      // Cut the action item's animation time in half since we delay it in the JS
-      transition-duration: $swift-ease-in-duration / 2;
-    }
-  }
-
-  /*
-   * Hover styling
-   */
-  &.md-is-open {
-    md-fab-trigger > button {
-      box-shadow: none;
-
-      md-icon {
-        opacity: 0;
-      }
-    }
-
-    .md-fab-action-item {
-      opacity: 1;
-      transform: scale(1);
-    }
-  }
-}
 md-grid-list {
   box-sizing: border-box;
   display: block;
@@ -3228,61 +3104,6 @@ md-grid-list {
   }
 }
 
-
-md-icon {
-  margin: auto;
-  background-repeat: no-repeat no-repeat;
-  display: inline-block;
-  vertical-align: middle;
-  fill: currentColor;
-  height: $icon-size;
-  width: $icon-size;
-
-  svg {
-    pointer-events: none;
-  }
-
-  &[md-font-icon] {
-    line-height: 1;
-    width: auto;
-  }
-}
-
-//
-//@font-face {
-//  font-family:"material";
-//  src:url("/dist/material-font/material.eot");
-//  font-weight:normal;
-//  font-style:normal;
-//}
-//
-//@font-face {
-//  font-family:"material";
-//  src:url("/dist/material-font/material.eot");
-//  src:url("/dist/material-font/material.eot?#iefix") format("embedded-opentype"),
-//    url("/dist/material-font/material.woff") format("woff"),
-//    url("/dist/material-font/material.ttf") format("truetype"),
-//    url("/dist/material-font/material.svg?#material") format("svg");
-//  font-weight:normal;
-//  font-style:normal;
-//}
-//
-///* Bootstrap Overrides */
-//[class^="icon-"]:before,
-//[class*=" icon-"]:before {
-//  font-family:"material";
-//  display:inline-block;
-//  vertical-align:middle;
-//  line-height:1;
-//  font-weight:normal;
-//  font-style:normal;
-//  speak:none;
-//  text-decoration:inherit;
-//  text-transform:none;
-//  text-rendering:optimizeLegibility;
-//  -webkit-font-smoothing:antialiased;
-//  -moz-osx-font-smoothing:grayscale;
-//}
 
 $input-container-padding: 2px !default;
 
@@ -3634,6 +3455,185 @@ md-input-container.md-icon-right {
     fill: #fff;
   }
 }
+
+$button-fab-width: rem(5.600) !default;
+$icon-button-margin: rem(0.600) !default;
+
+md-fab-toolbar {
+  $icon-delay: 200ms;
+
+  // Include the top/left/bottom/right fab positions
+  @include fab-all-positions();
+
+  display: block;
+
+  /*
+   * Closed styling
+   */
+  .md-fab-toolbar-wrapper {
+    display: block;
+    position: relative;
+    overflow: hidden;
+
+    // Account for the size of the trigger plus it's margin/shadow
+    height: $button-fab-width + ($icon-button-margin * 2);
+  }
+
+  md-fab-trigger {
+    position: absolute;
+    z-index: $z-index-fab;
+
+    button {
+      overflow: visible !important;
+    }
+
+    .md-fab-toolbar-background {
+      display: block;
+      position: absolute;
+      z-index: $z-index-fab + 1;
+
+      opacity: 1;
+      transition: $swift-ease-in;
+    }
+
+    md-icon {
+      position: relative;
+      z-index: $z-index-fab + 2;
+
+      opacity: 1;
+
+      // Hide the icon very quickly
+      transition: all $icon-delay ease-in;
+    }
+  }
+
+  &.md-left {
+    md-fab-trigger {
+      right: 0;
+    }
+
+    .md-toolbar-tools {
+      flex-direction: row-reverse;
+
+      > .md-button:first-child {
+        margin-right: 0.6rem;
+      }
+
+      > .md-button:first-child {
+        margin-left: -0.8rem;
+      }
+
+
+      > .md-button:last-child {
+        margin-right: 8px;
+      }
+
+    }
+  }
+
+  &.md-right {
+    md-fab-trigger {
+      left: 0;
+    }
+
+    .md-toolbar-tools {
+      flex-direction: row;
+    }
+  }
+
+  md-toolbar {
+    background-color: transparent !important;
+    pointer-events: none;
+    z-index: $z-index-fab + 3;
+
+    .md-toolbar-tools {
+      // Fix some spacing issues with the icons and the trigger
+      padding: 0 20px;
+      margin-top: 3px;
+    }
+
+    .md-fab-action-item {
+      opacity: 0;
+      transform: scale(0);
+      transition: $swift-ease-in;
+
+      // Cut the action item's animation time in half since we delay it in the JS
+      transition-duration: $swift-ease-in-duration / 2;
+    }
+  }
+
+  /*
+   * Hover styling
+   */
+  &.md-is-open {
+    md-fab-trigger > button {
+      box-shadow: none;
+
+      md-icon {
+        opacity: 0;
+      }
+    }
+
+    .md-fab-action-item {
+      opacity: 1;
+      transform: scale(1);
+    }
+  }
+}
+md-icon {
+  margin: auto;
+  background-repeat: no-repeat no-repeat;
+  display: inline-block;
+  vertical-align: middle;
+  fill: currentColor;
+  height: $icon-size;
+  width: $icon-size;
+
+  svg {
+    pointer-events: none;
+  }
+
+  &[md-font-icon] {
+    line-height: 1;
+    width: auto;
+  }
+}
+
+//
+//@font-face {
+//  font-family:"material";
+//  src:url("/dist/material-font/material.eot");
+//  font-weight:normal;
+//  font-style:normal;
+//}
+//
+//@font-face {
+//  font-family:"material";
+//  src:url("/dist/material-font/material.eot");
+//  src:url("/dist/material-font/material.eot?#iefix") format("embedded-opentype"),
+//    url("/dist/material-font/material.woff") format("woff"),
+//    url("/dist/material-font/material.ttf") format("truetype"),
+//    url("/dist/material-font/material.svg?#material") format("svg");
+//  font-weight:normal;
+//  font-style:normal;
+//}
+//
+///* Bootstrap Overrides */
+//[class^="icon-"]:before,
+//[class*=" icon-"]:before {
+//  font-family:"material";
+//  display:inline-block;
+//  vertical-align:middle;
+//  line-height:1;
+//  font-weight:normal;
+//  font-style:normal;
+//  speak:none;
+//  text-decoration:inherit;
+//  text-transform:none;
+//  text-rendering:optimizeLegibility;
+//  -webkit-font-smoothing:antialiased;
+//  -moz-osx-font-smoothing:grayscale;
+//}
 
 $list-h3-margin: 0 0 0px 0 !default;
 $list-h4-margin: 3px 0 1px 0 !default;
@@ -4156,172 +4156,236 @@ md-menu-content.md-menu-bar-menu.md-dense {
   }
 }
 
-$progress-circular-ease-in-out : cubic-bezier(0.35, 0, 0.25, 1) !default;
-$progress-circular-duration : 5.25s !default;
-$progress-circular-circle-duration : $progress-circular-duration * 0.25 !default;
-$progress-circular-outer-duration : $progress-circular-duration * (5 / 9) !default;
-$progress-circular-sporadic-duration : $progress-circular-duration !default;
-$progress-border-width : 10px;
-$progress-circular-size : 10 * $progress-border-width !default;
+$select-option-height: 48px;
+$select-option-padding: 16px;
+$select-container-padding: 16px;
+$select-container-transition-duration: 350ms;
 
-md-progress-circular {
-  display: block;
+$select-max-visible-options: 5;
+
+.md-select-menu-container {
+  position: fixed;
+  left: 0;
+  top: 0;
+  z-index: $z-index-select;
+  opacity: 0;
+  display: none;
+
+  // Don't let the user select a new choice while it's animating
+  &:not(.md-clickable) {
+    pointer-events: none;
+  }
+
+  md-progress-circular {
+    display: table;
+    margin: 3*$baseline-grid auto !important;
+  }
+
+
+  // enter: md-select scales in, then options fade in.
+  &.md-active {
+    display: block;
+    opacity: 1;
+    md-select-menu {
+      transition: $swift-ease-out;
+      transition-duration: 150ms;
+      > * {
+        opacity: 1;
+        transition: $swift-ease-in;
+        transition-duration: 150ms;
+        transition-delay: 100ms;
+      }
+    }
+  }
+
+  // leave: the container fades out
+  &.md-leave {
+    opacity: 0;
+    transition: $swift-ease-in;
+    transition-duration: 250ms;
+  }
+}
+
+md-input-container > md-select {
+  margin: 0;
+  order: 2;
+}
+
+md-select {
+  display: flex;
+  margin: 2.5*$baseline-grid 0 3*$baseline-grid + 2 0;
+  &[disabled] .md-select-value {
+    background-position: 0 bottom;
+    // This background-size is coordinated with a linear-gradient set in select-theme.scss
+    // to create a dotted line under the input.
+    background-size: 4px 1px;
+    background-repeat: repeat-x;
+    margin-bottom: -1px; // Shift downward so dotted line is positioned the same as other bottom borders
+  }
+  &:focus {
+    outline: none;
+  }
+  &[disabled]:hover {
+    cursor: default;
+  }
+  &:not([disabled]) {
+    &:hover {
+      cursor: pointer
+    }
+    &.ng-invalid.ng-dirty {
+      .md-select-value {
+        border-bottom: 2px solid;
+        padding-bottom: 0;
+      }
+    }
+    &:focus {
+      .md-select-value {
+        border-bottom-width: 2px;
+        border-bottom-style: solid;
+        padding-bottom: 0;
+      }
+    }
+  }
+}
+
+
+.md-select-value {
+  display: flex;
+  align-items: center;
+  padding: 2px 2px 1px;
+  border-bottom-width: 1px;
+  border-bottom-style: solid;
+  background-color: rgba(0,0,0,0);
   position: relative;
+  box-sizing: content-box;
+  min-width: 8 * $baseline-grid;
+  min-height: 26px;
+  flex-grow: 1;
 
-  width: $progress-circular-size;
-  height: $progress-circular-size;
+  .md-text {
+    display: inline;
+  }
 
-  padding-top: 0 !important;
-  margin-bottom: 0 !important;
-
-  z-index: $z-index-progress-circular; // Used to fix a Chrome bug with spinner animation
-
-  .md-spinner-wrapper {
-    display:block;
-    position: absolute;
+  *:first-child {
+    flex: 1 0 auto;
+    text-overflow: ellipsis;
+    white-space: nowrap;
     overflow: hidden;
-    top: 50%;
-    left: 50%;
-
-    .md-inner {
-       width: $progress-circular-size;
-       height: $progress-circular-size;
-       position: relative;
-       .md-gap {
-         position: absolute;
-         left: $progress-circular-size * 0.5 - 1;
-         right: $progress-circular-size * 0.5 - 1;
-         top: 0;
-         bottom: 0;
-         border-top-width: $progress-border-width;
-         border-top-style: solid;
-         box-sizing: border-box;
-       }
-       .md-left, .md-right {
-         position: absolute;
-         top: 0;
-         height: $progress-circular-size;
-         width: $progress-circular-size * 0.50;
-         overflow: hidden;
-         .md-half-circle {
-           position: absolute;
-           top: 0;
-           width: $progress-circular-size;
-           height: $progress-circular-size;
-           box-sizing: border-box;
-           border-width: $progress-border-width;
-           border-style: solid;
-           border-bottom-color: transparent;
-           border-radius: 50%;
-         }
-       }
-       .md-left {
-         left: 0;
-         .md-half-circle {
-           left: 0;
-           border-right-color: transparent;
-         }
-       }
-       .md-right {
-         right: 0;
-         .md-half-circle {
-           right: 0;
-           border-left-color: transparent;
-         }
-       }
-     }
+    transform: translate3d(0, 2px, 0);
   }
 
+  .md-select-icon {
+    display: block;
+    align-items: flex-end;
+    text-align: end;
+    width: 3 * $baseline-grid;
+    margin: 0 .5 * $baseline-grid;
+    transform: translate3d(0, 1px, 0);
+  }
 
-  .md-mode-indeterminate .md-spinner-wrapper {
-    animation: outer-rotate $progress-circular-outer-duration linear infinite;
-    .md-inner {
-      animation: sporadic-rotate $progress-circular-sporadic-duration $progress-circular-ease-in-out infinite;
-      .md-left, .md-right {
-        .md-half-circle {
-          animation-iteration-count: infinite;
-          animation-duration: ($progress-circular-duration * 0.25);
-          animation-timing-function: $progress-circular-ease-in-out;
-        }
-      }
-      .md-left {
-        .md-half-circle {
-          animation-name: left-wobble;
-        }
-      }
-      .md-right {
-        .md-half-circle {
-          animation-name: right-wobble;
-        }
-      }
+  .md-select-icon:after {
+    display: block;
+    content: '\25BC';
+    position: relative;
+    top: 2px;
+    speak: none;
+    transform: scaleY(0.6) scaleX(1);
+  }
+
+  &.md-select-placeholder {
+    display: flex;
+    order: 1;
+    pointer-events: none;
+    -webkit-font-smoothing: antialiased;
+    padding-left: 2px;
+    z-index: 1;
+  }
+}
+
+md-select-menu {
+  display: flex;
+  flex-direction: column;
+  &.md-reverse {
+    flex-direction: column-reverse;
+  }
+
+  &:not(.md-overflow) {
+    md-content {
+      padding-top: $baseline-grid;
+      padding-bottom: $baseline-grid;
     }
   }
 
-  md-progress-circular.ng-hide {
-    .md-spinner-wrapper  {
-      animation: none;
-      .md-inner {
-        animation: none;
-        .md-left {
-          .md-half-circle {
-            animation-name: none;
-          }
-        }
-        .md-right {
-          .md-half-circle {
-            animation-name: none;
-          }
-        }
-      }
-    }
+  box-shadow: $whiteframe-shadow-1dp;
+  max-height: ($select-option-height * $select-max-visible-options) + 2 * $baseline-grid;
+  min-height: $select-option-height;
+  overflow-y: hidden;
+
+  @include rtl(transform-origin, left top, right top);
+
+  transform: scale(1.0);
+
+  md-content {
+    min-width: 136px;
+    min-height: $select-option-height;
+    max-height: ($select-option-height * $select-max-visible-options) + 2 * $baseline-grid;
+    overflow-y: auto;
+  }
+  > * {
+    opacity: 0;
+  }
+}
+
+md-option {
+  cursor: pointer;
+  position: relative;
+  display: flex;
+  align-items: center;
+  width: auto;
+
+  &[disabled] {
+    cursor: default;
   }
 
-  .md-spinner-wrapper.ng-hide {
-    animation: none;
-    .md-inner {
-      animation: none;
-      .md-left {
-        .md-half-circle {
-          animation-name: none;
-        }
-      }
-      .md-right {
-        .md-half-circle {
-          animation-name: none;
-        }
-      }
-    }
+  &:focus {
+    outline: none;
   }
 
+  .md-text {
+    @include not-selectable();
+    width: auto;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    font-size: rem(1.6);
+  }
+  padding: 0 $select-option-padding 0 $select-option-padding;
+  height: $select-option-height;
 }
 
-
-//
-// Keyframe animation for the Indeterminate Progress
-//
-@keyframes outer-rotate {
-  0%       { transform: rotate(0deg) scale(0.5); }
-  100%     { transform: rotate(360deg) scale(0.5); }
-}
-@keyframes left-wobble {
-  0%, 100% { transform: rotate(130deg); }
-  50%      { transform: rotate( -5deg); }
-}
-@keyframes right-wobble {
-  0%, 100% { transform: rotate(-130deg); }
-  50%      { transform: rotate(   5deg); }
-}
-@keyframes sporadic-rotate {
-  12.5%    { transform: rotate( 135deg); }
-  25%      { transform: rotate( 270deg); }
-  37.5%    { transform: rotate( 405deg); }
-  50%      { transform: rotate( 540deg); }
-  62.5%    { transform: rotate( 675deg); }
-  75%      { transform: rotate( 810deg); }
-  87.5%    { transform: rotate( 945deg); }
-  100%     { transform: rotate(1080deg); }
+md-optgroup {
+  display: block;
+  label {
+    display: block;
+    font-size: rem(1.4);
+    text-transform: uppercase;
+    padding: $baseline-grid * 2;
+    font-weight: 500;
+  }
+  md-option {
+    padding-left: $select-option-padding * 2;
+    padding-right: $select-option-padding * 2;
+  }
 }
 
+@media screen and (-ms-high-contrast: active) {
+  .md-select-backdrop {
+    background-color: transparent;
+  }
+  md-select-menu {
+    border: 1px solid #fff;
+  }
+}
 
 $progress-linear-bar-height: 5px !default;
 
@@ -4697,236 +4761,172 @@ md-radio-group {
   }
 }
 
-$select-option-height: 48px;
-$select-option-padding: 16px;
-$select-container-padding: 16px;
-$select-container-transition-duration: 350ms;
+$progress-circular-ease-in-out : cubic-bezier(0.35, 0, 0.25, 1) !default;
+$progress-circular-duration : 5.25s !default;
+$progress-circular-circle-duration : $progress-circular-duration * 0.25 !default;
+$progress-circular-outer-duration : $progress-circular-duration * (5 / 9) !default;
+$progress-circular-sporadic-duration : $progress-circular-duration !default;
+$progress-border-width : 10px;
+$progress-circular-size : 10 * $progress-border-width !default;
 
-$select-max-visible-options: 5;
-
-.md-select-menu-container {
-  position: fixed;
-  left: 0;
-  top: 0;
-  z-index: $z-index-select;
-  opacity: 0;
-  display: none;
-
-  // Don't let the user select a new choice while it's animating
-  &:not(.md-clickable) {
-    pointer-events: none;
-  }
-
-  md-progress-circular {
-    display: table;
-    margin: 3*$baseline-grid auto !important;
-  }
-
-
-  // enter: md-select scales in, then options fade in.
-  &.md-active {
-    display: block;
-    opacity: 1;
-    md-select-menu {
-      transition: $swift-ease-out;
-      transition-duration: 150ms;
-      > * {
-        opacity: 1;
-        transition: $swift-ease-in;
-        transition-duration: 150ms;
-        transition-delay: 100ms;
-      }
-    }
-  }
-
-  // leave: the container fades out
-  &.md-leave {
-    opacity: 0;
-    transition: $swift-ease-in;
-    transition-duration: 250ms;
-  }
-}
-
-md-input-container > md-select {
-  margin: 0;
-  order: 2;
-}
-
-md-select {
-  display: flex;
-  margin: 2.5*$baseline-grid 0 3*$baseline-grid + 2 0;
-  &[disabled] .md-select-value {
-    background-position: 0 bottom;
-    // This background-size is coordinated with a linear-gradient set in select-theme.scss
-    // to create a dotted line under the input.
-    background-size: 4px 1px;
-    background-repeat: repeat-x;
-    margin-bottom: -1px; // Shift downward so dotted line is positioned the same as other bottom borders
-  }
-  &:focus {
-    outline: none;
-  }
-  &[disabled]:hover {
-    cursor: default;
-  }
-  &:not([disabled]) {
-    &:hover {
-      cursor: pointer
-    }
-    &.ng-invalid.ng-dirty {
-      .md-select-value {
-        border-bottom: 2px solid;
-        padding-bottom: 0;
-      }
-    }
-    &:focus {
-      .md-select-value {
-        border-bottom-width: 2px;
-        border-bottom-style: solid;
-        padding-bottom: 0;
-      }
-    }
-  }
-}
-
-
-.md-select-value {
-  display: flex;
-  align-items: center;
-  padding: 2px 2px 1px;
-  border-bottom-width: 1px;
-  border-bottom-style: solid;
-  background-color: rgba(0,0,0,0);
-  position: relative;
-  box-sizing: content-box;
-  min-width: 8 * $baseline-grid;
-  min-height: 26px;
-  flex-grow: 1;
-
-  .md-text {
-    display: inline;
-  }
-
-  *:first-child {
-    flex: 1 0 auto;
-    text-overflow: ellipsis;
-    white-space: nowrap;
-    overflow: hidden;
-    transform: translate3d(0, 2px, 0);
-  }
-
-  .md-select-icon {
-    display: block;
-    align-items: flex-end;
-    text-align: end;
-    width: 3 * $baseline-grid;
-    margin: 0 .5 * $baseline-grid;
-    transform: translate3d(0, 1px, 0);
-  }
-
-  .md-select-icon:after {
-    display: block;
-    content: '\25BC';
-    position: relative;
-    top: 2px;
-    speak: none;
-    transform: scaleY(0.6) scaleX(1);
-  }
-
-  &.md-select-placeholder {
-    display: flex;
-    order: 1;
-    pointer-events: none;
-    -webkit-font-smoothing: antialiased;
-    padding-left: 2px;
-    z-index: 1;
-  }
-}
-
-md-select-menu {
-  display: flex;
-  flex-direction: column;
-  &.md-reverse {
-    flex-direction: column-reverse;
-  }
-
-  &:not(.md-overflow) {
-    md-content {
-      padding-top: $baseline-grid;
-      padding-bottom: $baseline-grid;
-    }
-  }
-
-  box-shadow: $whiteframe-shadow-1dp;
-  max-height: ($select-option-height * $select-max-visible-options) + 2 * $baseline-grid;
-  min-height: $select-option-height;
-  overflow-y: hidden;
-
-  @include rtl(transform-origin, left top, right top);
-
-  transform: scale(1.0);
-
-  md-content {
-    min-width: 136px;
-    min-height: $select-option-height;
-    max-height: ($select-option-height * $select-max-visible-options) + 2 * $baseline-grid;
-    overflow-y: auto;
-  }
-  > * {
-    opacity: 0;
-  }
-}
-
-md-option {
-  cursor: pointer;
-  position: relative;
-  display: flex;
-  align-items: center;
-  width: auto;
-
-  &[disabled] {
-    cursor: default;
-  }
-
-  &:focus {
-    outline: none;
-  }
-
-  .md-text {
-    @include not-selectable();
-    width: auto;
-    white-space: nowrap;
-    overflow: hidden;
-    text-overflow: ellipsis;
-    font-size: rem(1.6);
-  }
-  padding: 0 $select-option-padding 0 $select-option-padding;
-  height: $select-option-height;
-}
-
-md-optgroup {
+md-progress-circular {
   display: block;
-  label {
-    display: block;
-    font-size: rem(1.4);
-    text-transform: uppercase;
-    padding: $baseline-grid * 2;
-    font-weight: 500;
+  position: relative;
+
+  width: $progress-circular-size;
+  height: $progress-circular-size;
+
+  padding-top: 0 !important;
+  margin-bottom: 0 !important;
+
+  z-index: $z-index-progress-circular; // Used to fix a Chrome bug with spinner animation
+
+  .md-spinner-wrapper {
+    display:block;
+    position: absolute;
+    overflow: hidden;
+    top: 50%;
+    left: 50%;
+
+    .md-inner {
+       width: $progress-circular-size;
+       height: $progress-circular-size;
+       position: relative;
+       .md-gap {
+         position: absolute;
+         left: $progress-circular-size * 0.5 - 1;
+         right: $progress-circular-size * 0.5 - 1;
+         top: 0;
+         bottom: 0;
+         border-top-width: $progress-border-width;
+         border-top-style: solid;
+         box-sizing: border-box;
+       }
+       .md-left, .md-right {
+         position: absolute;
+         top: 0;
+         height: $progress-circular-size;
+         width: $progress-circular-size * 0.50;
+         overflow: hidden;
+         .md-half-circle {
+           position: absolute;
+           top: 0;
+           width: $progress-circular-size;
+           height: $progress-circular-size;
+           box-sizing: border-box;
+           border-width: $progress-border-width;
+           border-style: solid;
+           border-bottom-color: transparent;
+           border-radius: 50%;
+         }
+       }
+       .md-left {
+         left: 0;
+         .md-half-circle {
+           left: 0;
+           border-right-color: transparent;
+         }
+       }
+       .md-right {
+         right: 0;
+         .md-half-circle {
+           right: 0;
+           border-left-color: transparent;
+         }
+       }
+     }
   }
-  md-option {
-    padding-left: $select-option-padding * 2;
-    padding-right: $select-option-padding * 2;
+
+
+  .md-mode-indeterminate .md-spinner-wrapper {
+    animation: outer-rotate $progress-circular-outer-duration linear infinite;
+    .md-inner {
+      animation: sporadic-rotate $progress-circular-sporadic-duration $progress-circular-ease-in-out infinite;
+      .md-left, .md-right {
+        .md-half-circle {
+          animation-iteration-count: infinite;
+          animation-duration: ($progress-circular-duration * 0.25);
+          animation-timing-function: $progress-circular-ease-in-out;
+        }
+      }
+      .md-left {
+        .md-half-circle {
+          animation-name: left-wobble;
+        }
+      }
+      .md-right {
+        .md-half-circle {
+          animation-name: right-wobble;
+        }
+      }
+    }
   }
+
+  md-progress-circular.ng-hide {
+    .md-spinner-wrapper  {
+      animation: none;
+      .md-inner {
+        animation: none;
+        .md-left {
+          .md-half-circle {
+            animation-name: none;
+          }
+        }
+        .md-right {
+          .md-half-circle {
+            animation-name: none;
+          }
+        }
+      }
+    }
+  }
+
+  .md-spinner-wrapper.ng-hide {
+    animation: none;
+    .md-inner {
+      animation: none;
+      .md-left {
+        .md-half-circle {
+          animation-name: none;
+        }
+      }
+      .md-right {
+        .md-half-circle {
+          animation-name: none;
+        }
+      }
+    }
+  }
+
 }
 
-@media screen and (-ms-high-contrast: active) {
-  .md-select-backdrop {
-    background-color: transparent;
-  }
-  md-select-menu {
-    border: 1px solid #fff;
-  }
+
+//
+// Keyframe animation for the Indeterminate Progress
+//
+@keyframes outer-rotate {
+  0%       { transform: rotate(0deg) scale(0.5); }
+  100%     { transform: rotate(360deg) scale(0.5); }
 }
+@keyframes left-wobble {
+  0%, 100% { transform: rotate(130deg); }
+  50%      { transform: rotate( -5deg); }
+}
+@keyframes right-wobble {
+  0%, 100% { transform: rotate(-130deg); }
+  50%      { transform: rotate(   5deg); }
+}
+@keyframes sporadic-rotate {
+  12.5%    { transform: rotate( 135deg); }
+  25%      { transform: rotate( 270deg); }
+  37.5%    { transform: rotate( 405deg); }
+  50%      { transform: rotate( 540deg); }
+  62.5%    { transform: rotate( 675deg); }
+  75%      { transform: rotate( 810deg); }
+  87.5%    { transform: rotate( 945deg); }
+  100%     { transform: rotate(1080deg); }
+}
+
 
 $sidenav-mobile-width: 320px !default;
 $sidenav-desktop-width: 400px !default;
@@ -5045,6 +5045,296 @@ md-sidenav {
     border-left: 1px solid #fff;
   }
 }
+
+.md-sticky-clone {
+  z-index: 2;
+  top: 0;
+  left: 0;
+  right: 0;
+  position: absolute !important;
+
+  transform: translate3d(-9999px,-9999px,0);
+
+  &[sticky-state="active"] {
+    transform: translate3d(0, 0, 0);
+    &:not(.md-sticky-no-effect) .md-subheader-inner {
+      animation: subheaderStickyHoverIn 0.3s ease-out both;
+    }
+  }
+}
+
+$checkBoxWidth: 18px;
+
+#details-body h1.md-toolbar-tools {
+    color: #222;
+}
+
+.mdtTable {
+    &.invisible {
+        visibility: hidden;
+    }
+    box-shadow: none;
+    font-size: 15px;
+    /* 12sp Roboto Medium, 54% black */
+    /* optional animation of sort icons: add class 'animate-sort-icon' to mdt-header-row to activate animation */
+    /* 64dp card header height */
+    /* 56do for last row */
+    /* column padding */
+    /* 48dp row height */
+    /* 13sp Roboto Regular, 87% black */
+    /* border separation color */
+    /* INTERACTION */
+    /* default icon color */
+    table {
+        width: 100%;
+        &:focus {
+            outline: none;
+        }
+        tr {
+            @extend .noselect;
+            cursor: default;
+            &:focus {
+                outline: none;
+            }
+        }
+        td, th {
+            padding: 0;
+            margin: 0;
+        }
+
+        th {
+            font-size: 12px;
+            font-weight: 500;
+            color: #666666;
+            cursor: pointer;
+            white-space: nowrap;
+            position: relative;
+
+            &[disabled] {
+                cursor: auto;
+            }
+
+            &:focus {
+                outline: none;
+            }
+
+            &:hover .hoverSortIcons ng-md-icon {
+                visibility: visible;
+            }
+
+            .hoverSortIcons ng-md-icon {
+                visibility: hidden;
+                width: 16px;
+                height: 16px;
+                fill: #b3b3b3;
+            }
+            .hoverSortIcons ng-md-icon svg {
+                -webkit-transform: rotate(90deg);
+                transform: rotate(90deg);
+            }
+        }
+
+        .column-container {
+            position: relative;
+            width: 100%;
+            height: 100%;
+
+            .column-header-body {
+                overflow: hidden;
+                position: absolute;
+                top: 20px;
+                left: 0;
+                right: 0;
+                bottom: 0;
+                width: 100%;
+                max-height: 25px;
+                text-overflow: ellipsis;
+                white-space: nowrap;
+            }
+            .column-body {
+                overflow: hidden;
+                position: absolute;
+                top: 13px;
+                left: 0;
+                right: 0;
+                bottom: 0;
+                width: 100%;
+                max-height: 25px;
+                text-overflow: ellipsis;
+                white-space: nowrap;
+            }
+        }
+    }
+
+    #visible-header {
+        background-color: #FAFAFA;
+        border-bottom: 1px solid #eeeeee;
+        th:hover {
+            background-color: #EEEEEE;
+            color: #404040;
+        }
+    }
+
+    .noselect {
+        -webkit-touch-callout: none;
+        -webkit-user-select: none;
+        -khtml-user-select: none;
+        -moz-user-select: none;
+        -ms-user-select: none;
+        user-select: none;
+    }
+
+}
+
+.mdtTable th .sortedColumn {
+    /* when hoverSortIcons on a sorted column*/
+    /* sort icon rotated -90 degrees for descending sort */
+}
+
+.mdtTable th .sortedColumn .hoverSortIcons ng-md-icon {
+    display: none;
+}
+
+.mdtTable th .sortedColumn ng-md-icon {
+    /* specified 16px is a fix now cause angular materia generates a 24x24 icon even the passed value is 16  */
+    width: 16px;
+    height: 16px;
+    fill: #212121;
+    /* sort icon rotated 90 degrees for ascending sort (default) */
+}
+
+.mdtTable th .sortedColumn ng-md-icon svg {
+    -webkit-transform: rotate(90deg);
+    transform: rotate(90deg);
+}
+
+.mdtTable th .sortedColumn.descending ng-md-icon > svg {
+    -webkit-transform: rotate(-90deg);
+    transform: rotate(-90deg);
+}
+
+.mdtTable thead tr.animate-sort-icon .sortedColumn ng-md-icon svg {
+    -webkit-transition: 0.3s linear all;
+    transition: 0.3s linear all;
+}
+
+.mdtTable .mdt-header, .mdtTable .mdt-header-alternate {
+    height: 64px;
+    padding-left: 16px;
+    padding-right: 14px;
+}
+
+.mdtTable .mdt-header md-button, .mdtTable .mdt-header-alternate md-button {
+    margin-left: 16px;
+}
+
+.mdtTable .mdt-header ng-md-icon, .mdtTable .mdt-header-alternate ng-md-icon {
+    fill: #757575;
+}
+
+.mdtTable .mdt-header-alternate {
+    background-color: #e3edfd;
+}
+
+.mdtTable .mdt-header-alternate .alternate-text {
+    color: #0D47A1;
+}
+
+.mdtTable .mdt-footer, .mdtTable tr th {
+    height: 56px;
+}
+
+.mdtTable .mdt-footer .mdt-pagination, .mdtTable tr th .mdt-pagination {
+    font-size: 12px;
+    color: #757575;
+}
+
+.mdtTable .mdt-footer .mdt-pagination md-input-container, .mdtTable tr th .mdt-pagination md-input-container {
+    margin-top: 0;
+    margin-bottom: 0;
+}
+
+.mdtTable .checkboxCell {
+    width: $checkBoxWidth;
+    /*the next cell should not have just 24px padding */
+}
+
+.mdtTable .checkboxCell md-checkbox {
+    margin: 0;
+    padding: 0;
+}
+
+.mdtTable .checkboxCell + td, .mdtTable .checkboxCell + th {
+    padding-left: 16px;
+}
+
+.mdtTable tr td {
+    padding: 0;
+    height: 48px;
+    font-size: 13px;
+}
+
+.mdtTable td:first-child, .mdtTable th:first-child {
+    padding: 0 0 0 16px;
+}
+
+.mdtTable td:last-child, .mdtTable th:last-child {
+    padding-right: 16px;
+}
+
+.mdtTable .column {
+    padding-left: 56px;
+}
+
+.mdtTable .leftAlignedColumn {
+    text-align: left;
+}
+
+.mdtTable .rightAlignedColumn {
+    text-align: right;
+}
+
+.mdtTable tr th {
+    color: #212121;
+    border-bottom: 0;
+}
+
+.mdtTable tr td {
+    border-bottom: solid 1px #DDDDDD;
+}
+
+.mdtTable ng-md-icon {
+    fill: #757575;
+}
+
+/*context-menu*/
+mtd-dropdown.context-menu {
+    background-color: white;
+    position: fixed;
+    z-index: 51;
+    min-width: 250px;
+}
+
+.mdt-dropdown-menu-item {
+    overflow: hidden;
+    margin: 0;
+    display: block;
+    text-align: left;
+    padding: 5px 10px 5px 20px;
+    text-transform: none;
+    font-size: 14px;
+    font-weight: normal;
+
+    md-icon {
+        font-size: 20px;
+        font-weight: normal;
+    }
+
+    .name {
+        padding-left: 10px;
+    }
+}
+
 
 $slider-background-color:  rgb(200, 200, 200) !default;
 $slider-height:  48px !default;
@@ -5340,23 +5630,6 @@ md-slider {
 }
 
 
-.md-sticky-clone {
-  z-index: 2;
-  top: 0;
-  left: 0;
-  right: 0;
-  position: absolute !important;
-
-  transform: translate3d(-9999px,-9999px,0);
-
-  &[sticky-state="active"] {
-    transform: translate3d(0, 0, 0);
-    &:not(.md-sticky-no-effect) .md-subheader-inner {
-      animation: subheaderStickyHoverIn 0.3s ease-out both;
-    }
-  }
-}
-
 $subheader-line-height: 1em !default;
 $subheader-font-size: rem(1.4) !default;
 $subheader-padding: ($baseline-grid * 2) !default;
@@ -5424,444 +5697,6 @@ $subheader-sticky-shadow: 0px 2px 4px 0 rgba(0,0,0,0.16) !default;
     position: relative;
   }
 }
-
-$switch-width: 36px !default;
-$switch-height: $baseline-grid * 3 !default;
-$switch-bar-height: 14px !default;
-$switch-thumb-size: 20px !default;
-$switch-margin: 16px !default;
-
-.md-inline-form {
-  md-switch {
-    margin-top: 18px;
-    margin-bottom: 19px;
-  }
-}
-
-md-switch {
-  margin: $switch-margin 0;
-  white-space: nowrap;
-  cursor: pointer;
-  outline: none;
-  user-select: none;
-  height: 30px;
-  line-height: 28px;
-  align-items: center;
-  display: flex;
-
-  @include rtl(margin-left, inherit, $switch-margin);
-  @include rtl(margin-right, $switch-margin, inherit);
-
-  &:last-of-type {
-    @include rtl(margin-left, inherit, 0);
-    @include rtl(margin-right, 0, inherit);
-  }
-  
-  &[disabled] {
-    cursor: default;
-
-    .md-container {
-      cursor: default;
-    }
-  }
-
-  .md-container {
-    cursor: grab;
-    width: $switch-width;
-    height: $switch-height;
-    position: relative;
-    user-select: none;
-    margin-right: 8px;
-    float: left;
-  }
-
-  // If the user moves his mouse off the switch, stil display grabbing cursor
-  &:not([disabled]) {
-    .md-dragging,
-    &.md-dragging .md-container {
-      cursor: grabbing;
-    }
-  }
-
-  &.md-focused:not([disabled]) {
-    .md-thumb:before {
-      left: -8px;
-      top: -8px;
-      right: -8px;
-      bottom: -8px;
-    }
-
-    &:not(.md-checked) {
-      .md-thumb:before {
-        background-color: rgba(0, 0, 0, 0.12);
-      }
-    }
-  }
-
-  .md-label {
-    border-color: transparent;
-    border-width: 0;
-    float: left;
-  }
-
-  .md-bar {
-    left: 1px;
-    width: $switch-width - 2px;
-    top: $switch-height / 2 - $switch-bar-height / 2;
-    height: $switch-bar-height;
-    border-radius: 8px;
-    position: absolute;
-  }
-
-  .md-thumb-container {
-    top: $switch-height / 2 - $switch-thumb-size / 2;
-    left: 0;
-    width: $switch-width - $switch-thumb-size;
-    position: absolute;
-    transform: translate3d(0,0,0);
-    z-index: 1;
-  }
-  &.md-checked .md-thumb-container {
-    transform: translate3d(100%,0,0);
-  }
-
-  .md-thumb {
-    position: absolute;
-    margin: 0;
-    left: 0;
-    top: 0;
-    outline: none;
-    height: $switch-thumb-size;
-    width: $switch-thumb-size;
-    border-radius: 50%;
-    box-shadow: $whiteframe-shadow-1dp;
-
-    &:before {
-      background-color: transparent;
-      border-radius: 50%;
-      content: '';
-      position: absolute;
-      display: block;
-      height: auto;
-      left: 0;
-      top: 0;
-      right: 0;
-      bottom: 0;
-      transition: all 0.5s;
-      width: auto;
-    }
-
-    .md-ripple-container {
-      position: absolute;
-      display: block;
-      width: auto;
-      height: auto;
-      left: -$switch-thumb-size;
-      top: -$switch-thumb-size;
-      right: -$switch-thumb-size;
-      bottom: -$switch-thumb-size;
-    }
-  }
-
-  &:not(.md-dragging) {
-    .md-bar,
-    .md-thumb-container,
-    .md-thumb {
-      transition: $swift-linear;
-      transition-property: transform, background-color;
-    }
-    .md-bar,
-    .md-thumb {
-      transition-delay: 0.05s;
-    }
-  }
-
-}
-
-@media screen and (-ms-high-contrast: active) {
-  md-switch.md-default-theme .md-bar {
-    background-color: #666;
-  }
-  md-switch.md-default-theme.md-checked .md-bar {
-    background-color: #9E9E9E;
-  }
-  md-switch.md-default-theme .md-thumb {
-    background-color: #fff;
-  }
-}
-
-$checkBoxWidth: 18px;
-
-#details-body h1.md-toolbar-tools {
-    color: #222;
-}
-
-.mdtTable {
-    &.invisible {
-        visibility: hidden;
-    }
-    box-shadow: none;
-    font-size: 15px;
-    /* 12sp Roboto Medium, 54% black */
-    /* optional animation of sort icons: add class 'animate-sort-icon' to mdt-header-row to activate animation */
-    /* 64dp card header height */
-    /* 56do for last row */
-    /* column padding */
-    /* 48dp row height */
-    /* 13sp Roboto Regular, 87% black */
-    /* border separation color */
-    /* INTERACTION */
-    /* default icon color */
-    table {
-        width: 100%;
-        &:focus {
-            outline: none;
-        }
-        tr {
-            @extend .noselect;
-            cursor: default;
-            &:focus {
-                outline: none;
-            }
-        }
-        td, th {
-            padding: 0;
-            margin: 0;
-        }
-
-        th {
-            font-size: 12px;
-            font-weight: 500;
-            color: #666666;
-            cursor: pointer;
-            white-space: nowrap;
-            position: relative;
-
-            &[disabled] {
-                cursor: auto;
-            }
-
-            &:focus {
-                outline: none;
-            }
-
-            &:hover .hoverSortIcons ng-md-icon {
-                visibility: visible;
-            }
-
-            .hoverSortIcons ng-md-icon {
-                visibility: hidden;
-                width: 16px;
-                height: 16px;
-                fill: #b3b3b3;
-            }
-            .hoverSortIcons ng-md-icon svg {
-                -webkit-transform: rotate(90deg);
-                transform: rotate(90deg);
-            }
-        }
-
-        .column-container {
-            position: relative;
-            width: 100%;
-            height: 100%;
-
-            .column-header-body {
-                overflow: hidden;
-                position: absolute;
-                top: 20px;
-                left: 0;
-                right: 0;
-                bottom: 0;
-                width: 100%;
-                max-height: 25px;
-                text-overflow: ellipsis;
-                white-space: nowrap;
-            }
-            .column-body {
-                overflow: hidden;
-                position: absolute;
-                top: 13px;
-                left: 0;
-                right: 0;
-                bottom: 0;
-                width: 100%;
-                max-height: 25px;
-                text-overflow: ellipsis;
-                white-space: nowrap;
-            }
-        }
-    }
-
-    #visible-header {
-        background-color: #FAFAFA;
-        border-bottom: 1px solid #eeeeee;
-        th:hover {
-            background-color: #EEEEEE;
-            color: #404040;
-        }
-    }
-
-    .noselect {
-        -webkit-touch-callout: none;
-        -webkit-user-select: none;
-        -khtml-user-select: none;
-        -moz-user-select: none;
-        -ms-user-select: none;
-        user-select: none;
-    }
-
-}
-
-.mdtTable th .sortedColumn {
-    /* when hoverSortIcons on a sorted column*/
-    /* sort icon rotated -90 degrees for descending sort */
-}
-
-.mdtTable th .sortedColumn .hoverSortIcons ng-md-icon {
-    display: none;
-}
-
-.mdtTable th .sortedColumn ng-md-icon {
-    /* specified 16px is a fix now cause angular materia generates a 24x24 icon even the passed value is 16  */
-    width: 16px;
-    height: 16px;
-    fill: #212121;
-    /* sort icon rotated 90 degrees for ascending sort (default) */
-}
-
-.mdtTable th .sortedColumn ng-md-icon svg {
-    -webkit-transform: rotate(90deg);
-    transform: rotate(90deg);
-}
-
-.mdtTable th .sortedColumn.descending ng-md-icon > svg {
-    -webkit-transform: rotate(-90deg);
-    transform: rotate(-90deg);
-}
-
-.mdtTable thead tr.animate-sort-icon .sortedColumn ng-md-icon svg {
-    -webkit-transition: 0.3s linear all;
-    transition: 0.3s linear all;
-}
-
-.mdtTable .mdt-header, .mdtTable .mdt-header-alternate {
-    height: 64px;
-    padding-left: 16px;
-    padding-right: 14px;
-}
-
-.mdtTable .mdt-header md-button, .mdtTable .mdt-header-alternate md-button {
-    margin-left: 16px;
-}
-
-.mdtTable .mdt-header ng-md-icon, .mdtTable .mdt-header-alternate ng-md-icon {
-    fill: #757575;
-}
-
-.mdtTable .mdt-header-alternate {
-    background-color: #e3edfd;
-}
-
-.mdtTable .mdt-header-alternate .alternate-text {
-    color: #0D47A1;
-}
-
-.mdtTable .mdt-footer, .mdtTable tr th {
-    height: 56px;
-}
-
-.mdtTable .mdt-footer .mdt-pagination, .mdtTable tr th .mdt-pagination {
-    font-size: 12px;
-    color: #757575;
-}
-
-.mdtTable .mdt-footer .mdt-pagination md-input-container, .mdtTable tr th .mdt-pagination md-input-container {
-    margin-top: 0;
-    margin-bottom: 0;
-}
-
-.mdtTable .checkboxCell {
-    width: $checkBoxWidth;
-    /*the next cell should not have just 24px padding */
-}
-
-.mdtTable .checkboxCell md-checkbox {
-    margin: 0;
-    padding: 0;
-}
-
-.mdtTable .checkboxCell + td, .mdtTable .checkboxCell + th {
-    padding-left: 16px;
-}
-
-.mdtTable tr td {
-    padding: 0;
-    height: 48px;
-    font-size: 13px;
-}
-
-.mdtTable td:first-child, .mdtTable th:first-child {
-    padding: 0 0 0 16px;
-}
-
-.mdtTable td:last-child, .mdtTable th:last-child {
-    padding-right: 16px;
-}
-
-.mdtTable .column {
-    padding-left: 56px;
-}
-
-.mdtTable .leftAlignedColumn {
-    text-align: left;
-}
-
-.mdtTable .rightAlignedColumn {
-    text-align: right;
-}
-
-.mdtTable tr th {
-    color: #212121;
-    border-bottom: 0;
-}
-
-.mdtTable tr td {
-    border-bottom: solid 1px #DDDDDD;
-}
-
-.mdtTable ng-md-icon {
-    fill: #757575;
-}
-
-/*context-menu*/
-mtd-dropdown.context-menu {
-    background-color: white;
-    position: fixed;
-    z-index: 51;
-    min-width: 250px;
-}
-
-.mdt-dropdown-menu-item {
-    overflow: hidden;
-    margin: 0;
-    display: block;
-    text-align: left;
-    padding: 5px 10px 5px 20px;
-    text-transform: none;
-    font-size: 14px;
-    font-weight: normal;
-
-    md-icon {
-        font-size: 20px;
-        font-weight: normal;
-    }
-
-    .name {
-        padding-left: 10px;
-    }
-}
-
 
 $tabs-paginator-width: $baseline-grid * 4 !default;
 $tabs-tab-width: $baseline-grid * 12 !default;
@@ -6148,6 +5983,171 @@ md-toolbar + md-tabs {
   border-top-right-radius: 0;
 }
 
+$switch-width: 36px !default;
+$switch-height: $baseline-grid * 3 !default;
+$switch-bar-height: 14px !default;
+$switch-thumb-size: 20px !default;
+$switch-margin: 16px !default;
+
+.md-inline-form {
+  md-switch {
+    margin-top: 18px;
+    margin-bottom: 19px;
+  }
+}
+
+md-switch {
+  margin: $switch-margin 0;
+  white-space: nowrap;
+  cursor: pointer;
+  outline: none;
+  user-select: none;
+  height: 30px;
+  line-height: 28px;
+  align-items: center;
+  display: flex;
+
+  @include rtl(margin-left, inherit, $switch-margin);
+  @include rtl(margin-right, $switch-margin, inherit);
+
+  &:last-of-type {
+    @include rtl(margin-left, inherit, 0);
+    @include rtl(margin-right, 0, inherit);
+  }
+  
+  &[disabled] {
+    cursor: default;
+
+    .md-container {
+      cursor: default;
+    }
+  }
+
+  .md-container {
+    cursor: grab;
+    width: $switch-width;
+    height: $switch-height;
+    position: relative;
+    user-select: none;
+    margin-right: 8px;
+    float: left;
+  }
+
+  // If the user moves his mouse off the switch, stil display grabbing cursor
+  &:not([disabled]) {
+    .md-dragging,
+    &.md-dragging .md-container {
+      cursor: grabbing;
+    }
+  }
+
+  &.md-focused:not([disabled]) {
+    .md-thumb:before {
+      left: -8px;
+      top: -8px;
+      right: -8px;
+      bottom: -8px;
+    }
+
+    &:not(.md-checked) {
+      .md-thumb:before {
+        background-color: rgba(0, 0, 0, 0.12);
+      }
+    }
+  }
+
+  .md-label {
+    border-color: transparent;
+    border-width: 0;
+    float: left;
+  }
+
+  .md-bar {
+    left: 1px;
+    width: $switch-width - 2px;
+    top: $switch-height / 2 - $switch-bar-height / 2;
+    height: $switch-bar-height;
+    border-radius: 8px;
+    position: absolute;
+  }
+
+  .md-thumb-container {
+    top: $switch-height / 2 - $switch-thumb-size / 2;
+    left: 0;
+    width: $switch-width - $switch-thumb-size;
+    position: absolute;
+    transform: translate3d(0,0,0);
+    z-index: 1;
+  }
+  &.md-checked .md-thumb-container {
+    transform: translate3d(100%,0,0);
+  }
+
+  .md-thumb {
+    position: absolute;
+    margin: 0;
+    left: 0;
+    top: 0;
+    outline: none;
+    height: $switch-thumb-size;
+    width: $switch-thumb-size;
+    border-radius: 50%;
+    box-shadow: $whiteframe-shadow-1dp;
+
+    &:before {
+      background-color: transparent;
+      border-radius: 50%;
+      content: '';
+      position: absolute;
+      display: block;
+      height: auto;
+      left: 0;
+      top: 0;
+      right: 0;
+      bottom: 0;
+      transition: all 0.5s;
+      width: auto;
+    }
+
+    .md-ripple-container {
+      position: absolute;
+      display: block;
+      width: auto;
+      height: auto;
+      left: -$switch-thumb-size;
+      top: -$switch-thumb-size;
+      right: -$switch-thumb-size;
+      bottom: -$switch-thumb-size;
+    }
+  }
+
+  &:not(.md-dragging) {
+    .md-bar,
+    .md-thumb-container,
+    .md-thumb {
+      transition: $swift-linear;
+      transition-property: transform, background-color;
+    }
+    .md-bar,
+    .md-thumb {
+      transition-delay: 0.05s;
+    }
+  }
+
+}
+
+@media screen and (-ms-high-contrast: active) {
+  md-switch.md-default-theme .md-bar {
+    background-color: #666;
+  }
+  md-switch.md-default-theme.md-checked .md-bar {
+    background-color: #9E9E9E;
+  }
+  md-switch.md-default-theme .md-thumb {
+    background-color: #fff;
+  }
+}
+
 // See height set globally, depended on by buttons
 
 md-toast {
@@ -6349,6 +6349,215 @@ md-toast {
   overflow: hidden !important;
 }
 
+.md-whiteframe-1dp, .md-whiteframe-z1 {
+  box-shadow: $whiteframe-shadow-1dp;
+}
+.md-whiteframe-2dp {
+  box-shadow: $whiteframe-shadow-2dp;
+}
+.md-whiteframe-3dp {
+  box-shadow: $whiteframe-shadow-3dp;
+}
+.md-whiteframe-4dp, .md-whiteframe-z2{
+  box-shadow: $whiteframe-shadow-4dp;
+}
+.md-whiteframe-5dp {
+  box-shadow: $whiteframe-shadow-5dp;
+}
+.md-whiteframe-6dp {
+  box-shadow: $whiteframe-shadow-6dp;
+}
+.md-whiteframe-7dp, .md-whiteframe-z3 {
+  box-shadow: $whiteframe-shadow-7dp;
+}
+.md-whiteframe-8dp {
+  box-shadow: $whiteframe-shadow-8dp;
+}
+.md-whiteframe-9dp {
+  box-shadow: $whiteframe-shadow-9dp;
+}
+.md-whiteframe-10dp, .md-whiteframe-z4 {
+  box-shadow: $whiteframe-shadow-10dp;
+}
+.md-whiteframe-11dp {
+  box-shadow: $whiteframe-shadow-11dp;
+}
+.md-whiteframe-12dp {
+  box-shadow: $whiteframe-shadow-12dp;
+}
+.md-whiteframe-13dp, .md-whiteframe-z5{
+  box-shadow: $whiteframe-shadow-13dp;
+}
+.md-whiteframe-14dp {
+  box-shadow: $whiteframe-shadow-14dp;
+}
+.md-whiteframe-15dp {
+  box-shadow: $whiteframe-shadow-15dp;
+}
+.md-whiteframe-16dp {
+  box-shadow: $whiteframe-shadow-16dp;
+}
+.md-whiteframe-17dp {
+  box-shadow: $whiteframe-shadow-17dp;
+}
+.md-whiteframe-18dp {
+  box-shadow: $whiteframe-shadow-18dp;
+}
+.md-whiteframe-19dp {
+  box-shadow: $whiteframe-shadow-19dp;
+}
+.md-whiteframe-20dp {
+  box-shadow: $whiteframe-shadow-20dp;
+}
+.md-whiteframe-21dp {
+  box-shadow: $whiteframe-shadow-21dp;
+}
+.md-whiteframe-22dp {
+  box-shadow: $whiteframe-shadow-22dp;
+}
+.md-whiteframe-23dp {
+  box-shadow: $whiteframe-shadow-23dp;
+}
+.md-whiteframe-24dp {
+  box-shadow: $whiteframe-shadow-24dp;
+}
+
+@media screen and (-ms-high-contrast: active) {
+  md-whiteframe {
+    border: 1px solid #fff;
+  }
+}
+
+$virtual-repeat-scrollbar-width: 16px;
+
+.md-virtual-repeat-container {
+  box-sizing: border-box;
+  display: block;
+  margin: 0;
+  overflow: hidden;
+  padding: 0;
+  position: relative;
+
+  .md-virtual-repeat-scroller {
+    bottom: 0;
+    box-sizing: border-box;
+    left: 0;
+    margin: 0;
+    overflow-x: hidden;
+    padding: 0;
+    position: absolute;
+    right: 0;
+    top: 0;
+  }
+
+  .md-virtual-repeat-sizer {
+    box-sizing: border-box;
+    height: 1px;
+    display: block;
+    margin: 0;
+    padding: 0;
+    width: 1px;
+  }
+
+  .md-virtual-repeat-offsetter {
+    box-sizing: border-box;
+    left: 0;
+    margin: 0;
+    padding: 0;
+    position: absolute;
+    right: 0;
+    top: 0;
+  }
+}
+
+.md-virtual-repeat-container.md-orient-horizontal {
+  .md-virtual-repeat-scroller {
+    overflow-x: auto;
+    overflow-y: hidden;
+  }
+
+  .md-virtual-repeat-offsetter {
+    // Leave room for the scroll bar.
+    // TODO: Will probably need to perform measurements at runtime.
+    bottom: $virtual-repeat-scrollbar-width;
+    right: auto;
+    white-space: nowrap;
+  }
+}
+
+$tooltip-fontsize-lg: rem(1);
+$tooltip-fontsize-sm: rem(1.4);
+$tooltip-height-lg: rem(2.2);
+$tooltip-height-sm: rem(3.2);
+$tooltip-top-margin-lg: rem(1.4);
+$tooltip-top-margin-sm: rem(2.4);
+$tooltip-lr-padding-lg: rem(0.8);
+$tooltip-lr-padding-sm: rem(1.6);
+$tooltip-max-width: rem(3.20);
+
+md-tooltip {
+  position: absolute;
+  z-index: $z-index-tooltip;
+  overflow: hidden;
+  pointer-events: none;
+  border-radius: 4px;
+
+  font-weight: 500;
+  font-size: $tooltip-fontsize-sm;
+  @media screen and (min-width: $layout-breakpoint-sm) {
+    font-size: $tooltip-fontsize-lg;
+  }
+
+  .md-content {
+    position: relative;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    transform-origin: center top;
+    transform: scale(0);
+    opacity: 0;
+    height: $tooltip-height-sm;
+    line-height: $tooltip-height-sm;
+    padding-left: $tooltip-lr-padding-sm;
+    padding-right: $tooltip-lr-padding-sm;
+    @media screen and (min-width: $layout-breakpoint-sm) {
+      height: $tooltip-height-lg;
+      line-height: $tooltip-height-lg;
+      padding-left: $tooltip-lr-padding-lg;
+      padding-right: $tooltip-lr-padding-lg;
+    }
+    &.md-show-add {
+      transition: $swift-ease-out;
+      transition-duration: .2s;
+      transform: scale(0);
+      opacity: 0;
+    }
+    &.md-show, &.md-show-add-active {
+      transform: scale(1);
+      opacity: 1;
+      transform-origin: center top;
+    }
+    &.md-show-remove {
+      transition: $swift-ease-out;
+      transition-duration: .2s;
+      &.md-show-remove-active {
+        transform: scale(0);
+        opacity: 0;
+      }
+    }
+  }
+
+  &.md-hide {
+    transition: $swift-ease-in;
+  }
+
+  &.md-show {
+    transition: $swift-ease-out;
+    pointer-events: auto;
+    will-change: opacity, height, width;
+  }
+}
+
 // Standard/Desktop Heights
 $toolbar-tools-height: 64px !default;
 $toolbar-height: 64px !default;
@@ -6506,212 +6715,3 @@ md-toolbar {
   }
 }
 
-
-$tooltip-fontsize-lg: rem(1);
-$tooltip-fontsize-sm: rem(1.4);
-$tooltip-height-lg: rem(2.2);
-$tooltip-height-sm: rem(3.2);
-$tooltip-top-margin-lg: rem(1.4);
-$tooltip-top-margin-sm: rem(2.4);
-$tooltip-lr-padding-lg: rem(0.8);
-$tooltip-lr-padding-sm: rem(1.6);
-$tooltip-max-width: rem(3.20);
-
-md-tooltip {
-  position: absolute;
-  z-index: $z-index-tooltip;
-  overflow: hidden;
-  pointer-events: none;
-  border-radius: 4px;
-
-  font-weight: 500;
-  font-size: $tooltip-fontsize-sm;
-  @media screen and (min-width: $layout-breakpoint-sm) {
-    font-size: $tooltip-fontsize-lg;
-  }
-
-  .md-content {
-    position: relative;
-    white-space: nowrap;
-    overflow: hidden;
-    text-overflow: ellipsis;
-    transform-origin: center top;
-    transform: scale(0);
-    opacity: 0;
-    height: $tooltip-height-sm;
-    line-height: $tooltip-height-sm;
-    padding-left: $tooltip-lr-padding-sm;
-    padding-right: $tooltip-lr-padding-sm;
-    @media screen and (min-width: $layout-breakpoint-sm) {
-      height: $tooltip-height-lg;
-      line-height: $tooltip-height-lg;
-      padding-left: $tooltip-lr-padding-lg;
-      padding-right: $tooltip-lr-padding-lg;
-    }
-    &.md-show-add {
-      transition: $swift-ease-out;
-      transition-duration: .2s;
-      transform: scale(0);
-      opacity: 0;
-    }
-    &.md-show, &.md-show-add-active {
-      transform: scale(1);
-      opacity: 1;
-      transform-origin: center top;
-    }
-    &.md-show-remove {
-      transition: $swift-ease-out;
-      transition-duration: .2s;
-      &.md-show-remove-active {
-        transform: scale(0);
-        opacity: 0;
-      }
-    }
-  }
-
-  &.md-hide {
-    transition: $swift-ease-in;
-  }
-
-  &.md-show {
-    transition: $swift-ease-out;
-    pointer-events: auto;
-    will-change: opacity, height, width;
-  }
-}
-
-$virtual-repeat-scrollbar-width: 16px;
-
-.md-virtual-repeat-container {
-  box-sizing: border-box;
-  display: block;
-  margin: 0;
-  overflow: hidden;
-  padding: 0;
-  position: relative;
-
-  .md-virtual-repeat-scroller {
-    bottom: 0;
-    box-sizing: border-box;
-    left: 0;
-    margin: 0;
-    overflow-x: hidden;
-    padding: 0;
-    position: absolute;
-    right: 0;
-    top: 0;
-  }
-
-  .md-virtual-repeat-sizer {
-    box-sizing: border-box;
-    height: 1px;
-    display: block;
-    margin: 0;
-    padding: 0;
-    width: 1px;
-  }
-
-  .md-virtual-repeat-offsetter {
-    box-sizing: border-box;
-    left: 0;
-    margin: 0;
-    padding: 0;
-    position: absolute;
-    right: 0;
-    top: 0;
-  }
-}
-
-.md-virtual-repeat-container.md-orient-horizontal {
-  .md-virtual-repeat-scroller {
-    overflow-x: auto;
-    overflow-y: hidden;
-  }
-
-  .md-virtual-repeat-offsetter {
-    // Leave room for the scroll bar.
-    // TODO: Will probably need to perform measurements at runtime.
-    bottom: $virtual-repeat-scrollbar-width;
-    right: auto;
-    white-space: nowrap;
-  }
-}
-
-.md-whiteframe-1dp, .md-whiteframe-z1 {
-  box-shadow: $whiteframe-shadow-1dp;
-}
-.md-whiteframe-2dp {
-  box-shadow: $whiteframe-shadow-2dp;
-}
-.md-whiteframe-3dp {
-  box-shadow: $whiteframe-shadow-3dp;
-}
-.md-whiteframe-4dp, .md-whiteframe-z2{
-  box-shadow: $whiteframe-shadow-4dp;
-}
-.md-whiteframe-5dp {
-  box-shadow: $whiteframe-shadow-5dp;
-}
-.md-whiteframe-6dp {
-  box-shadow: $whiteframe-shadow-6dp;
-}
-.md-whiteframe-7dp, .md-whiteframe-z3 {
-  box-shadow: $whiteframe-shadow-7dp;
-}
-.md-whiteframe-8dp {
-  box-shadow: $whiteframe-shadow-8dp;
-}
-.md-whiteframe-9dp {
-  box-shadow: $whiteframe-shadow-9dp;
-}
-.md-whiteframe-10dp, .md-whiteframe-z4 {
-  box-shadow: $whiteframe-shadow-10dp;
-}
-.md-whiteframe-11dp {
-  box-shadow: $whiteframe-shadow-11dp;
-}
-.md-whiteframe-12dp {
-  box-shadow: $whiteframe-shadow-12dp;
-}
-.md-whiteframe-13dp, .md-whiteframe-z5{
-  box-shadow: $whiteframe-shadow-13dp;
-}
-.md-whiteframe-14dp {
-  box-shadow: $whiteframe-shadow-14dp;
-}
-.md-whiteframe-15dp {
-  box-shadow: $whiteframe-shadow-15dp;
-}
-.md-whiteframe-16dp {
-  box-shadow: $whiteframe-shadow-16dp;
-}
-.md-whiteframe-17dp {
-  box-shadow: $whiteframe-shadow-17dp;
-}
-.md-whiteframe-18dp {
-  box-shadow: $whiteframe-shadow-18dp;
-}
-.md-whiteframe-19dp {
-  box-shadow: $whiteframe-shadow-19dp;
-}
-.md-whiteframe-20dp {
-  box-shadow: $whiteframe-shadow-20dp;
-}
-.md-whiteframe-21dp {
-  box-shadow: $whiteframe-shadow-21dp;
-}
-.md-whiteframe-22dp {
-  box-shadow: $whiteframe-shadow-22dp;
-}
-.md-whiteframe-23dp {
-  box-shadow: $whiteframe-shadow-23dp;
-}
-.md-whiteframe-24dp {
-  box-shadow: $whiteframe-shadow-24dp;
-}
-
-@media screen and (-ms-high-contrast: active) {
-  md-whiteframe {
-    border: 1px solid #fff;
-  }
-}
