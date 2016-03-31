@@ -2149,6 +2149,34 @@ md-checkbox {
   }
 }
 
+md-content {
+
+  display: block;
+  position: relative;
+  overflow: auto;
+  -webkit-overflow-scrolling: touch;
+
+  &[md-scroll-y] {
+    overflow-y: auto;
+    overflow-x: hidden;
+  }
+  &[md-scroll-x] {
+    overflow-x: auto;
+    overflow-y: hidden;
+  }
+  &[md-scroll-xy] {
+  }
+
+  // For iOS allow disabling of momentum scrolling
+  // @see issue #2640.
+
+  &.autoScroll {
+    -webkit-overflow-scrolling: auto;
+  }
+}
+
+
+
 $chip-font-size: rem(1.6) !default;
 $chip-height: rem(3.2) !default;
 $chip-padding: 0 rem(1.2) 0 rem(1.2) !default;
@@ -2344,34 +2372,6 @@ $contact-chip-name-width: rem(12) !default;
     border: none;
   }
 }
-
-
-md-content {
-
-  display: block;
-  position: relative;
-  overflow: auto;
-  -webkit-overflow-scrolling: touch;
-
-  &[md-scroll-y] {
-    overflow-y: auto;
-    overflow-x: hidden;
-  }
-  &[md-scroll-x] {
-    overflow-x: auto;
-    overflow-y: hidden;
-  }
-  &[md-scroll-xy] {
-  }
-
-  // For iOS allow disabling of momentum scrolling
-  // @see issue #2640.
-
-  &.autoScroll {
-    -webkit-overflow-scrolling: auto;
-  }
-}
-
 
 
 /** Styles for mdCalendar. */
@@ -2730,6 +2730,24 @@ md-datepicker[disabled] {
   }
 }
 
+md-divider {
+  display: block;
+  border-top-width: 1px;
+  border-top-style: solid;
+  margin: 0;
+
+  &[md-inset] {
+    margin-left: $baseline-grid * 10;
+  }
+}
+
+.layout-row {
+  & > md-divider {
+    border-top-width: 0;
+    border-right-width: 1px;
+    border-right-style: solid;
+  }
+}
 $dialog-padding: $baseline-grid * 3;
 
 .md-dialog-is-showing {
@@ -2860,24 +2878,6 @@ md-dialog {
   }
 }
 
-md-divider {
-  display: block;
-  border-top-width: 1px;
-  border-top-style: solid;
-  margin: 0;
-
-  &[md-inset] {
-    margin-left: $baseline-grid * 10;
-  }
-}
-
-.layout-row {
-  & > md-divider {
-    border-top-width: 0;
-    border-right-width: 1px;
-    border-right-style: solid;
-  }
-}
 md-fab-speed-dial {
   position: relative;
   display: flex;
@@ -3229,61 +3229,6 @@ md-grid-list {
 }
 
 
-md-icon {
-  margin: auto;
-  background-repeat: no-repeat no-repeat;
-  display: inline-block;
-  vertical-align: middle;
-  fill: currentColor;
-  height: $icon-size;
-  width: $icon-size;
-
-  svg {
-    pointer-events: none;
-  }
-
-  &[md-font-icon] {
-    line-height: 1;
-    width: auto;
-  }
-}
-
-//
-//@font-face {
-//  font-family:"material";
-//  src:url("/dist/material-font/material.eot");
-//  font-weight:normal;
-//  font-style:normal;
-//}
-//
-//@font-face {
-//  font-family:"material";
-//  src:url("/dist/material-font/material.eot");
-//  src:url("/dist/material-font/material.eot?#iefix") format("embedded-opentype"),
-//    url("/dist/material-font/material.woff") format("woff"),
-//    url("/dist/material-font/material.ttf") format("truetype"),
-//    url("/dist/material-font/material.svg?#material") format("svg");
-//  font-weight:normal;
-//  font-style:normal;
-//}
-//
-///* Bootstrap Overrides */
-//[class^="icon-"]:before,
-//[class*=" icon-"]:before {
-//  font-family:"material";
-//  display:inline-block;
-//  vertical-align:middle;
-//  line-height:1;
-//  font-weight:normal;
-//  font-style:normal;
-//  speak:none;
-//  text-decoration:inherit;
-//  text-transform:none;
-//  text-rendering:optimizeLegibility;
-//  -webkit-font-smoothing:antialiased;
-//  -moz-osx-font-smoothing:grayscale;
-//}
-
 $input-container-padding: 2px !default;
 
 $input-label-default-offset: 24px !default;
@@ -3634,6 +3579,61 @@ md-input-container.md-icon-right {
     fill: #fff;
   }
 }
+
+md-icon {
+  margin: auto;
+  background-repeat: no-repeat no-repeat;
+  display: inline-block;
+  vertical-align: middle;
+  fill: currentColor;
+  height: $icon-size;
+  width: $icon-size;
+
+  svg {
+    pointer-events: none;
+  }
+
+  &[md-font-icon] {
+    line-height: 1;
+    width: auto;
+  }
+}
+
+//
+//@font-face {
+//  font-family:"material";
+//  src:url("/dist/material-font/material.eot");
+//  font-weight:normal;
+//  font-style:normal;
+//}
+//
+//@font-face {
+//  font-family:"material";
+//  src:url("/dist/material-font/material.eot");
+//  src:url("/dist/material-font/material.eot?#iefix") format("embedded-opentype"),
+//    url("/dist/material-font/material.woff") format("woff"),
+//    url("/dist/material-font/material.ttf") format("truetype"),
+//    url("/dist/material-font/material.svg?#material") format("svg");
+//  font-weight:normal;
+//  font-style:normal;
+//}
+//
+///* Bootstrap Overrides */
+//[class^="icon-"]:before,
+//[class*=" icon-"]:before {
+//  font-family:"material";
+//  display:inline-block;
+//  vertical-align:middle;
+//  line-height:1;
+//  font-weight:normal;
+//  font-style:normal;
+//  speak:none;
+//  text-decoration:inherit;
+//  text-transform:none;
+//  text-rendering:optimizeLegibility;
+//  -webkit-font-smoothing:antialiased;
+//  -moz-osx-font-smoothing:grayscale;
+//}
 
 $list-h3-margin: 0 0 0px 0 !default;
 $list-h4-margin: 3px 0 1px 0 !default;
@@ -4323,211 +4323,6 @@ md-progress-circular {
 }
 
 
-$progress-linear-bar-height: 5px !default;
-
-md-progress-linear {
-  display: block;
-  position: relative;
-  width: 100%;
-  height: $progress-linear-bar-height;
-
-  padding-top: 0 !important;
-  margin-bottom: 0 !important;
-
-  .md-container {
-    display:block;
-    position: relative;
-    overflow: hidden;
-
-    width:100%;
-    height: $progress-linear-bar-height;
-
-    transform: translate(0, 0) scale(1, 1);
-
-    .md-bar {
-      position: absolute;
-
-      left: 0;
-      top: 0;
-      bottom: 0;
-
-      width: 100%;
-      height: $progress-linear-bar-height;
-    }
-
-    .md-dashed:before {
-      content: "";
-      display: none;
-      position: absolute;
-
-      margin-top: 0;
-      height: $progress-linear-bar-height;
-      width: 100%;
-
-      background-color: transparent;
-      background-size: 10px 10px !important;
-      background-position: 0px -23px;
-    }
-
-    .md-bar1, .md-bar2 {
-
-      // Just set the transition information here.
-      // Note: the actual transform values are calculated in JS
-
-      transition: transform 0.2s linear;
-    }
-
-    // ************************************************************
-    // Animations for modes: Determinate, InDeterminate, and Query
-    // ************************************************************
-
-    &.md-mode-query {
-        .md-bar1 {
-          display: none;
-        }
-        .md-bar2 {
-          transition: all 0.2s linear;
-          animation: query .8s infinite cubic-bezier(0.390, 0.575, 0.565, 1.000);
-        }
-      }
-
-    &.md-mode-determinate {
-      .md-bar1 {
-        display: none;
-      }
-    }
-
-    &.md-mode-indeterminate {
-      .md-bar1 {
-        animation: md-progress-linear-indeterminate-scale-1 4s infinite,
-                   md-progress-linear-indeterminate-1 4s infinite;
-      }
-      .md-bar2 {
-        animation: md-progress-linear-indeterminate-scale-2 4s infinite,
-                   md-progress-linear-indeterminate-2 4s infinite;
-      }
-    }
-
-    &.ng-hide {
-      animation: none;
-
-      .md-bar1 {
-        animation-name: none;
-      }
-      .md-bar2 {
-        animation-name: none;
-      }
-    }
-  }
-
-  // Special animations for the `buffer` mode
-
-  .md-container.md-mode-buffer {
-    background-color: transparent !important;
-
-    transition: all 0.2s linear;
-
-    .md-dashed:before {
-      display: block;
-      animation: buffer 3s infinite linear;
-    }
-  }
-}
-
-@keyframes query {
-  0% {
-    opacity: 1;
-    transform: translateX(35%) scale(.3, 1);
-  }
-  100% {
-    opacity: 0;
-    transform: translateX(-50%) scale(0, 1);
-  }
-}
-@keyframes buffer {
-  0% {
-    opacity: 1;
-    background-position: 0px -23px;
-  }
-  50% {
-    opacity: 0;
-  }
-  100% {
-    opacity: 1;
-    background-position: -200px -23px;
-  }
-}
-@keyframes md-progress-linear-indeterminate-scale-1 {
-  0% {
-    transform: scaleX(0.1);
-    animation-timing-function: linear;
-  }
-  36.6% {
-    transform: scaleX(0.1);
-    animation-timing-function: cubic-bezier(0.334731432, 0.124819821, 0.785843996, 1);
-  }
-  69.15% {
-    transform: scaleX(0.83);
-    animation-timing-function: cubic-bezier(0.225732004, 0, 0.233648906, 1.3709798);
-  }
-  100% {
-    transform: scaleX(0.1);
-  }
-}
-@keyframes md-progress-linear-indeterminate-1 {
-  0% {
-    left: -378.6 * 100% / 360;
-    animation-timing-function: linear;
-  }
-  20% {
-    left: -378.6 * 100% / 360;
-    animation-timing-function: cubic-bezier(0.5, 0, 0.701732, 0.495818703);
-  }
-  69.15% {
-    left: 77.4 * 100% / 360;
-    animation-timing-function: cubic-bezier(0.302435, 0.38135197, 0.55, 0.956352125);
-  }
-  100% {
-    left: 343.6 * 100% / 360;
-  }
-}
-@keyframes md-progress-linear-indeterminate-scale-2 {
-  0% {
-    transform: scaleX(0.1);
-    animation-timing-function: cubic-bezier(0.205028172, 0.057050836, 0.57660995, 0.453970841);
-  }
-  19.15% {
-    transform: scaleX(0.57);
-    animation-timing-function: cubic-bezier(0.152312994, 0.196431957, 0.648373778, 1.00431535);
-  }
-  44.15% {
-    transform: scaleX(0.91);
-    animation-timing-function: cubic-bezier(0.25775882, -0.003163357, 0.211761916, 1.38178961);
-  }
-  100% {
-    transform: scaleX(0.1);
-  }
-}
-@keyframes md-progress-linear-indeterminate-2 {
-  0% {
-    left: -197.6 * 100% / 360;
-    animation-timing-function: cubic-bezier(0.15, 0, 0.5150584, 0.409684966);
-  }
-  25% {
-    left: -62.1 * 100% / 360;
-    animation-timing-function: cubic-bezier(0.3103299, 0.284057684, 0.8, 0.733718979);
-  }
-  48.35% {
-    left: 106.2 * 100% / 360;
-    animation-timing-function: cubic-bezier(0.4, 0.627034903, 0.6, 0.902025796);
-  }
-  100% {
-    left: 422.6 * 100% / 360;
-  }
-}
-
-
-
 $radio-width: 20px !default;
 $radio-height: $radio-width !default;
 $radio-text-margin: 10px !default;
@@ -4928,6 +4723,211 @@ md-optgroup {
   }
 }
 
+$progress-linear-bar-height: 5px !default;
+
+md-progress-linear {
+  display: block;
+  position: relative;
+  width: 100%;
+  height: $progress-linear-bar-height;
+
+  padding-top: 0 !important;
+  margin-bottom: 0 !important;
+
+  .md-container {
+    display:block;
+    position: relative;
+    overflow: hidden;
+
+    width:100%;
+    height: $progress-linear-bar-height;
+
+    transform: translate(0, 0) scale(1, 1);
+
+    .md-bar {
+      position: absolute;
+
+      left: 0;
+      top: 0;
+      bottom: 0;
+
+      width: 100%;
+      height: $progress-linear-bar-height;
+    }
+
+    .md-dashed:before {
+      content: "";
+      display: none;
+      position: absolute;
+
+      margin-top: 0;
+      height: $progress-linear-bar-height;
+      width: 100%;
+
+      background-color: transparent;
+      background-size: 10px 10px !important;
+      background-position: 0px -23px;
+    }
+
+    .md-bar1, .md-bar2 {
+
+      // Just set the transition information here.
+      // Note: the actual transform values are calculated in JS
+
+      transition: transform 0.2s linear;
+    }
+
+    // ************************************************************
+    // Animations for modes: Determinate, InDeterminate, and Query
+    // ************************************************************
+
+    &.md-mode-query {
+        .md-bar1 {
+          display: none;
+        }
+        .md-bar2 {
+          transition: all 0.2s linear;
+          animation: query .8s infinite cubic-bezier(0.390, 0.575, 0.565, 1.000);
+        }
+      }
+
+    &.md-mode-determinate {
+      .md-bar1 {
+        display: none;
+      }
+    }
+
+    &.md-mode-indeterminate {
+      .md-bar1 {
+        animation: md-progress-linear-indeterminate-scale-1 4s infinite,
+                   md-progress-linear-indeterminate-1 4s infinite;
+      }
+      .md-bar2 {
+        animation: md-progress-linear-indeterminate-scale-2 4s infinite,
+                   md-progress-linear-indeterminate-2 4s infinite;
+      }
+    }
+
+    &.ng-hide {
+      animation: none;
+
+      .md-bar1 {
+        animation-name: none;
+      }
+      .md-bar2 {
+        animation-name: none;
+      }
+    }
+  }
+
+  // Special animations for the `buffer` mode
+
+  .md-container.md-mode-buffer {
+    background-color: transparent !important;
+
+    transition: all 0.2s linear;
+
+    .md-dashed:before {
+      display: block;
+      animation: buffer 3s infinite linear;
+    }
+  }
+}
+
+@keyframes query {
+  0% {
+    opacity: 1;
+    transform: translateX(35%) scale(.3, 1);
+  }
+  100% {
+    opacity: 0;
+    transform: translateX(-50%) scale(0, 1);
+  }
+}
+@keyframes buffer {
+  0% {
+    opacity: 1;
+    background-position: 0px -23px;
+  }
+  50% {
+    opacity: 0;
+  }
+  100% {
+    opacity: 1;
+    background-position: -200px -23px;
+  }
+}
+@keyframes md-progress-linear-indeterminate-scale-1 {
+  0% {
+    transform: scaleX(0.1);
+    animation-timing-function: linear;
+  }
+  36.6% {
+    transform: scaleX(0.1);
+    animation-timing-function: cubic-bezier(0.334731432, 0.124819821, 0.785843996, 1);
+  }
+  69.15% {
+    transform: scaleX(0.83);
+    animation-timing-function: cubic-bezier(0.225732004, 0, 0.233648906, 1.3709798);
+  }
+  100% {
+    transform: scaleX(0.1);
+  }
+}
+@keyframes md-progress-linear-indeterminate-1 {
+  0% {
+    left: -378.6 * 100% / 360;
+    animation-timing-function: linear;
+  }
+  20% {
+    left: -378.6 * 100% / 360;
+    animation-timing-function: cubic-bezier(0.5, 0, 0.701732, 0.495818703);
+  }
+  69.15% {
+    left: 77.4 * 100% / 360;
+    animation-timing-function: cubic-bezier(0.302435, 0.38135197, 0.55, 0.956352125);
+  }
+  100% {
+    left: 343.6 * 100% / 360;
+  }
+}
+@keyframes md-progress-linear-indeterminate-scale-2 {
+  0% {
+    transform: scaleX(0.1);
+    animation-timing-function: cubic-bezier(0.205028172, 0.057050836, 0.57660995, 0.453970841);
+  }
+  19.15% {
+    transform: scaleX(0.57);
+    animation-timing-function: cubic-bezier(0.152312994, 0.196431957, 0.648373778, 1.00431535);
+  }
+  44.15% {
+    transform: scaleX(0.91);
+    animation-timing-function: cubic-bezier(0.25775882, -0.003163357, 0.211761916, 1.38178961);
+  }
+  100% {
+    transform: scaleX(0.1);
+  }
+}
+@keyframes md-progress-linear-indeterminate-2 {
+  0% {
+    left: -197.6 * 100% / 360;
+    animation-timing-function: cubic-bezier(0.15, 0, 0.5150584, 0.409684966);
+  }
+  25% {
+    left: -62.1 * 100% / 360;
+    animation-timing-function: cubic-bezier(0.3103299, 0.284057684, 0.8, 0.733718979);
+  }
+  48.35% {
+    left: 106.2 * 100% / 360;
+    animation-timing-function: cubic-bezier(0.4, 0.627034903, 0.6, 0.902025796);
+  }
+  100% {
+    left: 422.6 * 100% / 360;
+  }
+}
+
+
+
 $sidenav-mobile-width: 320px !default;
 $sidenav-desktop-width: 400px !default;
 $sidenav-min-space: 56px !default;
@@ -5046,300 +5046,6 @@ md-sidenav {
   }
 }
 
-$slider-background-color:  rgb(200, 200, 200) !default;
-$slider-height:  48px !default;
-
-$slider-track-height:  2px !default;
-$slider-thumb-width:  32px !default;
-$slider-thumb-height:  $slider-thumb-width !default;
-
-$slider-thumb-default-scale: 0.5 !default;
-$slider-thumb-hover-scale: 0.6 !default;
-$slider-thumb-focus-scale: 0.85 !default;
-$slider-thumb-disabled-scale: 0.35 !default;
-$slider-thumb-disabled-border: 6px !default;
-
-$slider-focus-thumb-width:  48px !default;
-$slider-focus-thumb-height: $slider-focus-thumb-width !default;
-$slider-focus-ring-border-width: 3px !default;
-
-$slider-arrow-height: 16px !default;
-$slider-arrow-width: 28px !default;
-
-$slider-sign-height: 28px !default;
-$slider-sign-width: 28px !default;
-$slider-sign-top: ($slider-height / 2) - ($slider-thumb-default-scale * $slider-thumb-height / 2) - ($slider-sign-height) - ($slider-arrow-height) + 8px !default;
-
-@keyframes sliderFocusThumb {
-  0% {
-    opacity: 0;
-    transform: scale(0.0);
-  }
-  50% {
-    transform: scale(1.0);
-    opacity: 1;
-  }
-  100% {
-    opacity: 0;
-  }
-}
-
-@mixin slider-thumb-position($width: $slider-thumb-width, $height: $slider-thumb-height) {
-  position: absolute;
-  left: -$width / 2;
-  top: ($slider-height / 2) - ($height / 2);
-  width: $width;
-  height: $height;
-  border-radius: max($width, $height);
-}
-
-md-slider {
-
-  height: $slider-height;
-  position: relative;
-  display: block;
-  margin-left: 4px;
-  margin-right: 4px;
-  padding: 0;
-
-  *, *:after {
-    box-sizing: border-box;
-  }
-
-  .md-slider-wrapper {
-    position: relative;
-  }
-
-  /**
-   * Track
-   */
-  .md-track-container {
-    width: 100%;
-    position: absolute;
-    top: ($slider-height / 2) - ($slider-track-height) / 2;
-    height: $slider-track-height;
-  }
-  .md-track {
-    position: absolute;
-    left: 0;
-    right: 0;
-    height: 100%;
-  }
-  .md-track-fill {
-    transition: width 0.05s linear;
-  }
-  .md-track-ticks {
-    position: absolute;
-    left: 0;
-    right: 0;
-    height: 100%;
-  }
-  .md-track-ticks canvas {
-    // Restrict the width of the canvas so that ticks are rendered correctly
-    // when parent elements are resized. Else, the position of the ticks might
-    // be incorrect as we only update the canvas width attribute on window resize.
-    width: 100%;
-  }
-
-  /**
-   * Slider thumb
-   */
-  .md-thumb-container {
-    position: absolute;
-    left: 0;
-    top: 50%;
-    transform: translate3d(-50%,-50%,0);
-    transition: left 0.1s linear;
-  }
-  .md-thumb {
-    z-index: 1;
-
-    // Positioning the outer area of the thumb 6px bigger than it needs to be keeps
-    // the :after area being clipped by the background of the focus-thumb animation.
-    @include slider-thumb-position($slider-thumb-width + 6, $slider-thumb-height + 6);
-
-    // We render thumb in an :after selector to fix an obscure problem with the
-    // thumb being clipped by the focus-ring and focus-thumb while running the focus
-    // animation.
-    &:after {
-      content: '';
-      position: absolute;
-      left: 3px;
-      top: 3px;
-      width: $slider-thumb-width;
-      height: $slider-thumb-height;
-      border-radius: max($slider-thumb-width, $slider-thumb-height);
-      border-width: 3px;
-      border-style: solid;
-    }
-
-    transform: scale($slider-thumb-default-scale);
-    transition: all 0.1s linear;
-  }
-
-  /* The sign that's focused in discrete mode */
-  .md-sign {
-
-    /* Center the children (slider-thumb-text) */
-    display: flex;
-    align-items: center;
-    justify-content: center;
-
-    position: absolute;
-    left: -($slider-sign-height / 2);
-    top: $slider-sign-top;
-    width: $slider-sign-width;
-    height: $slider-sign-height;
-    border-radius: max($slider-sign-height, $slider-sign-width);
-
-    transform: scale(0.4) translate3d(0,(-$slider-sign-top + 8) / 0.4,0);
-    transition: all 0.2s ease-in-out;
-
-    /* The arrow pointing down under the sign */
-    &:after {
-      position: absolute;
-      content: '';
-      left: -($slider-sign-width / 2 - $slider-arrow-width / 2);
-      border-radius: $slider-arrow-height;
-      top: 19px;
-      border-left: $slider-arrow-width / 2 solid transparent;
-      border-right: $slider-arrow-width / 2 solid transparent;
-      border-top-width: $slider-arrow-height;
-      border-top-style: solid;
-
-      opacity: 0;
-      transform: translate3d(0,-8px,0);
-      transition: all 0.2s ease-in-out;
-    }
-
-    .md-thumb-text {
-      z-index: 1;
-      font-size: 12px;
-      font-weight: bold;
-    }
-  }
-
-  /**
-   * The border/background that comes in when focused in non-discrete mode
-   */
-  .md-focus-thumb {
-    @include slider-thumb-position($slider-focus-thumb-width, $slider-focus-thumb-height);
-    display: none;
-    opacity: 0;
-    background-color: #C0C0C0;
-    animation: sliderFocusThumb 0.4s linear;
-  }
-  .md-focus-ring {
-    @include slider-thumb-position($slider-focus-thumb-width, $slider-focus-thumb-height);
-    transform: scale(0);
-    transition: all 0.2s linear;
-    opacity: 0.26;
-  }
-  .md-disabled-thumb {
-    @include slider-thumb-position(
-      $slider-thumb-width + $slider-thumb-disabled-border * 2,
-      $slider-thumb-height + $slider-thumb-disabled-border * 2
-    );
-    transform: scale($slider-thumb-disabled-scale);
-    border-width: $slider-thumb-disabled-border;
-    border-style: solid;
-    display: none;
-  }
-
-  &.md-min {
-    .md-thumb {
-      &:after {
-        background-color: white;
-      }
-    }
-    .md-sign {
-      opacity: 0;
-    }
-  }
-
-  &:focus {
-    outline: none;
-  }
-
-  /* Don't animate left/right while panning */
-  &.md-dragging {
-    .md-thumb-container,
-    .md-track-fill {
-      transition: none;
-    }
-  }
-
-  &:not([md-discrete]) {
-    /* Hide the sign and ticks in non-discrete mode */
-    .md-track-ticks,
-    .md-sign {
-      display: none;
-    }
-
-    &:not([disabled]) {
-      &:hover {
-        .md-thumb {
-          transform: scale($slider-thumb-hover-scale);
-        }
-      }
-
-      &:focus,
-      &.md-active {
-        .md-focus-thumb {
-          display: block;
-        }
-        .md-focus-ring {
-          transform: scale(1);
-        }
-        .md-thumb {
-          transform: scale($slider-thumb-focus-scale);
-        }
-      }
-    }
-  }
-
-  &[md-discrete] {
-    /* Hide the focus thumb in discrete mode */
-    .md-focus-thumb,
-    .md-focus-ring {
-      display: none;
-    }
-
-    &:not([disabled]) {
-      &:focus,
-      &.md-active {
-        .md-sign,
-        .md-sign:after {
-          opacity: 1;
-          transform: translate3d(0,0,0) scale(1.0);
-        }
-      }
-    }
-  }
-
-  &[disabled] {
-    .md-track-fill {
-      display: none;
-    }
-    .md-sign {
-      display: none;
-    }
-    .md-thumb {
-      transform: scale($slider-thumb-disabled-scale);
-    }
-    .md-disabled-thumb {
-      display: block;
-    }
-  }
-}
-
-@media screen and (-ms-high-contrast: active) {
-  md-slider.md-default-theme .md-track {
-    border-bottom: 1px solid #fff;
-  }
-}
-
-
 .md-sticky-clone {
   z-index: 2;
   top: 0;
@@ -5422,171 +5128,6 @@ $subheader-sticky-shadow: 0px 2px 4px 0 rgba(0,0,0,0.16) !default;
     display: block;
     z-index: 1;
     position: relative;
-  }
-}
-
-$switch-width: 36px !default;
-$switch-height: $baseline-grid * 3 !default;
-$switch-bar-height: 14px !default;
-$switch-thumb-size: 20px !default;
-$switch-margin: 16px !default;
-
-.md-inline-form {
-  md-switch {
-    margin-top: 18px;
-    margin-bottom: 19px;
-  }
-}
-
-md-switch {
-  margin: $switch-margin 0;
-  white-space: nowrap;
-  cursor: pointer;
-  outline: none;
-  user-select: none;
-  height: 30px;
-  line-height: 28px;
-  align-items: center;
-  display: flex;
-
-  @include rtl(margin-left, inherit, $switch-margin);
-  @include rtl(margin-right, $switch-margin, inherit);
-
-  &:last-of-type {
-    @include rtl(margin-left, inherit, 0);
-    @include rtl(margin-right, 0, inherit);
-  }
-  
-  &[disabled] {
-    cursor: default;
-
-    .md-container {
-      cursor: default;
-    }
-  }
-
-  .md-container {
-    cursor: grab;
-    width: $switch-width;
-    height: $switch-height;
-    position: relative;
-    user-select: none;
-    margin-right: 8px;
-    float: left;
-  }
-
-  // If the user moves his mouse off the switch, stil display grabbing cursor
-  &:not([disabled]) {
-    .md-dragging,
-    &.md-dragging .md-container {
-      cursor: grabbing;
-    }
-  }
-
-  &.md-focused:not([disabled]) {
-    .md-thumb:before {
-      left: -8px;
-      top: -8px;
-      right: -8px;
-      bottom: -8px;
-    }
-
-    &:not(.md-checked) {
-      .md-thumb:before {
-        background-color: rgba(0, 0, 0, 0.12);
-      }
-    }
-  }
-
-  .md-label {
-    border-color: transparent;
-    border-width: 0;
-    float: left;
-  }
-
-  .md-bar {
-    left: 1px;
-    width: $switch-width - 2px;
-    top: $switch-height / 2 - $switch-bar-height / 2;
-    height: $switch-bar-height;
-    border-radius: 8px;
-    position: absolute;
-  }
-
-  .md-thumb-container {
-    top: $switch-height / 2 - $switch-thumb-size / 2;
-    left: 0;
-    width: $switch-width - $switch-thumb-size;
-    position: absolute;
-    transform: translate3d(0,0,0);
-    z-index: 1;
-  }
-  &.md-checked .md-thumb-container {
-    transform: translate3d(100%,0,0);
-  }
-
-  .md-thumb {
-    position: absolute;
-    margin: 0;
-    left: 0;
-    top: 0;
-    outline: none;
-    height: $switch-thumb-size;
-    width: $switch-thumb-size;
-    border-radius: 50%;
-    box-shadow: $whiteframe-shadow-1dp;
-
-    &:before {
-      background-color: transparent;
-      border-radius: 50%;
-      content: '';
-      position: absolute;
-      display: block;
-      height: auto;
-      left: 0;
-      top: 0;
-      right: 0;
-      bottom: 0;
-      transition: all 0.5s;
-      width: auto;
-    }
-
-    .md-ripple-container {
-      position: absolute;
-      display: block;
-      width: auto;
-      height: auto;
-      left: -$switch-thumb-size;
-      top: -$switch-thumb-size;
-      right: -$switch-thumb-size;
-      bottom: -$switch-thumb-size;
-    }
-  }
-
-  &:not(.md-dragging) {
-    .md-bar,
-    .md-thumb-container,
-    .md-thumb {
-      transition: $swift-linear;
-      transition-property: transform, background-color;
-    }
-    .md-bar,
-    .md-thumb {
-      transition-delay: 0.05s;
-    }
-  }
-
-}
-
-@media screen and (-ms-high-contrast: active) {
-  md-switch.md-default-theme .md-bar {
-    background-color: #666;
-  }
-  md-switch.md-default-theme.md-checked .md-bar {
-    background-color: #9E9E9E;
-  }
-  md-switch.md-default-theme .md-thumb {
-    background-color: #fff;
   }
 }
 
@@ -5988,6 +5529,501 @@ mtd-dropdown.context-menu {
 }
 
 
+$slider-background-color:  rgb(200, 200, 200) !default;
+$slider-height:  48px !default;
+
+$slider-track-height:  2px !default;
+$slider-thumb-width:  32px !default;
+$slider-thumb-height:  $slider-thumb-width !default;
+
+$slider-thumb-default-scale: 0.5 !default;
+$slider-thumb-hover-scale: 0.6 !default;
+$slider-thumb-focus-scale: 0.85 !default;
+$slider-thumb-disabled-scale: 0.35 !default;
+$slider-thumb-disabled-border: 6px !default;
+
+$slider-focus-thumb-width:  48px !default;
+$slider-focus-thumb-height: $slider-focus-thumb-width !default;
+$slider-focus-ring-border-width: 3px !default;
+
+$slider-arrow-height: 16px !default;
+$slider-arrow-width: 28px !default;
+
+$slider-sign-height: 28px !default;
+$slider-sign-width: 28px !default;
+$slider-sign-top: ($slider-height / 2) - ($slider-thumb-default-scale * $slider-thumb-height / 2) - ($slider-sign-height) - ($slider-arrow-height) + 8px !default;
+
+@keyframes sliderFocusThumb {
+  0% {
+    opacity: 0;
+    transform: scale(0.0);
+  }
+  50% {
+    transform: scale(1.0);
+    opacity: 1;
+  }
+  100% {
+    opacity: 0;
+  }
+}
+
+@mixin slider-thumb-position($width: $slider-thumb-width, $height: $slider-thumb-height) {
+  position: absolute;
+  left: -$width / 2;
+  top: ($slider-height / 2) - ($height / 2);
+  width: $width;
+  height: $height;
+  border-radius: max($width, $height);
+}
+
+md-slider {
+
+  height: $slider-height;
+  position: relative;
+  display: block;
+  margin-left: 4px;
+  margin-right: 4px;
+  padding: 0;
+
+  *, *:after {
+    box-sizing: border-box;
+  }
+
+  .md-slider-wrapper {
+    position: relative;
+  }
+
+  /**
+   * Track
+   */
+  .md-track-container {
+    width: 100%;
+    position: absolute;
+    top: ($slider-height / 2) - ($slider-track-height) / 2;
+    height: $slider-track-height;
+  }
+  .md-track {
+    position: absolute;
+    left: 0;
+    right: 0;
+    height: 100%;
+  }
+  .md-track-fill {
+    transition: width 0.05s linear;
+  }
+  .md-track-ticks {
+    position: absolute;
+    left: 0;
+    right: 0;
+    height: 100%;
+  }
+  .md-track-ticks canvas {
+    // Restrict the width of the canvas so that ticks are rendered correctly
+    // when parent elements are resized. Else, the position of the ticks might
+    // be incorrect as we only update the canvas width attribute on window resize.
+    width: 100%;
+  }
+
+  /**
+   * Slider thumb
+   */
+  .md-thumb-container {
+    position: absolute;
+    left: 0;
+    top: 50%;
+    transform: translate3d(-50%,-50%,0);
+    transition: left 0.1s linear;
+  }
+  .md-thumb {
+    z-index: 1;
+
+    // Positioning the outer area of the thumb 6px bigger than it needs to be keeps
+    // the :after area being clipped by the background of the focus-thumb animation.
+    @include slider-thumb-position($slider-thumb-width + 6, $slider-thumb-height + 6);
+
+    // We render thumb in an :after selector to fix an obscure problem with the
+    // thumb being clipped by the focus-ring and focus-thumb while running the focus
+    // animation.
+    &:after {
+      content: '';
+      position: absolute;
+      left: 3px;
+      top: 3px;
+      width: $slider-thumb-width;
+      height: $slider-thumb-height;
+      border-radius: max($slider-thumb-width, $slider-thumb-height);
+      border-width: 3px;
+      border-style: solid;
+    }
+
+    transform: scale($slider-thumb-default-scale);
+    transition: all 0.1s linear;
+  }
+
+  /* The sign that's focused in discrete mode */
+  .md-sign {
+
+    /* Center the children (slider-thumb-text) */
+    display: flex;
+    align-items: center;
+    justify-content: center;
+
+    position: absolute;
+    left: -($slider-sign-height / 2);
+    top: $slider-sign-top;
+    width: $slider-sign-width;
+    height: $slider-sign-height;
+    border-radius: max($slider-sign-height, $slider-sign-width);
+
+    transform: scale(0.4) translate3d(0,(-$slider-sign-top + 8) / 0.4,0);
+    transition: all 0.2s ease-in-out;
+
+    /* The arrow pointing down under the sign */
+    &:after {
+      position: absolute;
+      content: '';
+      left: -($slider-sign-width / 2 - $slider-arrow-width / 2);
+      border-radius: $slider-arrow-height;
+      top: 19px;
+      border-left: $slider-arrow-width / 2 solid transparent;
+      border-right: $slider-arrow-width / 2 solid transparent;
+      border-top-width: $slider-arrow-height;
+      border-top-style: solid;
+
+      opacity: 0;
+      transform: translate3d(0,-8px,0);
+      transition: all 0.2s ease-in-out;
+    }
+
+    .md-thumb-text {
+      z-index: 1;
+      font-size: 12px;
+      font-weight: bold;
+    }
+  }
+
+  /**
+   * The border/background that comes in when focused in non-discrete mode
+   */
+  .md-focus-thumb {
+    @include slider-thumb-position($slider-focus-thumb-width, $slider-focus-thumb-height);
+    display: none;
+    opacity: 0;
+    background-color: #C0C0C0;
+    animation: sliderFocusThumb 0.4s linear;
+  }
+  .md-focus-ring {
+    @include slider-thumb-position($slider-focus-thumb-width, $slider-focus-thumb-height);
+    transform: scale(0);
+    transition: all 0.2s linear;
+    opacity: 0.26;
+  }
+  .md-disabled-thumb {
+    @include slider-thumb-position(
+      $slider-thumb-width + $slider-thumb-disabled-border * 2,
+      $slider-thumb-height + $slider-thumb-disabled-border * 2
+    );
+    transform: scale($slider-thumb-disabled-scale);
+    border-width: $slider-thumb-disabled-border;
+    border-style: solid;
+    display: none;
+  }
+
+  &.md-min {
+    .md-thumb {
+      &:after {
+        background-color: white;
+      }
+    }
+    .md-sign {
+      opacity: 0;
+    }
+  }
+
+  &:focus {
+    outline: none;
+  }
+
+  /* Don't animate left/right while panning */
+  &.md-dragging {
+    .md-thumb-container,
+    .md-track-fill {
+      transition: none;
+    }
+  }
+
+  &:not([md-discrete]) {
+    /* Hide the sign and ticks in non-discrete mode */
+    .md-track-ticks,
+    .md-sign {
+      display: none;
+    }
+
+    &:not([disabled]) {
+      &:hover {
+        .md-thumb {
+          transform: scale($slider-thumb-hover-scale);
+        }
+      }
+
+      &:focus,
+      &.md-active {
+        .md-focus-thumb {
+          display: block;
+        }
+        .md-focus-ring {
+          transform: scale(1);
+        }
+        .md-thumb {
+          transform: scale($slider-thumb-focus-scale);
+        }
+      }
+    }
+  }
+
+  &[md-discrete] {
+    /* Hide the focus thumb in discrete mode */
+    .md-focus-thumb,
+    .md-focus-ring {
+      display: none;
+    }
+
+    &:not([disabled]) {
+      &:focus,
+      &.md-active {
+        .md-sign,
+        .md-sign:after {
+          opacity: 1;
+          transform: translate3d(0,0,0) scale(1.0);
+        }
+      }
+    }
+  }
+
+  &[disabled] {
+    .md-track-fill {
+      display: none;
+    }
+    .md-sign {
+      display: none;
+    }
+    .md-thumb {
+      transform: scale($slider-thumb-disabled-scale);
+    }
+    .md-disabled-thumb {
+      display: block;
+    }
+  }
+}
+
+@media screen and (-ms-high-contrast: active) {
+  md-slider.md-default-theme .md-track {
+    border-bottom: 1px solid #fff;
+  }
+}
+
+
+// See height set globally, depended on by buttons
+
+md-toast {
+  position: absolute;
+  z-index: $z-index-toast;
+
+  box-sizing: border-box;
+  cursor: default;
+  overflow: hidden;
+
+  // Add some padding to the outer toast container so that the wrapper's box shadow is visible
+  padding: $toast-margin;
+
+  // Setup opacity transition on whole toast
+  opacity: 1;
+  transition: $swift-ease-out;
+
+  .md-toast-content {
+    display: flex;
+    align-items: center;
+
+    height: 0;
+    max-height: 7 * $toast-height;
+    max-width: 100%;
+    min-height: 48px;
+    padding-left: 24px;
+    padding-right: 24px;
+
+    box-shadow: 0 2px 5px 0 rgba(0, 0, 0, 0.26);
+    border-radius: 2px;
+    font-size: 14px;
+
+    overflow: hidden;
+
+    // Setup for transform transitions on inner content
+    transform: translate3d(0, 0, 0) rotateZ(0deg);
+    transition: $swift-ease-out;
+  }
+
+  &.md-capsule {
+    border-radius: 24px;
+
+    .md-toast-content {
+      border-radius: 24px;
+    }
+  }
+
+  &.ng-leave-active {
+    .md-toast-content {
+      transition: $swift-ease-in;
+    }
+  }
+
+  /* Transition differently when swiping */
+  &.md-swipeleft,
+  &.md-swiperight,
+  &.md-swipeup,
+  &.md-swipedown {
+    .md-toast-content {
+      transition: $swift-ease-out;
+    }
+  }
+
+  &.ng-enter {
+    opacity: 0;
+    .md-toast-content {
+      transform: translate3d(0, 100%, 0);
+    }
+    &.md-top {
+      .md-toast-content {
+        transform: translate3d(0, -100%, 0);
+      }
+    }
+    &.ng-enter-active {
+      opacity: 1;
+      .md-toast-content {
+        transform: translate3d(0, 0, 0);
+      }
+    }
+  }
+  /*
+   * When the toast doesn't take up the whole screen,
+   * make it rotate when the user swipes it away
+   */
+  &.ng-leave.ng-leave-active {
+    .md-toast-content {
+      opacity: 0;
+      transform: translate3d(0, 100%, 0);
+    }
+
+    &.md-swipeup {
+      .md-toast-content {
+        transform: translate3d(0, -50%, 0);
+      }
+    }
+    &.md-swipedown {
+      .md-toast-content {
+        transform: translate3d(0, 50%, 0);
+      }
+    }
+    &.md-top {
+      .md-toast-content {
+        transform: translate3d(0, -100%, 0);
+      }
+    }
+  }
+
+  .md-action {
+    line-height: 19px;
+    margin-left: 24px;
+    margin-right: 0;
+    cursor: pointer;
+    text-transform: uppercase;
+    float: right;
+
+    &.md-button {
+      min-width: 0;
+    }
+  }
+}
+
+@media (max-width: $layout-breakpoint-sm - 1) {
+  md-toast {
+    left: 0;
+    right: 0;
+    width: 100%;
+    max-width: 100%;
+    min-width: 0;
+    border-radius: 0;
+    bottom: 0;
+
+    &.ng-leave.ng-leave-active {
+      &.md-swipeup {
+        .md-toast-content {
+          transform: translate3d(0, -50%, 0);
+        }
+      }
+      &.md-swipedown {
+        .md-toast-content {
+          transform: translate3d(0, 50%, 0);
+        }
+      }
+    }
+  }
+}
+
+@media (min-width: $layout-breakpoint-sm) {
+  md-toast {
+    min-width: 288px + $toast-margin * 2;
+    &.md-bottom {
+      bottom: 0;
+    }
+    &.md-left {
+      left: 0;
+    }
+    &.md-right {
+      right: 0;
+    }
+    &.md-top {
+      top: 0;
+    }
+
+    /*
+   * When the toast doesn't take up the whole screen,
+   * make it rotate when the user swipes it away
+   */
+    &.ng-leave.ng-leave-active {
+      &.md-swipeleft {
+        .md-toast-content {
+          transform: translate3d(-50%, 0, 0);
+        }
+      }
+      &.md-swiperight {
+        .md-toast-content {
+          transform: translate3d(50%, 0, 0);
+        }
+      }
+    }
+  }
+}
+
+@media (min-width: $layout-breakpoint-lg) {
+  md-toast {
+    .md-toast-content {
+      max-width: $baseline-grid * 71;
+    }
+  }
+}
+
+@media screen and (-ms-high-contrast: active) {
+  md-toast {
+    border: 1px solid #fff;
+  }
+}
+
+
+// While animating, set the toast parent's overflow to hidden so scrollbars do not appear
+.md-toast-animating {
+  overflow: hidden !important;
+}
+
 $tabs-paginator-width: $baseline-grid * 4 !default;
 $tabs-tab-width: $baseline-grid * 12 !default;
 $tabs-header-height: 48px !default;
@@ -6273,205 +6309,169 @@ md-toolbar + md-tabs {
   border-top-right-radius: 0;
 }
 
-// See height set globally, depended on by buttons
+$switch-width: 36px !default;
+$switch-height: $baseline-grid * 3 !default;
+$switch-bar-height: 14px !default;
+$switch-thumb-size: 20px !default;
+$switch-margin: 16px !default;
 
-md-toast {
-  position: absolute;
-  z-index: $z-index-toast;
-
-  box-sizing: border-box;
-  cursor: default;
-  overflow: hidden;
-
-  // Add some padding to the outer toast container so that the wrapper's box shadow is visible
-  padding: $toast-margin;
-
-  // Setup opacity transition on whole toast
-  opacity: 1;
-  transition: $swift-ease-out;
-
-  .md-toast-content {
-    display: flex;
-    align-items: center;
-
-    height: 0;
-    max-height: 7 * $toast-height;
-    max-width: 100%;
-    min-height: 48px;
-    padding-left: 24px;
-    padding-right: 24px;
-
-    box-shadow: 0 2px 5px 0 rgba(0, 0, 0, 0.26);
-    border-radius: 2px;
-    font-size: 14px;
-
-    overflow: hidden;
-
-    // Setup for transform transitions on inner content
-    transform: translate3d(0, 0, 0) rotateZ(0deg);
-    transition: $swift-ease-out;
-  }
-
-  &.md-capsule {
-    border-radius: 24px;
-
-    .md-toast-content {
-      border-radius: 24px;
-    }
-  }
-
-  &.ng-leave-active {
-    .md-toast-content {
-      transition: $swift-ease-in;
-    }
-  }
-
-  /* Transition differently when swiping */
-  &.md-swipeleft,
-  &.md-swiperight,
-  &.md-swipeup,
-  &.md-swipedown {
-    .md-toast-content {
-      transition: $swift-ease-out;
-    }
-  }
-
-  &.ng-enter {
-    opacity: 0;
-    .md-toast-content {
-      transform: translate3d(0, 100%, 0);
-    }
-    &.md-top {
-      .md-toast-content {
-        transform: translate3d(0, -100%, 0);
-      }
-    }
-    &.ng-enter-active {
-      opacity: 1;
-      .md-toast-content {
-        transform: translate3d(0, 0, 0);
-      }
-    }
-  }
-  /*
-   * When the toast doesn't take up the whole screen,
-   * make it rotate when the user swipes it away
-   */
-  &.ng-leave.ng-leave-active {
-    .md-toast-content {
-      opacity: 0;
-      transform: translate3d(0, 100%, 0);
-    }
-
-    &.md-swipeup {
-      .md-toast-content {
-        transform: translate3d(0, -50%, 0);
-      }
-    }
-    &.md-swipedown {
-      .md-toast-content {
-        transform: translate3d(0, 50%, 0);
-      }
-    }
-    &.md-top {
-      .md-toast-content {
-        transform: translate3d(0, -100%, 0);
-      }
-    }
-  }
-
-  .md-action {
-    line-height: 19px;
-    margin-left: 24px;
-    margin-right: 0;
-    cursor: pointer;
-    text-transform: uppercase;
-    float: right;
-
-    &.md-button {
-      min-width: 0;
-    }
+.md-inline-form {
+  md-switch {
+    margin-top: 18px;
+    margin-bottom: 19px;
   }
 }
 
-@media (max-width: $layout-breakpoint-sm - 1) {
-  md-toast {
+md-switch {
+  margin: $switch-margin 0;
+  white-space: nowrap;
+  cursor: pointer;
+  outline: none;
+  user-select: none;
+  height: 30px;
+  line-height: 28px;
+  align-items: center;
+  display: flex;
+
+  @include rtl(margin-left, inherit, $switch-margin);
+  @include rtl(margin-right, $switch-margin, inherit);
+
+  &:last-of-type {
+    @include rtl(margin-left, inherit, 0);
+    @include rtl(margin-right, 0, inherit);
+  }
+  
+  &[disabled] {
+    cursor: default;
+
+    .md-container {
+      cursor: default;
+    }
+  }
+
+  .md-container {
+    cursor: grab;
+    width: $switch-width;
+    height: $switch-height;
+    position: relative;
+    user-select: none;
+    margin-right: 8px;
+    float: left;
+  }
+
+  // If the user moves his mouse off the switch, stil display grabbing cursor
+  &:not([disabled]) {
+    .md-dragging,
+    &.md-dragging .md-container {
+      cursor: grabbing;
+    }
+  }
+
+  &.md-focused:not([disabled]) {
+    .md-thumb:before {
+      left: -8px;
+      top: -8px;
+      right: -8px;
+      bottom: -8px;
+    }
+
+    &:not(.md-checked) {
+      .md-thumb:before {
+        background-color: rgba(0, 0, 0, 0.12);
+      }
+    }
+  }
+
+  .md-label {
+    border-color: transparent;
+    border-width: 0;
+    float: left;
+  }
+
+  .md-bar {
+    left: 1px;
+    width: $switch-width - 2px;
+    top: $switch-height / 2 - $switch-bar-height / 2;
+    height: $switch-bar-height;
+    border-radius: 8px;
+    position: absolute;
+  }
+
+  .md-thumb-container {
+    top: $switch-height / 2 - $switch-thumb-size / 2;
     left: 0;
-    right: 0;
-    width: 100%;
-    max-width: 100%;
-    min-width: 0;
-    border-radius: 0;
-    bottom: 0;
-
-    &.ng-leave.ng-leave-active {
-      &.md-swipeup {
-        .md-toast-content {
-          transform: translate3d(0, -50%, 0);
-        }
-      }
-      &.md-swipedown {
-        .md-toast-content {
-          transform: translate3d(0, 50%, 0);
-        }
-      }
-    }
+    width: $switch-width - $switch-thumb-size;
+    position: absolute;
+    transform: translate3d(0,0,0);
+    z-index: 1;
   }
-}
+  &.md-checked .md-thumb-container {
+    transform: translate3d(100%,0,0);
+  }
 
-@media (min-width: $layout-breakpoint-sm) {
-  md-toast {
-    min-width: 288px + $toast-margin * 2;
-    &.md-bottom {
-      bottom: 0;
-    }
-    &.md-left {
+  .md-thumb {
+    position: absolute;
+    margin: 0;
+    left: 0;
+    top: 0;
+    outline: none;
+    height: $switch-thumb-size;
+    width: $switch-thumb-size;
+    border-radius: 50%;
+    box-shadow: $whiteframe-shadow-1dp;
+
+    &:before {
+      background-color: transparent;
+      border-radius: 50%;
+      content: '';
+      position: absolute;
+      display: block;
+      height: auto;
       left: 0;
-    }
-    &.md-right {
-      right: 0;
-    }
-    &.md-top {
       top: 0;
+      right: 0;
+      bottom: 0;
+      transition: all 0.5s;
+      width: auto;
     }
 
-    /*
-   * When the toast doesn't take up the whole screen,
-   * make it rotate when the user swipes it away
-   */
-    &.ng-leave.ng-leave-active {
-      &.md-swipeleft {
-        .md-toast-content {
-          transform: translate3d(-50%, 0, 0);
-        }
-      }
-      &.md-swiperight {
-        .md-toast-content {
-          transform: translate3d(50%, 0, 0);
-        }
-      }
+    .md-ripple-container {
+      position: absolute;
+      display: block;
+      width: auto;
+      height: auto;
+      left: -$switch-thumb-size;
+      top: -$switch-thumb-size;
+      right: -$switch-thumb-size;
+      bottom: -$switch-thumb-size;
     }
   }
-}
 
-@media (min-width: $layout-breakpoint-lg) {
-  md-toast {
-    .md-toast-content {
-      max-width: $baseline-grid * 71;
+  &:not(.md-dragging) {
+    .md-bar,
+    .md-thumb-container,
+    .md-thumb {
+      transition: $swift-linear;
+      transition-property: transform, background-color;
+    }
+    .md-bar,
+    .md-thumb {
+      transition-delay: 0.05s;
     }
   }
+
 }
 
 @media screen and (-ms-high-contrast: active) {
-  md-toast {
-    border: 1px solid #fff;
+  md-switch.md-default-theme .md-bar {
+    background-color: #666;
   }
-}
-
-
-// While animating, set the toast parent's overflow to hidden so scrollbars do not appear
-.md-toast-animating {
-  overflow: hidden !important;
+  md-switch.md-default-theme.md-checked .md-bar {
+    background-color: #9E9E9E;
+  }
+  md-switch.md-default-theme .md-thumb {
+    background-color: #fff;
+  }
 }
 
 // Standard/Desktop Heights
@@ -6632,6 +6632,85 @@ md-toolbar {
 }
 
 
+.md-whiteframe-1dp, .md-whiteframe-z1 {
+  box-shadow: $whiteframe-shadow-1dp;
+}
+.md-whiteframe-2dp {
+  box-shadow: $whiteframe-shadow-2dp;
+}
+.md-whiteframe-3dp {
+  box-shadow: $whiteframe-shadow-3dp;
+}
+.md-whiteframe-4dp, .md-whiteframe-z2{
+  box-shadow: $whiteframe-shadow-4dp;
+}
+.md-whiteframe-5dp {
+  box-shadow: $whiteframe-shadow-5dp;
+}
+.md-whiteframe-6dp {
+  box-shadow: $whiteframe-shadow-6dp;
+}
+.md-whiteframe-7dp, .md-whiteframe-z3 {
+  box-shadow: $whiteframe-shadow-7dp;
+}
+.md-whiteframe-8dp {
+  box-shadow: $whiteframe-shadow-8dp;
+}
+.md-whiteframe-9dp {
+  box-shadow: $whiteframe-shadow-9dp;
+}
+.md-whiteframe-10dp, .md-whiteframe-z4 {
+  box-shadow: $whiteframe-shadow-10dp;
+}
+.md-whiteframe-11dp {
+  box-shadow: $whiteframe-shadow-11dp;
+}
+.md-whiteframe-12dp {
+  box-shadow: $whiteframe-shadow-12dp;
+}
+.md-whiteframe-13dp, .md-whiteframe-z5{
+  box-shadow: $whiteframe-shadow-13dp;
+}
+.md-whiteframe-14dp {
+  box-shadow: $whiteframe-shadow-14dp;
+}
+.md-whiteframe-15dp {
+  box-shadow: $whiteframe-shadow-15dp;
+}
+.md-whiteframe-16dp {
+  box-shadow: $whiteframe-shadow-16dp;
+}
+.md-whiteframe-17dp {
+  box-shadow: $whiteframe-shadow-17dp;
+}
+.md-whiteframe-18dp {
+  box-shadow: $whiteframe-shadow-18dp;
+}
+.md-whiteframe-19dp {
+  box-shadow: $whiteframe-shadow-19dp;
+}
+.md-whiteframe-20dp {
+  box-shadow: $whiteframe-shadow-20dp;
+}
+.md-whiteframe-21dp {
+  box-shadow: $whiteframe-shadow-21dp;
+}
+.md-whiteframe-22dp {
+  box-shadow: $whiteframe-shadow-22dp;
+}
+.md-whiteframe-23dp {
+  box-shadow: $whiteframe-shadow-23dp;
+}
+.md-whiteframe-24dp {
+  box-shadow: $whiteframe-shadow-24dp;
+}
+
+@media screen and (-ms-high-contrast: active) {
+  md-whiteframe {
+    border: 1px solid #fff;
+  }
+}
+
 $tooltip-fontsize-lg: rem(1);
 $tooltip-fontsize-sm: rem(1.4);
 $tooltip-height-lg: rem(2.2);
@@ -6759,84 +6838,5 @@ $virtual-repeat-scrollbar-width: 16px;
     bottom: $virtual-repeat-scrollbar-width;
     right: auto;
     white-space: nowrap;
-  }
-}
-
-.md-whiteframe-1dp, .md-whiteframe-z1 {
-  box-shadow: $whiteframe-shadow-1dp;
-}
-.md-whiteframe-2dp {
-  box-shadow: $whiteframe-shadow-2dp;
-}
-.md-whiteframe-3dp {
-  box-shadow: $whiteframe-shadow-3dp;
-}
-.md-whiteframe-4dp, .md-whiteframe-z2{
-  box-shadow: $whiteframe-shadow-4dp;
-}
-.md-whiteframe-5dp {
-  box-shadow: $whiteframe-shadow-5dp;
-}
-.md-whiteframe-6dp {
-  box-shadow: $whiteframe-shadow-6dp;
-}
-.md-whiteframe-7dp, .md-whiteframe-z3 {
-  box-shadow: $whiteframe-shadow-7dp;
-}
-.md-whiteframe-8dp {
-  box-shadow: $whiteframe-shadow-8dp;
-}
-.md-whiteframe-9dp {
-  box-shadow: $whiteframe-shadow-9dp;
-}
-.md-whiteframe-10dp, .md-whiteframe-z4 {
-  box-shadow: $whiteframe-shadow-10dp;
-}
-.md-whiteframe-11dp {
-  box-shadow: $whiteframe-shadow-11dp;
-}
-.md-whiteframe-12dp {
-  box-shadow: $whiteframe-shadow-12dp;
-}
-.md-whiteframe-13dp, .md-whiteframe-z5{
-  box-shadow: $whiteframe-shadow-13dp;
-}
-.md-whiteframe-14dp {
-  box-shadow: $whiteframe-shadow-14dp;
-}
-.md-whiteframe-15dp {
-  box-shadow: $whiteframe-shadow-15dp;
-}
-.md-whiteframe-16dp {
-  box-shadow: $whiteframe-shadow-16dp;
-}
-.md-whiteframe-17dp {
-  box-shadow: $whiteframe-shadow-17dp;
-}
-.md-whiteframe-18dp {
-  box-shadow: $whiteframe-shadow-18dp;
-}
-.md-whiteframe-19dp {
-  box-shadow: $whiteframe-shadow-19dp;
-}
-.md-whiteframe-20dp {
-  box-shadow: $whiteframe-shadow-20dp;
-}
-.md-whiteframe-21dp {
-  box-shadow: $whiteframe-shadow-21dp;
-}
-.md-whiteframe-22dp {
-  box-shadow: $whiteframe-shadow-22dp;
-}
-.md-whiteframe-23dp {
-  box-shadow: $whiteframe-shadow-23dp;
-}
-.md-whiteframe-24dp {
-  box-shadow: $whiteframe-shadow-24dp;
-}
-
-@media screen and (-ms-high-contrast: active) {
-  md-whiteframe {
-    border: 1px solid #fff;
   }
 }
