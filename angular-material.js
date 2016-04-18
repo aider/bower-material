@@ -10,7 +10,7 @@
 (function(){
 "use strict";
 
-angular.module('ngMaterial', ["ng","ngAnimate","ngAria","material.core","material.core.animate","material.core.gestures","material.core.layout","material.core.theming.palette","material.core.theming","material.components.autocomplete","material.components.backdrop","material.components.button","material.components.bottomSheet","material.components.card","material.components.checkbox","material.components.chips","material.components.content","material.components.datepicker","material.components.dialog","material.components.divider","material.components.fabActions","material.components.fabShared","material.components.fabSpeedDial","material.components.fabToolbar","material.components.fabTrigger","material.components.gridList","material.components.icon","material.components.input","material.components.list","material.components.menu","material.components.menuBar","material.components.progressCircular","material.components.progressLinear","material.components.radioButton","material.components.select","material.components.showHide","material.components.sidenav","material.components.slider","material.components.sticky","material.components.subheader","material.components.swipe","material.components.switch","material.components.table","material.components.tabs","material.components.toast","material.components.toolbar","material.components.tooltip","material.components.virtualRepeat","material.components.whiteframe"]);
+angular.module('ngMaterial', ["ng","ngAnimate","ngAria","material.core","material.core.gestures","material.core.layout","material.core.theming.palette","material.core.theming","material.core.animate","material.components.autocomplete","material.components.bottomSheet","material.components.backdrop","material.components.button","material.components.card","material.components.checkbox","material.components.chips","material.components.content","material.components.datepicker","material.components.dialog","material.components.fabActions","material.components.fabShared","material.components.fabSpeedDial","material.components.divider","material.components.fabToolbar","material.components.fabTrigger","material.components.input","material.components.gridList","material.components.icon","material.components.list","material.components.menu","material.components.progressCircular","material.components.menuBar","material.components.progressLinear","material.components.showHide","material.components.select","material.components.sidenav","material.components.radioButton","material.components.slider","material.components.sticky","material.components.swipe","material.components.subheader","material.components.table","material.components.switch","material.components.tabs","material.components.toast","material.components.toolbar","material.components.tooltip","material.components.whiteframe","material.components.virtualRepeat"]);
 })();
 (function(){
 "use strict";
@@ -1413,640 +1413,6 @@ angular.element.prototype.blur = angular.element.prototype.blur || function() {
 (function(){
 "use strict";
 
-// Polyfill angular < 1.4 (provide $animateCss)
-angular
-  .module('material.core')
-  .factory('$$mdAnimate', ["$q", "$timeout", "$mdConstant", "$animateCss", function($q, $timeout, $mdConstant, $animateCss){
-
-     // Since $$mdAnimate is injected into $mdUtil... use a wrapper function
-     // to subsequently inject $mdUtil as an argument to the AnimateDomUtils
-
-     return function($mdUtil) {
-       return AnimateDomUtils( $mdUtil, $q, $timeout, $mdConstant, $animateCss);
-     };
-   }]);
-
-/**
- * Factory function that requires special injections
- */
-function AnimateDomUtils($mdUtil, $q, $timeout, $mdConstant, $animateCss) {
-  var self;
-  return self = {
-    /**
-     *
-     */
-    translate3d : function( target, from, to, options ) {
-      return $animateCss(target,{
-        from:from,
-        to:to,
-        addClass:options.transitionInClass
-      })
-      .start()
-      .then(function(){
-          // Resolve with reverser function...
-          return reverseTranslate;
-      });
-
-      /**
-       * Specific reversal of the request translate animation above...
-       */
-      function reverseTranslate (newFrom) {
-        return $animateCss(target, {
-           to: newFrom || from,
-           addClass: options.transitionOutClass,
-           removeClass: options.transitionInClass
-        }).start();
-
-      }
-  },
-
-    /**
-     * Listen for transitionEnd event (with optional timeout)
-     * Announce completion or failure via promise handlers
-     */
-    waitTransitionEnd: function (element, opts) {
-        var TIMEOUT = 3000; // fallback is 3 secs
-
-        return $q(function(resolve, reject){
-          opts = opts || { };
-
-          var timer = $timeout(finished, opts.timeout || TIMEOUT);
-          element.on($mdConstant.CSS.TRANSITIONEND, finished);
-
-          /**
-           * Upon timeout or transitionEnd, reject or resolve (respectively) this promise.
-           * NOTE: Make sure this transitionEnd didn't bubble up from a child
-           */
-          function finished(ev) {
-            if ( ev && ev.target !== element[0]) return;
-
-            if ( ev  ) $timeout.cancel(timer);
-            element.off($mdConstant.CSS.TRANSITIONEND, finished);
-
-            // Never reject since ngAnimate may cause timeouts due missed transitionEnd events
-            resolve();
-
-          }
-
-        });
-      },
-
-    /**
-     * Calculate the zoom transform from dialog to origin.
-     *
-     * We use this to set the dialog position immediately;
-     * then the md-transition-in actually translates back to
-     * `translate3d(0,0,0) scale(1.0)`...
-     *
-     * NOTE: all values are rounded to the nearest integer
-     */
-    calculateZoomToOrigin: function (element, originator) {
-      var origin = originator.element;
-      var bounds = originator.bounds;
-
-      var zoomTemplate = "translate3d( {centerX}px, {centerY}px, 0 ) scale( {scaleX}, {scaleY} )";
-      var buildZoom = angular.bind(null, $mdUtil.supplant, zoomTemplate);
-      var zoomStyle = buildZoom({centerX: 0, centerY: 0, scaleX: 0.5, scaleY: 0.5});
-
-      if (origin || bounds) {
-        var originBnds = origin ? self.clientRect(origin) || currentBounds() : self.copyRect(bounds);
-        var dialogRect = self.copyRect(element[0].getBoundingClientRect());
-        var dialogCenterPt = self.centerPointFor(dialogRect);
-        var originCenterPt = self.centerPointFor(originBnds);
-
-        // Build the transform to zoom from the dialog center to the origin center
-
-        zoomStyle = buildZoom({
-          centerX: originCenterPt.x - dialogCenterPt.x,
-          centerY: originCenterPt.y - dialogCenterPt.y,
-          scaleX: Math.round(100 * Math.min(0.5, originBnds.width / dialogRect.width))/100,
-          scaleY: Math.round(100 * Math.min(0.5, originBnds.height / dialogRect.height))/100
-        });
-      }
-
-      return zoomStyle;
-
-      /**
-       * This is a fallback if the origin information is no longer valid, then the
-       * origin bounds simply becomes the current bounds for the dialogContainer's parent
-       */
-      function currentBounds() {
-        var cntr = element ? element.parent() : null;
-        var parent = cntr ? cntr.parent() : null;
-
-        return parent ? self.clientRect(parent) : null;
-      }
-    },
-
-    /**
-     * Enhance raw values to represent valid css stylings...
-     */
-    toCss : function( raw ) {
-      var css = { };
-      var lookups = 'left top right bottom width height x y min-width min-height max-width max-height';
-
-      angular.forEach(raw, function(value,key) {
-        if ( angular.isUndefined(value) ) return;
-
-        if ( lookups.indexOf(key) >= 0 ) {
-          css[key] = value + 'px';
-        } else {
-          switch (key) {
-            case 'transition':
-              convertToVendor(key, $mdConstant.CSS.TRANSITION, value);
-              break;
-            case 'transform':
-              convertToVendor(key, $mdConstant.CSS.TRANSFORM, value);
-              break;
-            case 'transformOrigin':
-              convertToVendor(key, $mdConstant.CSS.TRANSFORM_ORIGIN, value);
-              break;
-          }
-        }
-      });
-
-      return css;
-
-      function convertToVendor(key, vendor, value) {
-        angular.forEach(vendor.split(' '), function (key) {
-          css[key] = value;
-        });
-      }
-    },
-
-    /**
-     * Convert the translate CSS value to key/value pair(s).
-     */
-    toTransformCss: function (transform, addTransition, transition) {
-      var css = {};
-      angular.forEach($mdConstant.CSS.TRANSFORM.split(' '), function (key) {
-        css[key] = transform;
-      });
-
-      if (addTransition) {
-        transition = transition || "all 0.4s cubic-bezier(0.25, 0.8, 0.25, 1) !important";
-        css['transition'] = transition;
-      }
-
-      return css;
-    },
-
-    /**
-     *  Clone the Rect and calculate the height/width if needed
-     */
-    copyRect: function (source, destination) {
-      if (!source) return null;
-
-      destination = destination || {};
-
-      angular.forEach('left top right bottom width height'.split(' '), function (key) {
-        destination[key] = Math.round(source[key])
-      });
-
-      destination.width = destination.width || (destination.right - destination.left);
-      destination.height = destination.height || (destination.bottom - destination.top);
-
-      return destination;
-    },
-
-    /**
-     * Calculate ClientRect of element; return null if hidden or zero size
-     */
-    clientRect: function (element) {
-      var bounds = angular.element(element)[0].getBoundingClientRect();
-      var isPositiveSizeClientRect = function (rect) {
-        return rect && (rect.width > 0) && (rect.height > 0);
-      };
-
-      // If the event origin element has zero size, it has probably been hidden.
-      return isPositiveSizeClientRect(bounds) ? self.copyRect(bounds) : null;
-    },
-
-    /**
-     *  Calculate 'rounded' center point of Rect
-     */
-    centerPointFor: function (targetRect) {
-      return targetRect ? {
-        x: Math.round(targetRect.left + (targetRect.width / 2)),
-        y: Math.round(targetRect.top + (targetRect.height / 2))
-      } : { x : 0, y : 0 };
-    }
-
-  };
-};
-
-
-})();
-(function(){
-"use strict";
-
-"use strict";
-
-if (angular.version.minor >= 4) {
-  angular.module('material.core.animate', []);
-} else {
-(function() {
-
-  var forEach = angular.forEach;
-
-  var WEBKIT = angular.isDefined(document.documentElement.style.WebkitAppearance);
-  var TRANSITION_PROP = WEBKIT ? 'WebkitTransition' : 'transition';
-  var ANIMATION_PROP = WEBKIT ? 'WebkitAnimation' : 'animation';
-  var PREFIX = WEBKIT ? '-webkit-' : '';
-
-  var TRANSITION_EVENTS = (WEBKIT ? 'webkitTransitionEnd ' : '') + 'transitionend';
-  var ANIMATION_EVENTS = (WEBKIT ? 'webkitAnimationEnd ' : '') + 'animationend';
-
-  var $$ForceReflowFactory = ['$document', function($document) {
-    return function() {
-      return $document[0].body.clientWidth + 1;
-    }
-  }];
-
-  var $$rAFMutexFactory = ['$$rAF', function($$rAF) {
-    return function() {
-      var passed = false;
-      $$rAF(function() {
-        passed = true;
-      });
-      return function(fn) {
-        passed ? fn() : $$rAF(fn);
-      };
-    };
-  }];
-
-  var $$AnimateRunnerFactory = ['$q', '$$rAFMutex', function($q, $$rAFMutex) {
-    var INITIAL_STATE = 0;
-    var DONE_PENDING_STATE = 1;
-    var DONE_COMPLETE_STATE = 2;
-
-    function AnimateRunner(host) {
-      this.setHost(host);
-
-      this._doneCallbacks = [];
-      this._runInAnimationFrame = $$rAFMutex();
-      this._state = 0;
-    }
-
-    AnimateRunner.prototype = {
-      setHost: function(host) {
-        this.host = host || {};
-      },
-
-      done: function(fn) {
-        if (this._state === DONE_COMPLETE_STATE) {
-          fn();
-        } else {
-          this._doneCallbacks.push(fn);
-        }
-      },
-
-      progress: angular.noop,
-
-      getPromise: function() {
-        if (!this.promise) {
-          var self = this;
-          this.promise = $q(function(resolve, reject) {
-            self.done(function(status) {
-              status === false ? reject() : resolve();
-            });
-          });
-        }
-        return this.promise;
-      },
-
-      then: function(resolveHandler, rejectHandler) {
-        return this.getPromise().then(resolveHandler, rejectHandler);
-      },
-
-      'catch': function(handler) {
-        return this.getPromise()['catch'](handler);
-      },
-
-      'finally': function(handler) {
-        return this.getPromise()['finally'](handler);
-      },
-
-      pause: function() {
-        if (this.host.pause) {
-          this.host.pause();
-        }
-      },
-
-      resume: function() {
-        if (this.host.resume) {
-          this.host.resume();
-        }
-      },
-
-      end: function() {
-        if (this.host.end) {
-          this.host.end();
-        }
-        this._resolve(true);
-      },
-
-      cancel: function() {
-        if (this.host.cancel) {
-          this.host.cancel();
-        }
-        this._resolve(false);
-      },
-
-      complete: function(response) {
-        var self = this;
-        if (self._state === INITIAL_STATE) {
-          self._state = DONE_PENDING_STATE;
-          self._runInAnimationFrame(function() {
-            self._resolve(response);
-          });
-        }
-      },
-
-      _resolve: function(response) {
-        if (this._state !== DONE_COMPLETE_STATE) {
-          forEach(this._doneCallbacks, function(fn) {
-            fn(response);
-          });
-          this._doneCallbacks.length = 0;
-          this._state = DONE_COMPLETE_STATE;
-        }
-      }
-    };
-
-    return AnimateRunner;
-  }];
-
-  angular
-    .module('material.core.animate', [])
-    .factory('$$forceReflow', $$ForceReflowFactory)
-    .factory('$$AnimateRunner', $$AnimateRunnerFactory)
-    .factory('$$rAFMutex', $$rAFMutexFactory)
-    .factory('$animateCss', ['$window', '$$rAF', '$$AnimateRunner', '$$forceReflow', '$$jqLite', '$timeout',
-                     function($window,   $$rAF,   $$AnimateRunner,   $$forceReflow,   $$jqLite,   $timeout) {
-
-      function init(element, options) {
-
-        var temporaryStyles = [];
-        var node = getDomNode(element);
-
-        if (options.transitionStyle) {
-          temporaryStyles.push([PREFIX + 'transition', options.transitionStyle]);
-        }
-
-        if (options.keyframeStyle) {
-          temporaryStyles.push([PREFIX + 'animation', options.keyframeStyle]);
-        }
-
-        if (options.delay) {
-          temporaryStyles.push([PREFIX + 'transition-delay', options.delay + 's']);
-        }
-
-        if (options.duration) {
-          temporaryStyles.push([PREFIX + 'transition-duration', options.duration + 's']);
-        }
-
-        var hasCompleteStyles = options.keyframeStyle ||
-                                (options.to && (options.duration > 0 || options.transitionStyle));
-        var hasCompleteClasses = !!options.addClass || !!options.removeClass;
-        var hasCompleteAnimation = hasCompleteStyles || hasCompleteClasses;
-
-        blockTransition(element, true);
-        applyAnimationFromStyles(element, options);
-
-        var animationClosed = false;
-        var events, eventFn;
-
-        return {
-          close: $window.close,
-          start: function() {
-            var runner = new $$AnimateRunner();
-            waitUntilQuiet(function() {
-              blockTransition(element, false);
-              if (!hasCompleteAnimation) {
-                return close();
-              }
-
-              forEach(temporaryStyles, function(entry) {
-                var key = entry[0];
-                var value = entry[1];
-                node.style[camelCase(key)] = value;
-              });
-
-              applyClasses(element, options);
-
-              var timings = computeTimings(element);
-              if (timings.duration === 0) {
-                return close();
-              }
-
-              var moreStyles = [];
-
-              if (options.easing) {
-                if (timings.transitionDuration) {
-                  moreStyles.push([PREFIX + 'transition-timing-function', options.easing]);
-                }
-                if (timings.animationDuration) {
-                  moreStyles.push([PREFIX + 'animation-timing-function', options.easing]);
-                }
-              }
-
-              if (options.delay && timings.animationDelay) {
-                moreStyles.push([PREFIX + 'animation-delay', options.delay + 's']);
-              }
-
-              if (options.duration && timings.animationDuration) {
-                moreStyles.push([PREFIX + 'animation-duration', options.duration + 's']);
-              }
-
-              forEach(moreStyles, function(entry) {
-                var key = entry[0];
-                var value = entry[1];
-                node.style[camelCase(key)] = value;
-                temporaryStyles.push(entry);
-              });
-
-              var maxDelay = timings.delay;
-              var maxDelayTime = maxDelay * 1000;
-              var maxDuration = timings.duration;
-              var maxDurationTime = maxDuration * 1000;
-              var startTime = Date.now();
-
-              events = [];
-              if (timings.transitionDuration) {
-                events.push(TRANSITION_EVENTS);
-              }
-              if (timings.animationDuration) {
-                events.push(ANIMATION_EVENTS);
-              }
-              events = events.join(' ');
-              eventFn = function(event) {
-                event.stopPropagation();
-                var ev = event.originalEvent || event;
-                var timeStamp = ev.timeStamp || Date.now();
-                var elapsedTime = parseFloat(ev.elapsedTime.toFixed(3));
-                if (Math.max(timeStamp - startTime, 0) >= maxDelayTime && elapsedTime >= maxDuration) {
-                  close();
-                }
-              };
-              element.on(events, eventFn);
-
-              applyAnimationToStyles(element, options);
-
-              $timeout(close, maxDelayTime + maxDurationTime * 1.5, false);
-            });
-
-            return runner;
-
-            function close() {
-              if (animationClosed) return;
-              animationClosed = true;
-
-              if (events && eventFn) {
-                element.off(events, eventFn);
-              }
-              applyClasses(element, options);
-              applyAnimationStyles(element, options);
-              forEach(temporaryStyles, function(entry) {
-                node.style[camelCase(entry[0])] = '';
-              });
-              runner.complete(true);
-              return runner;
-            }
-          }
-        }
-      }
-
-      function applyClasses(element, options) {
-        if (options.addClass) {
-          $$jqLite.addClass(element, options.addClass);
-          options.addClass = null;
-        }
-        if (options.removeClass) {
-          $$jqLite.removeClass(element, options.removeClass);
-          options.removeClass = null;
-        }
-      }
-
-      function computeTimings(element) {
-        var node = getDomNode(element);
-        var cs = $window.getComputedStyle(node)
-        var tdr = parseMaxTime(cs[prop('transitionDuration')]);
-        var adr = parseMaxTime(cs[prop('animationDuration')]);
-        var tdy = parseMaxTime(cs[prop('transitionDelay')]);
-        var ady = parseMaxTime(cs[prop('animationDelay')]);
-
-        adr *= (parseInt(cs[prop('animationIterationCount')], 10) || 1);
-        var duration = Math.max(adr, tdr);
-        var delay = Math.max(ady, tdy);
-
-        return {
-          duration: duration,
-          delay: delay,
-          animationDuration: adr,
-          transitionDuration: tdr,
-          animationDelay: ady,
-          transitionDelay: tdy
-        };
-
-        function prop(key) {
-          return WEBKIT ? 'Webkit' + key.charAt(0).toUpperCase() + key.substr(1)
-                        : key;
-        }
-      }
-
-      function parseMaxTime(str) {
-        var maxValue = 0;
-        var values = (str || "").split(/\s*,\s*/);
-        forEach(values, function(value) {
-          // it's always safe to consider only second values and omit `ms` values since
-          // getComputedStyle will always handle the conversion for us
-          if (value.charAt(value.length - 1) == 's') {
-            value = value.substring(0, value.length - 1);
-          }
-          value = parseFloat(value) || 0;
-          maxValue = maxValue ? Math.max(value, maxValue) : value;
-        });
-        return maxValue;
-      }
-
-      var cancelLastRAFRequest;
-      var rafWaitQueue = [];
-      function waitUntilQuiet(callback) {
-        if (cancelLastRAFRequest) {
-          cancelLastRAFRequest(); //cancels the request
-        }
-        rafWaitQueue.push(callback);
-        cancelLastRAFRequest = $$rAF(function() {
-          cancelLastRAFRequest = null;
-
-          // DO NOT REMOVE THIS LINE OR REFACTOR OUT THE `pageWidth` variable.
-          // PLEASE EXAMINE THE `$$forceReflow` service to understand why.
-          var pageWidth = $$forceReflow();
-
-          // we use a for loop to ensure that if the queue is changed
-          // during this looping then it will consider new requests
-          for (var i = 0; i < rafWaitQueue.length; i++) {
-            rafWaitQueue[i](pageWidth);
-          }
-          rafWaitQueue.length = 0;
-        });
-      }
-
-      function applyAnimationStyles(element, options) {
-        applyAnimationFromStyles(element, options);
-        applyAnimationToStyles(element, options);
-      }
-
-      function applyAnimationFromStyles(element, options) {
-        if (options.from) {
-          element.css(options.from);
-          options.from = null;
-        }
-      }
-
-      function applyAnimationToStyles(element, options) {
-        if (options.to) {
-          element.css(options.to);
-          options.to = null;
-        }
-      }
-
-      function getDomNode(element) {
-        for (var i = 0; i < element.length; i++) {
-          if (element[i].nodeType === 1) return element[i];
-        }
-      }
-
-      function blockTransition(element, bool) {
-        var node = getDomNode(element);
-        var key = camelCase(PREFIX + 'transition-delay');
-        node.style[key] = bool ? '-9999s' : '';
-      }
-
-      return init;
-    }]);
-
-  /**
-   * Older browsers [FF31] expect camelCase
-   * property keys.
-   * e.g.
-   *  animation-duration --> animationDuration
-   */
-  function camelCase(str) {
-    return str.replace(/-[a-z]/g, function(str) {
-      return str.charAt(1).toUpperCase();
-    });
-  }
-
-})();
-
-}
-
-})();
-(function(){
-"use strict";
-
 
 angular.module('material.core')
   .service('$mdAria', AriaService);
@@ -2999,504 +2365,6 @@ function getEventPoint(ev) {
 (function(){
 "use strict";
 
-(function() {
-  'use strict';
-
-  var $mdUtil, $interpolate, $log;
-
-  var SUFFIXES = /(-gt)?-(sm|md|lg|print)/g;
-  var WHITESPACE = /\s+/g;
-
-  var FLEX_OPTIONS = ['grow', 'initial', 'auto', 'none', 'noshrink', 'nogrow' ];
-  var LAYOUT_OPTIONS = ['row', 'column'];
-  var ALIGNMENT_MAIN_AXIS= [ "", "start", "center", "end", "stretch", "space-around", "space-between" ];
-  var ALIGNMENT_CROSS_AXIS= [ "", "start", "center", "end", "stretch" ];
-
-  var config = {
-    /**
-     * Enable directive attribute-to-class conversions
-     * Developers can use `<body md-layout-css />` to quickly
-     * disable the Layout directives and prohibit the injection of Layout classNames
-     */
-    enabled: true,
-
-    /**
-     * List of mediaQuery breakpoints and associated suffixes
-     *
-     *   [
-     *    { suffix: "sm", mediaQuery: "screen and (max-width: 599px)" },
-     *    { suffix: "md", mediaQuery: "screen and (min-width: 600px) and (max-width: 959px)" }
-     *   ]
-     */
-    breakpoints: []
-  };
-
-  registerLayoutAPI( angular.module('material.core.layout', ['ng']) );
-
-  /**
-   *   registerLayoutAPI()
-   *
-   *   The original ngMaterial Layout solution used attribute selectors and CSS.
-   *
-   *  ```html
-   *  <div layout="column"> My Content </div>
-   *  ```
-   *
-   *  ```css
-   *  [layout] {
-   *    box-sizing: border-box;
-   *    display:flex;
-   *  }
-   *  [layout=column] {
-   *    flex-direction : column
-   *  }
-   *  ```
-   *
-   *  Use of attribute selectors creates significant performance impacts in some
-   *  browsers... mainly IE.
-   *
-   *  This module registers directives that allow the same layout attributes to be
-   *  interpreted and converted to class selectors. The directive will add equivalent classes to each element that
-   *  contains a Layout directive.
-   *
-   * ```html
-   *   <div layout="column" class="layout layout-column"> My Content </div>
-   *```
-   *
-   *  ```css
-   *  .layout {
-   *    box-sizing: border-box;
-   *    display:flex;
-   *  }
-   *  .layout-column {
-   *    flex-direction : column
-   *  }
-   *  ```
-   */
-  function registerLayoutAPI(module){
-    var PREFIX_REGEXP = /^((?:x|data)[\:\-_])/i;
-    var SPECIAL_CHARS_REGEXP = /([\:\-\_]+(.))/g;
-
-    // NOTE: these are also defined in constants::MEDIA_PRIORITY and constants::MEDIA
-    var BREAKPOINTS     = [ "", "xs", "gt-xs", "sm", "gt-sm", "md", "gt-md", "lg", "gt-lg", "xl", "print" ];
-    var API_WITH_VALUES = [ "layout", "flex", "flex-order", "flex-offset", "layout-align" ];
-    var API_NO_VALUES   = [ "show", "hide", "layout-padding", "layout-margin" ];
-
-
-    // Build directive registration functions for the standard Layout API... for all breakpoints.
-    angular.forEach(BREAKPOINTS, function(mqb) {
-
-      // Attribute directives with expected, observable value(s)
-      angular.forEach( API_WITH_VALUES, function(name){
-        var fullName = mqb ? name + "-" + mqb : name;
-        module.directive( directiveNormalize(fullName), attributeWithObserve(fullName));
-      });
-
-      // Attribute directives with no expected value(s)
-      angular.forEach( API_NO_VALUES, function(name){
-        var fullName = mqb ? name + "-" + mqb : name;
-        module.directive( directiveNormalize(fullName), attributeWithoutValue(fullName));
-      });
-
-    });
-
-    // Register other, special directive functions for the Layout features:
-    module
-      .directive('mdLayoutCss'  , disableLayoutDirective )
-      .directive('ngCloak'      ,  buildCloakInterceptor('ng-cloak'))
-
-      .directive('layoutWrap'   , attributeWithoutValue('layout-wrap'))
-      .directive('layoutNowrap' , attributeWithoutValue('layout-nowrap'))
-      .directive('layoutNoWrap' , attributeWithoutValue('layout-no-wrap'))
-      .directive('layoutFill'   , attributeWithoutValue('layout-fill'))
-
-      // !! Deprecated attributes: use the `-lt` (aka less-than) notations
-
-      .directive('layoutLtMd'     , warnAttrNotSupported('layout-lt-md', true))
-      .directive('layoutLtLg'     , warnAttrNotSupported('layout-lt-lg', true))
-      .directive('flexLtMd'       , warnAttrNotSupported('flex-lt-md', true))
-      .directive('flexLtLg'       , warnAttrNotSupported('flex-lt-lg', true))
-
-      .directive('layoutAlignLtMd', warnAttrNotSupported('layout-align-lt-md'))
-      .directive('layoutAlignLtLg', warnAttrNotSupported('layout-align-lt-lg'))
-      .directive('flexOrderLtMd'  , warnAttrNotSupported('flex-order-lt-md'))
-      .directive('flexOrderLtLg'  , warnAttrNotSupported('flex-order-lt-lg'))
-      .directive('offsetLtMd'     , warnAttrNotSupported('flex-offset-lt-md'))
-      .directive('offsetLtLg'     , warnAttrNotSupported('flex-offset-lt-lg'))
-
-      .directive('hideLtMd'       , warnAttrNotSupported('hide-lt-md'))
-      .directive('hideLtLg'       , warnAttrNotSupported('hide-lt-lg'))
-      .directive('showLtMd'       , warnAttrNotSupported('show-lt-md'))
-      .directive('showLtLg'       , warnAttrNotSupported('show-lt-lg'));
-
-    /**
-     * Converts snake_case to camelCase.
-     * Also there is special case for Moz prefix starting with upper case letter.
-     * @param name Name to normalize
-     */
-    function directiveNormalize(name) {
-      return name
-        .replace(PREFIX_REGEXP, '')
-        .replace(SPECIAL_CHARS_REGEXP, function(_, separator, letter, offset) {
-          return offset ? letter.toUpperCase() : letter;
-        });
-    }
-
-  }
-
-  /**
-   * Special directive that will disable ALL Layout conversions of layout
-   * attribute(s) to classname(s).
-   *
-   * <link rel="stylesheet" href="angular-material.min.css">
-   * <link rel="stylesheet" href="angular-material.layout.css">
-   *
-   * <body md-layout-css>
-   *  ...
-   * </body>
-   *
-   * Note: Using md-layout-css directive requires the developer to load the Material
-   * Layout Attribute stylesheet (which only uses attribute selectors):
-   *
-   *       `angular-material.layout.css`
-   *
-   * Another option is to use the LayoutProvider to configure and disable the attribute
-   * conversions; this would obviate the use of the `md-layout-css` directive
-   *
-   */
-  function disableLayoutDirective() {
-    return {
-      restrict : 'A',
-      priority : '900',
-      compile  : function(element, attr) {
-        config.enabled = false;
-        return angular.noop;
-      }
-    };
-  }
-
-  /**
-   * Tail-hook ngCloak to delay the uncloaking while Layout transformers
-   * finish processing. Eliminates flicker with Material.Layoouts
-   */
-  function buildCloakInterceptor(className) {
-    return [ '$timeout', function($timeout){
-      return {
-        restrict : 'A',
-        priority : -10,   // run after normal ng-cloak
-        compile  : function( element ) {
-          if (!config.enabled) return angular.noop;
-
-          // Re-add the cloak
-          element.addClass(className);
-
-          return function( scope, element ) {
-            // Wait while layout injectors configure, then uncloak
-            // NOTE: $rAF does not delay enough... and this is a 1x-only event,
-            //       $timeout is acceptable.
-            $timeout( function(){
-              element.removeClass(className);
-            }, 10, false);
-          };
-        }
-      };
-    }];
-  }
-
-
-  // *********************************************************************************
-  //
-  // These functions create registration functions for ngMaterial Layout attribute directives
-  // This provides easy translation to switch ngMaterial attribute selectors to
-  // CLASS selectors and directives; which has huge performance implications
-  // for IE Browsers
-  //
-  // *********************************************************************************
-
-  /**
-   * Creates a directive registration function where a possible dynamic attribute
-   * value will be observed/watched.
-   * @param {string} className attribute name; eg `layout-gt-md` with value ="row"
-   */
-  function attributeWithObserve(className) {
-
-    return ['$mdUtil', '$interpolate', "$log", function(_$mdUtil_, _$interpolate_, _$log_) {
-      $mdUtil = _$mdUtil_;
-      $interpolate = _$interpolate_;
-      $log = _$log_;
-
-      return {
-        restrict: 'A',
-        compile: function(element, attr) {
-          var linkFn;
-          if (config.enabled) {
-            // immediately replace static (non-interpolated) invalid values...
-
-            validateAttributeUsage(className, attr, element, $log);
-
-            validateAttributeValue( className,
-              getNormalizedAttrValue(className, attr, ""),
-              buildUpdateFn(element, className, attr)
-            );
-
-            linkFn = translateWithValueToCssClass;
-          }
-
-          // Use for postLink to account for transforms after ng-transclude.
-          return linkFn || angular.noop;
-        }
-      };
-    }];
-
-    /**
-     * Add as transformed class selector(s), then
-     * remove the deprecated attribute selector
-     */
-    function translateWithValueToCssClass(scope, element, attrs) {
-      var updateFn = updateClassWithValue(element, className, attrs);
-      var unwatch = attrs.$observe(attrs.$normalize(className), updateFn);
-
-      updateFn(getNormalizedAttrValue(className, attrs, ""));
-      scope.$on("$destroy", function() { unwatch() });
-    }
-  }
-
-  /**
-   * Creates a registration function for ngMaterial Layout attribute directive.
-   * This is a `simple` transpose of attribute usage to class usage; where we ignore
-   * any attribute value
-   */
-  function attributeWithoutValue(className) {
-    return ['$mdUtil', '$interpolate', "$log", function(_$mdUtil_, _$interpolate_, _$log_) {
-      $mdUtil = _$mdUtil_;
-      $interpolate = _$interpolate_;
-      $log = _$log_;
-
-      return {
-        restrict: 'A',
-        compile: function(element, attr) {
-          var linkFn;
-          if (config.enabled) {
-            // immediately replace static (non-interpolated) invalid values...
-
-            validateAttributeValue( className,
-              getNormalizedAttrValue(className, attr, ""),
-              buildUpdateFn(element, className, attr)
-            );
-
-            translateToCssClass(null, element);
-
-            // Use for postLink to account for transforms after ng-transclude.
-            linkFn = translateToCssClass;
-          }
-
-          return linkFn || angular.noop;
-        }
-      };
-    }];
-
-    /**
-     * Add as transformed class selector, then
-     * remove the deprecated attribute selector
-     */
-    function translateToCssClass(scope, element) {
-      element.addClass(className);
-    }
-  }
-
-
-
-  /**
-   * After link-phase, do NOT remove deprecated layout attribute selector.
-   * Instead watch the attribute so interpolated data-bindings to layout
-   * selectors will continue to be supported.
-   *
-   * $observe() the className and update with new class (after removing the last one)
-   *
-   * e.g. `layout="{{layoutDemo.direction}}"` will update...
-   *
-   * NOTE: The value must match one of the specified styles in the CSS.
-   * For example `flex-gt-md="{{size}}`  where `scope.size == 47` will NOT work since
-   * only breakpoints for 0, 5, 10, 15... 100, 33, 34, 66, 67 are defined.
-   *
-   */
-  function updateClassWithValue(element, className) {
-    var lastClass;
-
-    return function updateClassFn(newValue) {
-      var value = validateAttributeValue(className, newValue || "");
-      if ( angular.isDefined(value) ) {
-        if (lastClass) element.removeClass(lastClass);
-        lastClass = !value ? className : className + "-" + value.replace(WHITESPACE, "-");
-        element.addClass(lastClass);
-      }
-    };
-  }
-
-  /**
-   * Provide console warning that this layout attribute has been deprecated
-   *
-   */
-  function warnAttrNotSupported(className) {
-    var parts = className.split("-");
-    return ["$log", function($log) {
-      $log.warn(className + "has been deprecated. Please use a `" + parts[0] + "-gt-<xxx>` variant.");
-      return angular.noop;
-    }];
-  }
-
-  /**
-   * Centralize warnings for known flexbox issues (especially IE-related issues)
-   */
-  function validateAttributeUsage(className, attr, element, $log){
-    var message, usage, url;
-    var nodeName = element[0].nodeName.toLowerCase();
-
-    switch(className.replace(SUFFIXES,"")) {
-      case "flex":
-        if ((nodeName == "md-button") || (nodeName == "fieldset")){
-          // @see https://github.com/philipwalton/flexbugs#9-some-html-elements-cant-be-flex-containers
-          // Use <div flex> wrapper inside (preferred) or outside
-
-          usage = "<" + nodeName + " " + className + "></" + nodeName + ">";
-          url = "https://github.com/philipwalton/flexbugs#9-some-html-elements-cant-be-flex-containers";
-          message = "Markup '{0}' may not work as expected in IE Browsers. Consult '{1}' for details.";
-
-          $log.warn( $mdUtil.supplant(message, [usage, url]) );
-        }
-    }
-
-  }
-
-
-  /**
-   * For the Layout attribute value, validate or replace with default
-   * fallback value
-   */
-  function validateAttributeValue(className, value, updateFn) {
-    var origValue = value;
-
-    if (!needsInterpolation(value)) {
-      switch (className.replace(SUFFIXES,"")) {
-        case 'layout'        :
-          if ( !findIn(value, LAYOUT_OPTIONS) ) {
-            value = LAYOUT_OPTIONS[0];    // 'row';
-          }
-          break;
-
-        case 'flex'          :
-          if (!findIn(value, FLEX_OPTIONS)) {
-            if (isNaN(value)) {
-              value = '';
-            }
-          }
-          break;
-
-        case 'flex-offset' :
-        case 'flex-order'    :
-          if (!value || isNaN(+value)) {
-            value = '0';
-          }
-          break;
-
-        case 'layout-align'  :
-          var axis = extractAlignAxis(value);
-          value = $mdUtil.supplant("{main}-{cross}",axis);
-          break;
-
-        case 'layout-padding' :
-        case 'layout-margin'  :
-        case 'layout-fill'    :
-        case 'layout-wrap'    :
-        case 'layout-nowrap'  :
-        case 'layout-nowrap' :
-          value = '';
-          break;
-      }
-
-      if (value != origValue) {
-        (updateFn || angular.noop)(value);
-      }
-    }
-
-    return value;
-  }
-
-  /**
-   * Replace current attribute value with fallback value
-   */
-  function buildUpdateFn(element, className, attrs) {
-    return function updateAttrValue(fallback) {
-      if (!needsInterpolation(fallback)) {
-        // Do not modify the element's attribute value; so
-        // uses '<ui-layout layout="/api/sidebar.html" />' will not
-        // be affected. Just update the attrs value.
-        attrs[attrs.$normalize(className)] = fallback;
-      }
-    };
-  }
-
-  /**
-   * See if the original value has interpolation symbols:
-   * e.g.  flex-gt-md="{{triggerPoint}}"
-   */
-  function needsInterpolation(value) {
-    return (value || "").indexOf($interpolate.startSymbol()) > -1;
-  }
-
-  function getNormalizedAttrValue(className, attrs, defaultVal) {
-    var normalizedAttr = attrs.$normalize(className);
-    return attrs[normalizedAttr] ? attrs[normalizedAttr].replace(WHITESPACE, "-") : defaultVal || null;
-  }
-
-  function findIn(item, list, replaceWith) {
-    item = replaceWith && item ? item.replace(WHITESPACE, replaceWith) : item;
-
-    var found = false;
-    if (item) {
-      list.forEach(function(it) {
-        it = replaceWith ? it.replace(WHITESPACE, replaceWith) : it;
-        found = found || (it === item);
-      });
-    }
-    return found;
-  }
-
-  function extractAlignAxis(attrValue) {
-    var axis = {
-      main : "start",
-      cross: "stretch"
-    }, values;
-
-    attrValue = (attrValue || "");
-
-    if ( attrValue.indexOf("-") == 0 || attrValue.indexOf(" ") == 0) {
-      // For missing main-axis values
-      attrValue = "none" + attrValue;
-    }
-
-    values = attrValue.toLowerCase().trim().replace(WHITESPACE, "-").split("-");
-    if ( values.length && (values[0] === "space") ) {
-      // for main-axis values of "space-around" or "space-between"
-      values = [ values[0]+"-"+values[1],values[2] ];
-    }
-
-    if ( values.length > 0 ) axis.main  = values[0] || axis.main;
-    if ( values.length > 1 ) axis.cross = values[1] || axis.cross;
-
-    if ( ALIGNMENT_MAIN_AXIS.indexOf(axis.main) < 0 )   axis.main = "start";
-    if ( ALIGNMENT_CROSS_AXIS.indexOf(axis.cross) < 0 ) axis.cross = "stretch";
-
-    return axis;
-  }
-
-
-})();
-
-})();
-(function(){
-"use strict";
-
 angular.module('material.core')
   .provider('$$interimElement', InterimElementProvider);
 
@@ -4190,6 +3058,504 @@ function InterimElementProvider() {
 (function(){
 "use strict";
 
+(function() {
+  'use strict';
+
+  var $mdUtil, $interpolate, $log;
+
+  var SUFFIXES = /(-gt)?-(sm|md|lg|print)/g;
+  var WHITESPACE = /\s+/g;
+
+  var FLEX_OPTIONS = ['grow', 'initial', 'auto', 'none', 'noshrink', 'nogrow' ];
+  var LAYOUT_OPTIONS = ['row', 'column'];
+  var ALIGNMENT_MAIN_AXIS= [ "", "start", "center", "end", "stretch", "space-around", "space-between" ];
+  var ALIGNMENT_CROSS_AXIS= [ "", "start", "center", "end", "stretch" ];
+
+  var config = {
+    /**
+     * Enable directive attribute-to-class conversions
+     * Developers can use `<body md-layout-css />` to quickly
+     * disable the Layout directives and prohibit the injection of Layout classNames
+     */
+    enabled: true,
+
+    /**
+     * List of mediaQuery breakpoints and associated suffixes
+     *
+     *   [
+     *    { suffix: "sm", mediaQuery: "screen and (max-width: 599px)" },
+     *    { suffix: "md", mediaQuery: "screen and (min-width: 600px) and (max-width: 959px)" }
+     *   ]
+     */
+    breakpoints: []
+  };
+
+  registerLayoutAPI( angular.module('material.core.layout', ['ng']) );
+
+  /**
+   *   registerLayoutAPI()
+   *
+   *   The original ngMaterial Layout solution used attribute selectors and CSS.
+   *
+   *  ```html
+   *  <div layout="column"> My Content </div>
+   *  ```
+   *
+   *  ```css
+   *  [layout] {
+   *    box-sizing: border-box;
+   *    display:flex;
+   *  }
+   *  [layout=column] {
+   *    flex-direction : column
+   *  }
+   *  ```
+   *
+   *  Use of attribute selectors creates significant performance impacts in some
+   *  browsers... mainly IE.
+   *
+   *  This module registers directives that allow the same layout attributes to be
+   *  interpreted and converted to class selectors. The directive will add equivalent classes to each element that
+   *  contains a Layout directive.
+   *
+   * ```html
+   *   <div layout="column" class="layout layout-column"> My Content </div>
+   *```
+   *
+   *  ```css
+   *  .layout {
+   *    box-sizing: border-box;
+   *    display:flex;
+   *  }
+   *  .layout-column {
+   *    flex-direction : column
+   *  }
+   *  ```
+   */
+  function registerLayoutAPI(module){
+    var PREFIX_REGEXP = /^((?:x|data)[\:\-_])/i;
+    var SPECIAL_CHARS_REGEXP = /([\:\-\_]+(.))/g;
+
+    // NOTE: these are also defined in constants::MEDIA_PRIORITY and constants::MEDIA
+    var BREAKPOINTS     = [ "", "xs", "gt-xs", "sm", "gt-sm", "md", "gt-md", "lg", "gt-lg", "xl", "print" ];
+    var API_WITH_VALUES = [ "layout", "flex", "flex-order", "flex-offset", "layout-align" ];
+    var API_NO_VALUES   = [ "show", "hide", "layout-padding", "layout-margin" ];
+
+
+    // Build directive registration functions for the standard Layout API... for all breakpoints.
+    angular.forEach(BREAKPOINTS, function(mqb) {
+
+      // Attribute directives with expected, observable value(s)
+      angular.forEach( API_WITH_VALUES, function(name){
+        var fullName = mqb ? name + "-" + mqb : name;
+        module.directive( directiveNormalize(fullName), attributeWithObserve(fullName));
+      });
+
+      // Attribute directives with no expected value(s)
+      angular.forEach( API_NO_VALUES, function(name){
+        var fullName = mqb ? name + "-" + mqb : name;
+        module.directive( directiveNormalize(fullName), attributeWithoutValue(fullName));
+      });
+
+    });
+
+    // Register other, special directive functions for the Layout features:
+    module
+      .directive('mdLayoutCss'  , disableLayoutDirective )
+      .directive('ngCloak'      ,  buildCloakInterceptor('ng-cloak'))
+
+      .directive('layoutWrap'   , attributeWithoutValue('layout-wrap'))
+      .directive('layoutNowrap' , attributeWithoutValue('layout-nowrap'))
+      .directive('layoutNoWrap' , attributeWithoutValue('layout-no-wrap'))
+      .directive('layoutFill'   , attributeWithoutValue('layout-fill'))
+
+      // !! Deprecated attributes: use the `-lt` (aka less-than) notations
+
+      .directive('layoutLtMd'     , warnAttrNotSupported('layout-lt-md', true))
+      .directive('layoutLtLg'     , warnAttrNotSupported('layout-lt-lg', true))
+      .directive('flexLtMd'       , warnAttrNotSupported('flex-lt-md', true))
+      .directive('flexLtLg'       , warnAttrNotSupported('flex-lt-lg', true))
+
+      .directive('layoutAlignLtMd', warnAttrNotSupported('layout-align-lt-md'))
+      .directive('layoutAlignLtLg', warnAttrNotSupported('layout-align-lt-lg'))
+      .directive('flexOrderLtMd'  , warnAttrNotSupported('flex-order-lt-md'))
+      .directive('flexOrderLtLg'  , warnAttrNotSupported('flex-order-lt-lg'))
+      .directive('offsetLtMd'     , warnAttrNotSupported('flex-offset-lt-md'))
+      .directive('offsetLtLg'     , warnAttrNotSupported('flex-offset-lt-lg'))
+
+      .directive('hideLtMd'       , warnAttrNotSupported('hide-lt-md'))
+      .directive('hideLtLg'       , warnAttrNotSupported('hide-lt-lg'))
+      .directive('showLtMd'       , warnAttrNotSupported('show-lt-md'))
+      .directive('showLtLg'       , warnAttrNotSupported('show-lt-lg'));
+
+    /**
+     * Converts snake_case to camelCase.
+     * Also there is special case for Moz prefix starting with upper case letter.
+     * @param name Name to normalize
+     */
+    function directiveNormalize(name) {
+      return name
+        .replace(PREFIX_REGEXP, '')
+        .replace(SPECIAL_CHARS_REGEXP, function(_, separator, letter, offset) {
+          return offset ? letter.toUpperCase() : letter;
+        });
+    }
+
+  }
+
+  /**
+   * Special directive that will disable ALL Layout conversions of layout
+   * attribute(s) to classname(s).
+   *
+   * <link rel="stylesheet" href="angular-material.min.css">
+   * <link rel="stylesheet" href="angular-material.layout.css">
+   *
+   * <body md-layout-css>
+   *  ...
+   * </body>
+   *
+   * Note: Using md-layout-css directive requires the developer to load the Material
+   * Layout Attribute stylesheet (which only uses attribute selectors):
+   *
+   *       `angular-material.layout.css`
+   *
+   * Another option is to use the LayoutProvider to configure and disable the attribute
+   * conversions; this would obviate the use of the `md-layout-css` directive
+   *
+   */
+  function disableLayoutDirective() {
+    return {
+      restrict : 'A',
+      priority : '900',
+      compile  : function(element, attr) {
+        config.enabled = false;
+        return angular.noop;
+      }
+    };
+  }
+
+  /**
+   * Tail-hook ngCloak to delay the uncloaking while Layout transformers
+   * finish processing. Eliminates flicker with Material.Layoouts
+   */
+  function buildCloakInterceptor(className) {
+    return [ '$timeout', function($timeout){
+      return {
+        restrict : 'A',
+        priority : -10,   // run after normal ng-cloak
+        compile  : function( element ) {
+          if (!config.enabled) return angular.noop;
+
+          // Re-add the cloak
+          element.addClass(className);
+
+          return function( scope, element ) {
+            // Wait while layout injectors configure, then uncloak
+            // NOTE: $rAF does not delay enough... and this is a 1x-only event,
+            //       $timeout is acceptable.
+            $timeout( function(){
+              element.removeClass(className);
+            }, 10, false);
+          };
+        }
+      };
+    }];
+  }
+
+
+  // *********************************************************************************
+  //
+  // These functions create registration functions for ngMaterial Layout attribute directives
+  // This provides easy translation to switch ngMaterial attribute selectors to
+  // CLASS selectors and directives; which has huge performance implications
+  // for IE Browsers
+  //
+  // *********************************************************************************
+
+  /**
+   * Creates a directive registration function where a possible dynamic attribute
+   * value will be observed/watched.
+   * @param {string} className attribute name; eg `layout-gt-md` with value ="row"
+   */
+  function attributeWithObserve(className) {
+
+    return ['$mdUtil', '$interpolate', "$log", function(_$mdUtil_, _$interpolate_, _$log_) {
+      $mdUtil = _$mdUtil_;
+      $interpolate = _$interpolate_;
+      $log = _$log_;
+
+      return {
+        restrict: 'A',
+        compile: function(element, attr) {
+          var linkFn;
+          if (config.enabled) {
+            // immediately replace static (non-interpolated) invalid values...
+
+            validateAttributeUsage(className, attr, element, $log);
+
+            validateAttributeValue( className,
+              getNormalizedAttrValue(className, attr, ""),
+              buildUpdateFn(element, className, attr)
+            );
+
+            linkFn = translateWithValueToCssClass;
+          }
+
+          // Use for postLink to account for transforms after ng-transclude.
+          return linkFn || angular.noop;
+        }
+      };
+    }];
+
+    /**
+     * Add as transformed class selector(s), then
+     * remove the deprecated attribute selector
+     */
+    function translateWithValueToCssClass(scope, element, attrs) {
+      var updateFn = updateClassWithValue(element, className, attrs);
+      var unwatch = attrs.$observe(attrs.$normalize(className), updateFn);
+
+      updateFn(getNormalizedAttrValue(className, attrs, ""));
+      scope.$on("$destroy", function() { unwatch() });
+    }
+  }
+
+  /**
+   * Creates a registration function for ngMaterial Layout attribute directive.
+   * This is a `simple` transpose of attribute usage to class usage; where we ignore
+   * any attribute value
+   */
+  function attributeWithoutValue(className) {
+    return ['$mdUtil', '$interpolate', "$log", function(_$mdUtil_, _$interpolate_, _$log_) {
+      $mdUtil = _$mdUtil_;
+      $interpolate = _$interpolate_;
+      $log = _$log_;
+
+      return {
+        restrict: 'A',
+        compile: function(element, attr) {
+          var linkFn;
+          if (config.enabled) {
+            // immediately replace static (non-interpolated) invalid values...
+
+            validateAttributeValue( className,
+              getNormalizedAttrValue(className, attr, ""),
+              buildUpdateFn(element, className, attr)
+            );
+
+            translateToCssClass(null, element);
+
+            // Use for postLink to account for transforms after ng-transclude.
+            linkFn = translateToCssClass;
+          }
+
+          return linkFn || angular.noop;
+        }
+      };
+    }];
+
+    /**
+     * Add as transformed class selector, then
+     * remove the deprecated attribute selector
+     */
+    function translateToCssClass(scope, element) {
+      element.addClass(className);
+    }
+  }
+
+
+
+  /**
+   * After link-phase, do NOT remove deprecated layout attribute selector.
+   * Instead watch the attribute so interpolated data-bindings to layout
+   * selectors will continue to be supported.
+   *
+   * $observe() the className and update with new class (after removing the last one)
+   *
+   * e.g. `layout="{{layoutDemo.direction}}"` will update...
+   *
+   * NOTE: The value must match one of the specified styles in the CSS.
+   * For example `flex-gt-md="{{size}}`  where `scope.size == 47` will NOT work since
+   * only breakpoints for 0, 5, 10, 15... 100, 33, 34, 66, 67 are defined.
+   *
+   */
+  function updateClassWithValue(element, className) {
+    var lastClass;
+
+    return function updateClassFn(newValue) {
+      var value = validateAttributeValue(className, newValue || "");
+      if ( angular.isDefined(value) ) {
+        if (lastClass) element.removeClass(lastClass);
+        lastClass = !value ? className : className + "-" + value.replace(WHITESPACE, "-");
+        element.addClass(lastClass);
+      }
+    };
+  }
+
+  /**
+   * Provide console warning that this layout attribute has been deprecated
+   *
+   */
+  function warnAttrNotSupported(className) {
+    var parts = className.split("-");
+    return ["$log", function($log) {
+      $log.warn(className + "has been deprecated. Please use a `" + parts[0] + "-gt-<xxx>` variant.");
+      return angular.noop;
+    }];
+  }
+
+  /**
+   * Centralize warnings for known flexbox issues (especially IE-related issues)
+   */
+  function validateAttributeUsage(className, attr, element, $log){
+    var message, usage, url;
+    var nodeName = element[0].nodeName.toLowerCase();
+
+    switch(className.replace(SUFFIXES,"")) {
+      case "flex":
+        if ((nodeName == "md-button") || (nodeName == "fieldset")){
+          // @see https://github.com/philipwalton/flexbugs#9-some-html-elements-cant-be-flex-containers
+          // Use <div flex> wrapper inside (preferred) or outside
+
+          usage = "<" + nodeName + " " + className + "></" + nodeName + ">";
+          url = "https://github.com/philipwalton/flexbugs#9-some-html-elements-cant-be-flex-containers";
+          message = "Markup '{0}' may not work as expected in IE Browsers. Consult '{1}' for details.";
+
+          $log.warn( $mdUtil.supplant(message, [usage, url]) );
+        }
+    }
+
+  }
+
+
+  /**
+   * For the Layout attribute value, validate or replace with default
+   * fallback value
+   */
+  function validateAttributeValue(className, value, updateFn) {
+    var origValue = value;
+
+    if (!needsInterpolation(value)) {
+      switch (className.replace(SUFFIXES,"")) {
+        case 'layout'        :
+          if ( !findIn(value, LAYOUT_OPTIONS) ) {
+            value = LAYOUT_OPTIONS[0];    // 'row';
+          }
+          break;
+
+        case 'flex'          :
+          if (!findIn(value, FLEX_OPTIONS)) {
+            if (isNaN(value)) {
+              value = '';
+            }
+          }
+          break;
+
+        case 'flex-offset' :
+        case 'flex-order'    :
+          if (!value || isNaN(+value)) {
+            value = '0';
+          }
+          break;
+
+        case 'layout-align'  :
+          var axis = extractAlignAxis(value);
+          value = $mdUtil.supplant("{main}-{cross}",axis);
+          break;
+
+        case 'layout-padding' :
+        case 'layout-margin'  :
+        case 'layout-fill'    :
+        case 'layout-wrap'    :
+        case 'layout-nowrap'  :
+        case 'layout-nowrap' :
+          value = '';
+          break;
+      }
+
+      if (value != origValue) {
+        (updateFn || angular.noop)(value);
+      }
+    }
+
+    return value;
+  }
+
+  /**
+   * Replace current attribute value with fallback value
+   */
+  function buildUpdateFn(element, className, attrs) {
+    return function updateAttrValue(fallback) {
+      if (!needsInterpolation(fallback)) {
+        // Do not modify the element's attribute value; so
+        // uses '<ui-layout layout="/api/sidebar.html" />' will not
+        // be affected. Just update the attrs value.
+        attrs[attrs.$normalize(className)] = fallback;
+      }
+    };
+  }
+
+  /**
+   * See if the original value has interpolation symbols:
+   * e.g.  flex-gt-md="{{triggerPoint}}"
+   */
+  function needsInterpolation(value) {
+    return (value || "").indexOf($interpolate.startSymbol()) > -1;
+  }
+
+  function getNormalizedAttrValue(className, attrs, defaultVal) {
+    var normalizedAttr = attrs.$normalize(className);
+    return attrs[normalizedAttr] ? attrs[normalizedAttr].replace(WHITESPACE, "-") : defaultVal || null;
+  }
+
+  function findIn(item, list, replaceWith) {
+    item = replaceWith && item ? item.replace(WHITESPACE, replaceWith) : item;
+
+    var found = false;
+    if (item) {
+      list.forEach(function(it) {
+        it = replaceWith ? it.replace(WHITESPACE, replaceWith) : it;
+        found = found || (it === item);
+      });
+    }
+    return found;
+  }
+
+  function extractAlignAxis(attrValue) {
+    var axis = {
+      main : "start",
+      cross: "stretch"
+    }, values;
+
+    attrValue = (attrValue || "");
+
+    if ( attrValue.indexOf("-") == 0 || attrValue.indexOf(" ") == 0) {
+      // For missing main-axis values
+      attrValue = "none" + attrValue;
+    }
+
+    values = attrValue.toLowerCase().trim().replace(WHITESPACE, "-").split("-");
+    if ( values.length && (values[0] === "space") ) {
+      // for main-axis values of "space-around" or "space-between"
+      values = [ values[0]+"-"+values[1],values[2] ];
+    }
+
+    if ( values.length > 0 ) axis.main  = values[0] || axis.main;
+    if ( values.length > 1 ) axis.cross = values[1] || axis.cross;
+
+    if ( ALIGNMENT_MAIN_AXIS.indexOf(axis.main) < 0 )   axis.main = "start";
+    if ( ALIGNMENT_CROSS_AXIS.indexOf(axis.cross) < 0 ) axis.cross = "stretch";
+
+    return axis;
+  }
+
+
+})();
+
+})();
+(function(){
+"use strict";
+
   /**
    * @ngdoc module
    * @name material.core.componentRegistry
@@ -4310,6 +3676,646 @@ function InterimElementProvider() {
 
   }
   ComponentRegistry.$inject = ["$log", "$q"];
+
+})();
+(function(){
+"use strict";
+
+(function() {
+  'use strict';
+
+  /**
+   * @ngdoc service
+   * @name $mdButtonInkRipple
+   * @module material.core
+   *
+   * @description
+   * Provides ripple effects for md-button.  See $mdInkRipple service for all possible configuration options.
+   *
+   * @param {object=} scope Scope within the current context
+   * @param {object=} element The element the ripple effect should be applied to
+   * @param {object=} options (Optional) Configuration options to override the default ripple configuration
+   */
+
+  angular.module('material.core')
+    .factory('$mdButtonInkRipple', MdButtonInkRipple);
+
+  function MdButtonInkRipple($mdInkRipple) {
+    return {
+      attach: function attachRipple(scope, element, options) {
+        options = angular.extend(optionsForElement(element), options);
+
+        return $mdInkRipple.attach(scope, element, options);
+      }
+    };
+
+    function optionsForElement(element) {
+      if (element.hasClass('md-icon-button')) {
+        return {
+          isMenuItem: element.hasClass('md-menu-item'),
+          fitRipple: true,
+          center: true
+        };
+      } else {
+        return {
+          isMenuItem: element.hasClass('md-menu-item'),
+          dimBackground: true
+        }
+      }
+    };
+  }
+  MdButtonInkRipple.$inject = ["$mdInkRipple"];;
+})();
+
+})();
+(function(){
+"use strict";
+
+(function() {
+  'use strict';
+
+    /**
+   * @ngdoc service
+   * @name $mdCheckboxInkRipple
+   * @module material.core
+   *
+   * @description
+   * Provides ripple effects for md-checkbox.  See $mdInkRipple service for all possible configuration options.
+   *
+   * @param {object=} scope Scope within the current context
+   * @param {object=} element The element the ripple effect should be applied to
+   * @param {object=} options (Optional) Configuration options to override the defaultripple configuration
+   */
+
+  angular.module('material.core')
+    .factory('$mdCheckboxInkRipple', MdCheckboxInkRipple);
+
+  function MdCheckboxInkRipple($mdInkRipple) {
+    return {
+      attach: attach
+    };
+
+    function attach(scope, element, options) {
+      return $mdInkRipple.attach(scope, element, angular.extend({
+        center: true,
+        dimBackground: false,
+        fitRipple: true
+      }, options));
+    };
+  }
+  MdCheckboxInkRipple.$inject = ["$mdInkRipple"];;
+})();
+
+})();
+(function(){
+"use strict";
+
+(function() {
+  'use strict';
+
+  /**
+   * @ngdoc service
+   * @name $mdListInkRipple
+   * @module material.core
+   *
+   * @description
+   * Provides ripple effects for md-list.  See $mdInkRipple service for all possible configuration options.
+   *
+   * @param {object=} scope Scope within the current context
+   * @param {object=} element The element the ripple effect should be applied to
+   * @param {object=} options (Optional) Configuration options to override the defaultripple configuration
+   */
+
+  angular.module('material.core')
+    .factory('$mdListInkRipple', MdListInkRipple);
+
+  function MdListInkRipple($mdInkRipple) {
+    return {
+      attach: attach
+    };
+
+    function attach(scope, element, options) {
+      return $mdInkRipple.attach(scope, element, angular.extend({
+        center: false,
+        dimBackground: true,
+        outline: false,
+        rippleSize: 'full'
+      }, options));
+    };
+  }
+  MdListInkRipple.$inject = ["$mdInkRipple"];;
+})();
+
+})();
+(function(){
+"use strict";
+
+/**
+ * @ngdoc module
+ * @name material.core.ripple
+ * @description
+ * Ripple
+ */
+angular.module('material.core')
+    .factory('$mdInkRipple', InkRippleService)
+    .directive('mdInkRipple', InkRippleDirective)
+    .directive('mdNoInk', attrNoDirective)
+    .directive('mdNoBar', attrNoDirective)
+    .directive('mdNoStretch', attrNoDirective);
+
+var DURATION = 450;
+
+/**
+ * @ngdoc directive
+ * @name mdInkRipple
+ * @module material.core.ripple
+ *
+ * @description
+ * The `md-ink-ripple` directive allows you to specify the ripple color or id a ripple is allowed.
+ *
+ * @param {string|boolean} md-ink-ripple A color string `#FF0000` or boolean (`false` or `0`) for preventing ripple
+ *
+ * @usage
+ * ### String values
+ * <hljs lang="html">
+ *   <ANY md-ink-ripple="#FF0000">
+ *     Ripples in red
+ *   </ANY>
+ *
+ *   <ANY md-ink-ripple="false">
+ *     Not rippling
+ *   </ANY>
+ * </hljs>
+ *
+ * ### Interpolated values
+ * <hljs lang="html">
+ *   <ANY md-ink-ripple="{{ randomColor() }}">
+ *     Ripples with the return value of 'randomColor' function
+ *   </ANY>
+ *
+ *   <ANY md-ink-ripple="{{ canRipple() }}">
+ *     Ripples if 'canRipple' function return value is not 'false' or '0'
+ *   </ANY>
+ * </hljs>
+ */
+function InkRippleDirective ($mdButtonInkRipple, $mdCheckboxInkRipple) {
+  return {
+    controller: angular.noop,
+    link:       function (scope, element, attr) {
+      attr.hasOwnProperty('mdInkRippleCheckbox')
+          ? $mdCheckboxInkRipple.attach(scope, element)
+          : $mdButtonInkRipple.attach(scope, element);
+    }
+  };
+}
+InkRippleDirective.$inject = ["$mdButtonInkRipple", "$mdCheckboxInkRipple"];
+
+/**
+ * @ngdoc service
+ * @name $mdInkRipple
+ * @module material.core.ripple
+ *
+ * @description
+ * `$mdInkRipple` is a service for adding ripples to any element
+ *
+ * @usage
+ * <hljs lang="js">
+ * app.factory('$myElementInkRipple', function($mdInkRipple) {
+ *   return {
+ *     attach: function (scope, element, options) {
+ *       return $mdInkRipple.attach(scope, element, angular.extend({
+ *         center: false,
+ *         dimBackground: true
+ *       }, options));
+ *     }
+ *   };
+ * });
+ *
+ * app.controller('myController', function ($scope, $element, $myElementInkRipple) {
+ *   $scope.onClick = function (ev) {
+ *     $myElementInkRipple.attach($scope, angular.element(ev.target), { center: true });
+ *   }
+ * });
+ * </hljs>
+ */
+
+/**
+ * @ngdoc method
+ * @name $mdInkRipple#attach
+ *
+ * @description
+ * Attaching given scope, element and options to inkRipple controller
+ *
+ * @param {object=} scope Scope within the current context
+ * @param {object=} element The element the ripple effect should be applied to
+ * @param {object=} options (Optional) Configuration options to override the defaultRipple configuration
+ * * `center` -  Whether the ripple should start from the center of the container element
+ * * `dimBackground` - Whether the background should be dimmed with the ripple color
+ * * `colorElement` - The element the ripple should take its color from, defined by css property `color`
+ * * `fitRipple` - Whether the ripple should fill the element
+ */
+function InkRippleService ($injector) {
+  return { attach: attach };
+  function attach (scope, element, options) {
+    if (element.controller('mdNoInk')) return angular.noop;
+    return $injector.instantiate(InkRippleCtrl, {
+      $scope:        scope,
+      $element:      element,
+      rippleOptions: options
+    });
+  }
+}
+InkRippleService.$inject = ["$injector"];
+
+/**
+ * Controller used by the ripple service in order to apply ripples
+ * @ngInject
+ */
+function InkRippleCtrl ($scope, $element, rippleOptions, $window, $timeout, $mdUtil) {
+  this.$window    = $window;
+  this.$timeout   = $timeout;
+  this.$mdUtil    = $mdUtil;
+  this.$scope     = $scope;
+  this.$element   = $element;
+  this.options    = rippleOptions;
+  this.mousedown  = false;
+  this.ripples    = [];
+  this.timeout    = null; // Stores a reference to the most-recent ripple timeout
+  this.lastRipple = null;
+
+  $mdUtil.valueOnUse(this, 'container', this.createContainer);
+
+  this.$element.addClass('md-ink-ripple');
+
+  // attach method for unit tests
+  ($element.controller('mdInkRipple') || {}).createRipple = angular.bind(this, this.createRipple);
+  ($element.controller('mdInkRipple') || {}).setColor = angular.bind(this, this.color);
+
+  this.bindEvents();
+}
+InkRippleCtrl.$inject = ["$scope", "$element", "rippleOptions", "$window", "$timeout", "$mdUtil"];
+
+
+/**
+ * Either remove or unlock any remaining ripples when the user mouses off of the element (either by
+ * mouseup or mouseleave event)
+ */
+function autoCleanup (self, cleanupFn) {
+
+  if ( self.mousedown || self.lastRipple ) {
+    self.mousedown = false;
+    self.$mdUtil.nextTick( angular.bind(self, cleanupFn), false);
+  }
+
+}
+
+
+/**
+ * Returns the color that the ripple should be (either based on CSS or hard-coded)
+ * @returns {string}
+ */
+InkRippleCtrl.prototype.color = function (value) {
+  var self = this;
+
+  // If assigning a color value, apply it to background and the ripple color
+  if (angular.isDefined(value)) {
+    self._color = self._parseColor(value);
+  }
+
+  // If color lookup, use assigned, defined, or inherited
+  return self._color || self._parseColor( self.inkRipple() ) || self._parseColor( getElementColor() );
+
+  /**
+   * Finds the color element and returns its text color for use as default ripple color
+   * @returns {string}
+   */
+  function getElementColor () {
+    var items = self.options && self.options.colorElement ? self.options.colorElement : [];
+    var elem =  items.length ? items[ 0 ] : self.$element[ 0 ];
+
+    return elem ? self.$window.getComputedStyle(elem).color : 'rgb(0,0,0)';
+  }
+};
+
+/**
+ * Updating the ripple colors based on the current inkRipple value
+ * or the element's computed style color
+ */
+InkRippleCtrl.prototype.calculateColor = function () {
+  return this.color();
+};
+
+
+/**
+ * Takes a string color and converts it to RGBA format
+ * @param color {string}
+ * @param [multiplier] {int}
+ * @returns {string}
+ */
+
+InkRippleCtrl.prototype._parseColor = function parseColor (color, multiplier) {
+  multiplier = multiplier || 1;
+
+  if (!color) return;
+  if (color.indexOf('rgba') === 0) return color.replace(/\d?\.?\d*\s*\)\s*$/, (0.1 * multiplier).toString() + ')');
+  if (color.indexOf('rgb') === 0) return rgbToRGBA(color);
+  if (color.indexOf('#') === 0) return hexToRGBA(color);
+
+  /**
+   * Converts hex value to RGBA string
+   * @param color {string}
+   * @returns {string}
+   */
+  function hexToRGBA (color) {
+    var hex   = color[ 0 ] === '#' ? color.substr(1) : color,
+      dig   = hex.length / 3,
+      red   = hex.substr(0, dig),
+      green = hex.substr(dig, dig),
+      blue  = hex.substr(dig * 2);
+    if (dig === 1) {
+      red += red;
+      green += green;
+      blue += blue;
+    }
+    return 'rgba(' + parseInt(red, 16) + ',' + parseInt(green, 16) + ',' + parseInt(blue, 16) + ',0.1)';
+  }
+
+  /**
+   * Converts an RGB color to RGBA
+   * @param color {string}
+   * @returns {string}
+   */
+  function rgbToRGBA (color) {
+    return color.replace(')', ', 0.1)').replace('(', 'a(');
+  }
+
+};
+
+/**
+ * Binds events to the root element for
+ */
+InkRippleCtrl.prototype.bindEvents = function () {
+  this.$element.on('mousedown', angular.bind(this, this.handleMousedown));
+  this.$element.on('mouseup touchend', angular.bind(this, this.handleMouseup));
+  this.$element.on('mouseleave', angular.bind(this, this.handleMouseup));
+  this.$element.on('touchmove', angular.bind(this, this.handleTouchmove));
+};
+
+/**
+ * Create a new ripple on every mousedown event from the root element
+ * @param event {MouseEvent}
+ */
+InkRippleCtrl.prototype.handleMousedown = function (event) {
+  if ( this.mousedown ) return;
+
+  // When jQuery is loaded, we have to get the original event
+  if (event.hasOwnProperty('originalEvent')) event = event.originalEvent;
+  this.mousedown = true;
+  if (this.options.center) {
+    this.createRipple(this.container.prop('clientWidth') / 2, this.container.prop('clientWidth') / 2);
+  } else {
+
+    // We need to calculate the relative coordinates if the target is a sublayer of the ripple element
+    if (event.srcElement !== this.$element[0]) {
+      var layerRect = this.$element[0].getBoundingClientRect();
+      var layerX = event.clientX - layerRect.left;
+      var layerY = event.clientY - layerRect.top;
+
+      this.createRipple(layerX, layerY);
+    } else {
+      this.createRipple(event.offsetX, event.offsetY);
+    }
+  }
+};
+
+/**
+ * Either remove or unlock any remaining ripples when the user mouses off of the element (either by
+ * mouseup, touchend or mouseleave event)
+ */
+InkRippleCtrl.prototype.handleMouseup = function () {
+  autoCleanup(this, this.clearRipples);
+};
+
+/**
+ * Either remove or unlock any remaining ripples when the user mouses off of the element (by
+ * touchmove)
+ */
+InkRippleCtrl.prototype.handleTouchmove = function () {
+  autoCleanup(this, this.deleteRipples);
+};
+
+/**
+ * Cycles through all ripples and attempts to remove them.
+ */
+InkRippleCtrl.prototype.deleteRipples = function () {
+  for (var i = 0; i < this.ripples.length; i++) {
+    this.ripples[ i ].remove();
+  }
+};
+
+/**
+ * Cycles through all ripples and attempts to remove them with fade.
+ * Depending on logic within `fadeInComplete`, some removals will be postponed.
+ */
+InkRippleCtrl.prototype.clearRipples = function () {
+  for (var i = 0; i < this.ripples.length; i++) {
+    this.fadeInComplete(this.ripples[ i ]);
+  }
+};
+
+/**
+ * Creates the ripple container element
+ * @returns {*}
+ */
+InkRippleCtrl.prototype.createContainer = function () {
+  var container = angular.element('<div class="md-ripple-container"></div>');
+  this.$element.append(container);
+  return container;
+};
+
+InkRippleCtrl.prototype.clearTimeout = function () {
+  if (this.timeout) {
+    this.$timeout.cancel(this.timeout);
+    this.timeout = null;
+  }
+};
+
+InkRippleCtrl.prototype.isRippleAllowed = function () {
+  var element = this.$element[0];
+  do {
+    if (!element.tagName || element.tagName === 'BODY') break;
+
+    if (element && angular.isFunction(element.hasAttribute)) {
+      if (element.hasAttribute('disabled')) return false;
+      if (this.inkRipple() === 'false' || this.inkRipple() === '0') return false;
+    }
+
+  } while (element = element.parentNode);
+  return true;
+};
+
+/**
+ * The attribute `md-ink-ripple` may be a static or interpolated
+ * color value OR a boolean indicator (used to disable ripples)
+ */
+InkRippleCtrl.prototype.inkRipple = function () {
+  return this.$element.attr('md-ink-ripple');
+};
+
+/**
+ * Creates a new ripple and adds it to the container.  Also tracks ripple in `this.ripples`.
+ * @param left
+ * @param top
+ */
+InkRippleCtrl.prototype.createRipple = function (left, top) {
+  if (!this.isRippleAllowed()) return;
+
+  var ctrl        = this;
+  var ripple      = angular.element('<div class="md-ripple"></div>');
+  var width       = this.$element.prop('clientWidth');
+  var height      = this.$element.prop('clientHeight');
+  var x           = Math.max(Math.abs(width - left), left) * 2;
+  var y           = Math.max(Math.abs(height - top), top) * 2;
+  var size        = getSize(this.options.fitRipple, x, y);
+  var color       = this.calculateColor();
+
+  ripple.css({
+    left:            left + 'px',
+    top:             top + 'px',
+    background:      'black',
+    width:           size + 'px',
+    height:          size + 'px',
+    backgroundColor: rgbaToRGB(color),
+    borderColor:     rgbaToRGB(color)
+  });
+  this.lastRipple = ripple;
+
+  // we only want one timeout to be running at a time
+  this.clearTimeout();
+  this.timeout    = this.$timeout(function () {
+    ctrl.clearTimeout();
+    if (!ctrl.mousedown) ctrl.fadeInComplete(ripple);
+  }, DURATION * 0.35, false);
+
+  if (this.options.dimBackground) this.container.css({ backgroundColor: color });
+  this.container.append(ripple);
+  this.ripples.push(ripple);
+  ripple.addClass('md-ripple-placed');
+
+  this.$mdUtil.nextTick(function () {
+
+    ripple.addClass('md-ripple-scaled md-ripple-active');
+    ctrl.$timeout(function () {
+      ctrl.clearRipples();
+    }, DURATION, false);
+
+  }, false);
+
+  function rgbaToRGB (color) {
+    return color
+        ? color.replace('rgba', 'rgb').replace(/,[^\),]+\)/, ')')
+        : 'rgb(0,0,0)';
+  }
+
+  function getSize (fit, x, y) {
+    return fit
+        ? Math.max(x, y)
+        : Math.sqrt(Math.pow(x, 2) + Math.pow(y, 2));
+  }
+};
+
+
+
+/**
+ * After fadeIn finishes, either kicks off the fade-out animation or queues the element for removal on mouseup
+ * @param ripple
+ */
+InkRippleCtrl.prototype.fadeInComplete = function (ripple) {
+  if (this.lastRipple === ripple) {
+    if (!this.timeout && !this.mousedown) {
+      this.removeRipple(ripple);
+    }
+  } else {
+    this.removeRipple(ripple);
+  }
+};
+
+/**
+ * Kicks off the animation for removing a ripple
+ * @param ripple {Element}
+ */
+InkRippleCtrl.prototype.removeRipple = function (ripple) {
+  var ctrl  = this;
+  var index = this.ripples.indexOf(ripple);
+  if (index < 0) return;
+  this.ripples.splice(this.ripples.indexOf(ripple), 1);
+  ripple.removeClass('md-ripple-active');
+  if (this.ripples.length === 0) this.container.css({ backgroundColor: '' });
+  // use a 2-second timeout in order to allow for the animation to finish
+  // we don't actually care how long the animation takes
+  this.$timeout(function () {
+    ctrl.fadeOutComplete(ripple);
+  }, DURATION, false);
+};
+
+/**
+ * Removes the provided ripple from the DOM
+ * @param ripple
+ */
+InkRippleCtrl.prototype.fadeOutComplete = function (ripple) {
+  ripple.remove();
+  this.lastRipple = null;
+};
+
+/**
+ * Used to create an empty directive.  This is used to track flag-directives whose children may have
+ * functionality based on them.
+ *
+ * Example: `md-no-ink` will potentially be used by all child directives.
+ */
+function attrNoDirective () {
+  return { controller: angular.noop };
+}
+
+})();
+(function(){
+"use strict";
+
+(function() {
+  'use strict';
+
+    /**
+   * @ngdoc service
+   * @name $mdTabInkRipple
+   * @module material.core
+   *
+   * @description
+   * Provides ripple effects for md-tabs.  See $mdInkRipple service for all possible configuration options.
+   *
+   * @param {object=} scope Scope within the current context
+   * @param {object=} element The element the ripple effect should be applied to
+   * @param {object=} options (Optional) Configuration options to override the defaultripple configuration
+   */
+
+  angular.module('material.core')
+    .factory('$mdTabInkRipple', MdTabInkRipple);
+
+  function MdTabInkRipple($mdInkRipple) {
+    return {
+      attach: attach
+    };
+
+    function attach(scope, element, options) {
+      return $mdInkRipple.attach(scope, element, angular.extend({
+        center: false,
+        dimBackground: true,
+        outline: false,
+        rippleSize: 'full'
+      }, options));
+    };
+  }
+  MdTabInkRipple.$inject = ["$mdInkRipple"];;
+})();
 
 })();
 (function(){
@@ -5379,641 +5385,635 @@ function rgba(rgbArray, opacity) {
 (function(){
 "use strict";
 
-(function() {
-  'use strict';
+// Polyfill angular < 1.4 (provide $animateCss)
+angular
+  .module('material.core')
+  .factory('$$mdAnimate', ["$q", "$timeout", "$mdConstant", "$animateCss", function($q, $timeout, $mdConstant, $animateCss){
 
-  /**
-   * @ngdoc service
-   * @name $mdButtonInkRipple
-   * @module material.core
-   *
-   * @description
-   * Provides ripple effects for md-button.  See $mdInkRipple service for all possible configuration options.
-   *
-   * @param {object=} scope Scope within the current context
-   * @param {object=} element The element the ripple effect should be applied to
-   * @param {object=} options (Optional) Configuration options to override the default ripple configuration
-   */
+     // Since $$mdAnimate is injected into $mdUtil... use a wrapper function
+     // to subsequently inject $mdUtil as an argument to the AnimateDomUtils
 
-  angular.module('material.core')
-    .factory('$mdButtonInkRipple', MdButtonInkRipple);
+     return function($mdUtil) {
+       return AnimateDomUtils( $mdUtil, $q, $timeout, $mdConstant, $animateCss);
+     };
+   }]);
 
-  function MdButtonInkRipple($mdInkRipple) {
-    return {
-      attach: function attachRipple(scope, element, options) {
-        options = angular.extend(optionsForElement(element), options);
+/**
+ * Factory function that requires special injections
+ */
+function AnimateDomUtils($mdUtil, $q, $timeout, $mdConstant, $animateCss) {
+  var self;
+  return self = {
+    /**
+     *
+     */
+    translate3d : function( target, from, to, options ) {
+      return $animateCss(target,{
+        from:from,
+        to:to,
+        addClass:options.transitionInClass
+      })
+      .start()
+      .then(function(){
+          // Resolve with reverser function...
+          return reverseTranslate;
+      });
 
-        return $mdInkRipple.attach(scope, element, options);
+      /**
+       * Specific reversal of the request translate animation above...
+       */
+      function reverseTranslate (newFrom) {
+        return $animateCss(target, {
+           to: newFrom || from,
+           addClass: options.transitionOutClass,
+           removeClass: options.transitionInClass
+        }).start();
+
       }
-    };
+  },
 
-    function optionsForElement(element) {
-      if (element.hasClass('md-icon-button')) {
-        return {
-          isMenuItem: element.hasClass('md-menu-item'),
-          fitRipple: true,
-          center: true
-        };
-      } else {
-        return {
-          isMenuItem: element.hasClass('md-menu-item'),
-          dimBackground: true
+    /**
+     * Listen for transitionEnd event (with optional timeout)
+     * Announce completion or failure via promise handlers
+     */
+    waitTransitionEnd: function (element, opts) {
+        var TIMEOUT = 3000; // fallback is 3 secs
+
+        return $q(function(resolve, reject){
+          opts = opts || { };
+
+          var timer = $timeout(finished, opts.timeout || TIMEOUT);
+          element.on($mdConstant.CSS.TRANSITIONEND, finished);
+
+          /**
+           * Upon timeout or transitionEnd, reject or resolve (respectively) this promise.
+           * NOTE: Make sure this transitionEnd didn't bubble up from a child
+           */
+          function finished(ev) {
+            if ( ev && ev.target !== element[0]) return;
+
+            if ( ev  ) $timeout.cancel(timer);
+            element.off($mdConstant.CSS.TRANSITIONEND, finished);
+
+            // Never reject since ngAnimate may cause timeouts due missed transitionEnd events
+            resolve();
+
+          }
+
+        });
+      },
+
+    /**
+     * Calculate the zoom transform from dialog to origin.
+     *
+     * We use this to set the dialog position immediately;
+     * then the md-transition-in actually translates back to
+     * `translate3d(0,0,0) scale(1.0)`...
+     *
+     * NOTE: all values are rounded to the nearest integer
+     */
+    calculateZoomToOrigin: function (element, originator) {
+      var origin = originator.element;
+      var bounds = originator.bounds;
+
+      var zoomTemplate = "translate3d( {centerX}px, {centerY}px, 0 ) scale( {scaleX}, {scaleY} )";
+      var buildZoom = angular.bind(null, $mdUtil.supplant, zoomTemplate);
+      var zoomStyle = buildZoom({centerX: 0, centerY: 0, scaleX: 0.5, scaleY: 0.5});
+
+      if (origin || bounds) {
+        var originBnds = origin ? self.clientRect(origin) || currentBounds() : self.copyRect(bounds);
+        var dialogRect = self.copyRect(element[0].getBoundingClientRect());
+        var dialogCenterPt = self.centerPointFor(dialogRect);
+        var originCenterPt = self.centerPointFor(originBnds);
+
+        // Build the transform to zoom from the dialog center to the origin center
+
+        zoomStyle = buildZoom({
+          centerX: originCenterPt.x - dialogCenterPt.x,
+          centerY: originCenterPt.y - dialogCenterPt.y,
+          scaleX: Math.round(100 * Math.min(0.5, originBnds.width / dialogRect.width))/100,
+          scaleY: Math.round(100 * Math.min(0.5, originBnds.height / dialogRect.height))/100
+        });
+      }
+
+      return zoomStyle;
+
+      /**
+       * This is a fallback if the origin information is no longer valid, then the
+       * origin bounds simply becomes the current bounds for the dialogContainer's parent
+       */
+      function currentBounds() {
+        var cntr = element ? element.parent() : null;
+        var parent = cntr ? cntr.parent() : null;
+
+        return parent ? self.clientRect(parent) : null;
+      }
+    },
+
+    /**
+     * Enhance raw values to represent valid css stylings...
+     */
+    toCss : function( raw ) {
+      var css = { };
+      var lookups = 'left top right bottom width height x y min-width min-height max-width max-height';
+
+      angular.forEach(raw, function(value,key) {
+        if ( angular.isUndefined(value) ) return;
+
+        if ( lookups.indexOf(key) >= 0 ) {
+          css[key] = value + 'px';
+        } else {
+          switch (key) {
+            case 'transition':
+              convertToVendor(key, $mdConstant.CSS.TRANSITION, value);
+              break;
+            case 'transform':
+              convertToVendor(key, $mdConstant.CSS.TRANSFORM, value);
+              break;
+            case 'transformOrigin':
+              convertToVendor(key, $mdConstant.CSS.TRANSFORM_ORIGIN, value);
+              break;
+          }
+        }
+      });
+
+      return css;
+
+      function convertToVendor(key, vendor, value) {
+        angular.forEach(vendor.split(' '), function (key) {
+          css[key] = value;
+        });
+      }
+    },
+
+    /**
+     * Convert the translate CSS value to key/value pair(s).
+     */
+    toTransformCss: function (transform, addTransition, transition) {
+      var css = {};
+      angular.forEach($mdConstant.CSS.TRANSFORM.split(' '), function (key) {
+        css[key] = transform;
+      });
+
+      if (addTransition) {
+        transition = transition || "all 0.4s cubic-bezier(0.25, 0.8, 0.25, 1) !important";
+        css['transition'] = transition;
+      }
+
+      return css;
+    },
+
+    /**
+     *  Clone the Rect and calculate the height/width if needed
+     */
+    copyRect: function (source, destination) {
+      if (!source) return null;
+
+      destination = destination || {};
+
+      angular.forEach('left top right bottom width height'.split(' '), function (key) {
+        destination[key] = Math.round(source[key])
+      });
+
+      destination.width = destination.width || (destination.right - destination.left);
+      destination.height = destination.height || (destination.bottom - destination.top);
+
+      return destination;
+    },
+
+    /**
+     * Calculate ClientRect of element; return null if hidden or zero size
+     */
+    clientRect: function (element) {
+      var bounds = angular.element(element)[0].getBoundingClientRect();
+      var isPositiveSizeClientRect = function (rect) {
+        return rect && (rect.width > 0) && (rect.height > 0);
+      };
+
+      // If the event origin element has zero size, it has probably been hidden.
+      return isPositiveSizeClientRect(bounds) ? self.copyRect(bounds) : null;
+    },
+
+    /**
+     *  Calculate 'rounded' center point of Rect
+     */
+    centerPointFor: function (targetRect) {
+      return targetRect ? {
+        x: Math.round(targetRect.left + (targetRect.width / 2)),
+        y: Math.round(targetRect.top + (targetRect.height / 2))
+      } : { x : 0, y : 0 };
+    }
+
+  };
+};
+
+
+})();
+(function(){
+"use strict";
+
+"use strict";
+
+if (angular.version.minor >= 4) {
+  angular.module('material.core.animate', []);
+} else {
+(function() {
+
+  var forEach = angular.forEach;
+
+  var WEBKIT = angular.isDefined(document.documentElement.style.WebkitAppearance);
+  var TRANSITION_PROP = WEBKIT ? 'WebkitTransition' : 'transition';
+  var ANIMATION_PROP = WEBKIT ? 'WebkitAnimation' : 'animation';
+  var PREFIX = WEBKIT ? '-webkit-' : '';
+
+  var TRANSITION_EVENTS = (WEBKIT ? 'webkitTransitionEnd ' : '') + 'transitionend';
+  var ANIMATION_EVENTS = (WEBKIT ? 'webkitAnimationEnd ' : '') + 'animationend';
+
+  var $$ForceReflowFactory = ['$document', function($document) {
+    return function() {
+      return $document[0].body.clientWidth + 1;
+    }
+  }];
+
+  var $$rAFMutexFactory = ['$$rAF', function($$rAF) {
+    return function() {
+      var passed = false;
+      $$rAF(function() {
+        passed = true;
+      });
+      return function(fn) {
+        passed ? fn() : $$rAF(fn);
+      };
+    };
+  }];
+
+  var $$AnimateRunnerFactory = ['$q', '$$rAFMutex', function($q, $$rAFMutex) {
+    var INITIAL_STATE = 0;
+    var DONE_PENDING_STATE = 1;
+    var DONE_COMPLETE_STATE = 2;
+
+    function AnimateRunner(host) {
+      this.setHost(host);
+
+      this._doneCallbacks = [];
+      this._runInAnimationFrame = $$rAFMutex();
+      this._state = 0;
+    }
+
+    AnimateRunner.prototype = {
+      setHost: function(host) {
+        this.host = host || {};
+      },
+
+      done: function(fn) {
+        if (this._state === DONE_COMPLETE_STATE) {
+          fn();
+        } else {
+          this._doneCallbacks.push(fn);
+        }
+      },
+
+      progress: angular.noop,
+
+      getPromise: function() {
+        if (!this.promise) {
+          var self = this;
+          this.promise = $q(function(resolve, reject) {
+            self.done(function(status) {
+              status === false ? reject() : resolve();
+            });
+          });
+        }
+        return this.promise;
+      },
+
+      then: function(resolveHandler, rejectHandler) {
+        return this.getPromise().then(resolveHandler, rejectHandler);
+      },
+
+      'catch': function(handler) {
+        return this.getPromise()['catch'](handler);
+      },
+
+      'finally': function(handler) {
+        return this.getPromise()['finally'](handler);
+      },
+
+      pause: function() {
+        if (this.host.pause) {
+          this.host.pause();
+        }
+      },
+
+      resume: function() {
+        if (this.host.resume) {
+          this.host.resume();
+        }
+      },
+
+      end: function() {
+        if (this.host.end) {
+          this.host.end();
+        }
+        this._resolve(true);
+      },
+
+      cancel: function() {
+        if (this.host.cancel) {
+          this.host.cancel();
+        }
+        this._resolve(false);
+      },
+
+      complete: function(response) {
+        var self = this;
+        if (self._state === INITIAL_STATE) {
+          self._state = DONE_PENDING_STATE;
+          self._runInAnimationFrame(function() {
+            self._resolve(response);
+          });
+        }
+      },
+
+      _resolve: function(response) {
+        if (this._state !== DONE_COMPLETE_STATE) {
+          forEach(this._doneCallbacks, function(fn) {
+            fn(response);
+          });
+          this._doneCallbacks.length = 0;
+          this._state = DONE_COMPLETE_STATE;
         }
       }
     };
-  }
-  MdButtonInkRipple.$inject = ["$mdInkRipple"];;
-})();
 
-})();
-(function(){
-"use strict";
+    return AnimateRunner;
+  }];
 
-(function() {
-  'use strict';
+  angular
+    .module('material.core.animate', [])
+    .factory('$$forceReflow', $$ForceReflowFactory)
+    .factory('$$AnimateRunner', $$AnimateRunnerFactory)
+    .factory('$$rAFMutex', $$rAFMutexFactory)
+    .factory('$animateCss', ['$window', '$$rAF', '$$AnimateRunner', '$$forceReflow', '$$jqLite', '$timeout',
+                     function($window,   $$rAF,   $$AnimateRunner,   $$forceReflow,   $$jqLite,   $timeout) {
 
-    /**
-   * @ngdoc service
-   * @name $mdCheckboxInkRipple
-   * @module material.core
-   *
-   * @description
-   * Provides ripple effects for md-checkbox.  See $mdInkRipple service for all possible configuration options.
-   *
-   * @param {object=} scope Scope within the current context
-   * @param {object=} element The element the ripple effect should be applied to
-   * @param {object=} options (Optional) Configuration options to override the defaultripple configuration
-   */
+      function init(element, options) {
 
-  angular.module('material.core')
-    .factory('$mdCheckboxInkRipple', MdCheckboxInkRipple);
+        var temporaryStyles = [];
+        var node = getDomNode(element);
 
-  function MdCheckboxInkRipple($mdInkRipple) {
-    return {
-      attach: attach
-    };
+        if (options.transitionStyle) {
+          temporaryStyles.push([PREFIX + 'transition', options.transitionStyle]);
+        }
 
-    function attach(scope, element, options) {
-      return $mdInkRipple.attach(scope, element, angular.extend({
-        center: true,
-        dimBackground: false,
-        fitRipple: true
-      }, options));
-    };
-  }
-  MdCheckboxInkRipple.$inject = ["$mdInkRipple"];;
-})();
+        if (options.keyframeStyle) {
+          temporaryStyles.push([PREFIX + 'animation', options.keyframeStyle]);
+        }
 
-})();
-(function(){
-"use strict";
+        if (options.delay) {
+          temporaryStyles.push([PREFIX + 'transition-delay', options.delay + 's']);
+        }
 
-(function() {
-  'use strict';
+        if (options.duration) {
+          temporaryStyles.push([PREFIX + 'transition-duration', options.duration + 's']);
+        }
+
+        var hasCompleteStyles = options.keyframeStyle ||
+                                (options.to && (options.duration > 0 || options.transitionStyle));
+        var hasCompleteClasses = !!options.addClass || !!options.removeClass;
+        var hasCompleteAnimation = hasCompleteStyles || hasCompleteClasses;
+
+        blockTransition(element, true);
+        applyAnimationFromStyles(element, options);
+
+        var animationClosed = false;
+        var events, eventFn;
+
+        return {
+          close: $window.close,
+          start: function() {
+            var runner = new $$AnimateRunner();
+            waitUntilQuiet(function() {
+              blockTransition(element, false);
+              if (!hasCompleteAnimation) {
+                return close();
+              }
+
+              forEach(temporaryStyles, function(entry) {
+                var key = entry[0];
+                var value = entry[1];
+                node.style[camelCase(key)] = value;
+              });
+
+              applyClasses(element, options);
+
+              var timings = computeTimings(element);
+              if (timings.duration === 0) {
+                return close();
+              }
+
+              var moreStyles = [];
+
+              if (options.easing) {
+                if (timings.transitionDuration) {
+                  moreStyles.push([PREFIX + 'transition-timing-function', options.easing]);
+                }
+                if (timings.animationDuration) {
+                  moreStyles.push([PREFIX + 'animation-timing-function', options.easing]);
+                }
+              }
+
+              if (options.delay && timings.animationDelay) {
+                moreStyles.push([PREFIX + 'animation-delay', options.delay + 's']);
+              }
+
+              if (options.duration && timings.animationDuration) {
+                moreStyles.push([PREFIX + 'animation-duration', options.duration + 's']);
+              }
+
+              forEach(moreStyles, function(entry) {
+                var key = entry[0];
+                var value = entry[1];
+                node.style[camelCase(key)] = value;
+                temporaryStyles.push(entry);
+              });
+
+              var maxDelay = timings.delay;
+              var maxDelayTime = maxDelay * 1000;
+              var maxDuration = timings.duration;
+              var maxDurationTime = maxDuration * 1000;
+              var startTime = Date.now();
+
+              events = [];
+              if (timings.transitionDuration) {
+                events.push(TRANSITION_EVENTS);
+              }
+              if (timings.animationDuration) {
+                events.push(ANIMATION_EVENTS);
+              }
+              events = events.join(' ');
+              eventFn = function(event) {
+                event.stopPropagation();
+                var ev = event.originalEvent || event;
+                var timeStamp = ev.timeStamp || Date.now();
+                var elapsedTime = parseFloat(ev.elapsedTime.toFixed(3));
+                if (Math.max(timeStamp - startTime, 0) >= maxDelayTime && elapsedTime >= maxDuration) {
+                  close();
+                }
+              };
+              element.on(events, eventFn);
+
+              applyAnimationToStyles(element, options);
+
+              $timeout(close, maxDelayTime + maxDurationTime * 1.5, false);
+            });
+
+            return runner;
+
+            function close() {
+              if (animationClosed) return;
+              animationClosed = true;
+
+              if (events && eventFn) {
+                element.off(events, eventFn);
+              }
+              applyClasses(element, options);
+              applyAnimationStyles(element, options);
+              forEach(temporaryStyles, function(entry) {
+                node.style[camelCase(entry[0])] = '';
+              });
+              runner.complete(true);
+              return runner;
+            }
+          }
+        }
+      }
+
+      function applyClasses(element, options) {
+        if (options.addClass) {
+          $$jqLite.addClass(element, options.addClass);
+          options.addClass = null;
+        }
+        if (options.removeClass) {
+          $$jqLite.removeClass(element, options.removeClass);
+          options.removeClass = null;
+        }
+      }
+
+      function computeTimings(element) {
+        var node = getDomNode(element);
+        var cs = $window.getComputedStyle(node)
+        var tdr = parseMaxTime(cs[prop('transitionDuration')]);
+        var adr = parseMaxTime(cs[prop('animationDuration')]);
+        var tdy = parseMaxTime(cs[prop('transitionDelay')]);
+        var ady = parseMaxTime(cs[prop('animationDelay')]);
+
+        adr *= (parseInt(cs[prop('animationIterationCount')], 10) || 1);
+        var duration = Math.max(adr, tdr);
+        var delay = Math.max(ady, tdy);
+
+        return {
+          duration: duration,
+          delay: delay,
+          animationDuration: adr,
+          transitionDuration: tdr,
+          animationDelay: ady,
+          transitionDelay: tdy
+        };
+
+        function prop(key) {
+          return WEBKIT ? 'Webkit' + key.charAt(0).toUpperCase() + key.substr(1)
+                        : key;
+        }
+      }
+
+      function parseMaxTime(str) {
+        var maxValue = 0;
+        var values = (str || "").split(/\s*,\s*/);
+        forEach(values, function(value) {
+          // it's always safe to consider only second values and omit `ms` values since
+          // getComputedStyle will always handle the conversion for us
+          if (value.charAt(value.length - 1) == 's') {
+            value = value.substring(0, value.length - 1);
+          }
+          value = parseFloat(value) || 0;
+          maxValue = maxValue ? Math.max(value, maxValue) : value;
+        });
+        return maxValue;
+      }
+
+      var cancelLastRAFRequest;
+      var rafWaitQueue = [];
+      function waitUntilQuiet(callback) {
+        if (cancelLastRAFRequest) {
+          cancelLastRAFRequest(); //cancels the request
+        }
+        rafWaitQueue.push(callback);
+        cancelLastRAFRequest = $$rAF(function() {
+          cancelLastRAFRequest = null;
+
+          // DO NOT REMOVE THIS LINE OR REFACTOR OUT THE `pageWidth` variable.
+          // PLEASE EXAMINE THE `$$forceReflow` service to understand why.
+          var pageWidth = $$forceReflow();
+
+          // we use a for loop to ensure that if the queue is changed
+          // during this looping then it will consider new requests
+          for (var i = 0; i < rafWaitQueue.length; i++) {
+            rafWaitQueue[i](pageWidth);
+          }
+          rafWaitQueue.length = 0;
+        });
+      }
+
+      function applyAnimationStyles(element, options) {
+        applyAnimationFromStyles(element, options);
+        applyAnimationToStyles(element, options);
+      }
+
+      function applyAnimationFromStyles(element, options) {
+        if (options.from) {
+          element.css(options.from);
+          options.from = null;
+        }
+      }
+
+      function applyAnimationToStyles(element, options) {
+        if (options.to) {
+          element.css(options.to);
+          options.to = null;
+        }
+      }
+
+      function getDomNode(element) {
+        for (var i = 0; i < element.length; i++) {
+          if (element[i].nodeType === 1) return element[i];
+        }
+      }
+
+      function blockTransition(element, bool) {
+        var node = getDomNode(element);
+        var key = camelCase(PREFIX + 'transition-delay');
+        node.style[key] = bool ? '-9999s' : '';
+      }
+
+      return init;
+    }]);
 
   /**
-   * @ngdoc service
-   * @name $mdListInkRipple
-   * @module material.core
-   *
-   * @description
-   * Provides ripple effects for md-list.  See $mdInkRipple service for all possible configuration options.
-   *
-   * @param {object=} scope Scope within the current context
-   * @param {object=} element The element the ripple effect should be applied to
-   * @param {object=} options (Optional) Configuration options to override the defaultripple configuration
+   * Older browsers [FF31] expect camelCase
+   * property keys.
+   * e.g.
+   *  animation-duration --> animationDuration
    */
-
-  angular.module('material.core')
-    .factory('$mdListInkRipple', MdListInkRipple);
-
-  function MdListInkRipple($mdInkRipple) {
-    return {
-      attach: attach
-    };
-
-    function attach(scope, element, options) {
-      return $mdInkRipple.attach(scope, element, angular.extend({
-        center: false,
-        dimBackground: true,
-        outline: false,
-        rippleSize: 'full'
-      }, options));
-    };
-  }
-  MdListInkRipple.$inject = ["$mdInkRipple"];;
-})();
-
-})();
-(function(){
-"use strict";
-
-/**
- * @ngdoc module
- * @name material.core.ripple
- * @description
- * Ripple
- */
-angular.module('material.core')
-    .factory('$mdInkRipple', InkRippleService)
-    .directive('mdInkRipple', InkRippleDirective)
-    .directive('mdNoInk', attrNoDirective)
-    .directive('mdNoBar', attrNoDirective)
-    .directive('mdNoStretch', attrNoDirective);
-
-var DURATION = 450;
-
-/**
- * @ngdoc directive
- * @name mdInkRipple
- * @module material.core.ripple
- *
- * @description
- * The `md-ink-ripple` directive allows you to specify the ripple color or id a ripple is allowed.
- *
- * @param {string|boolean} md-ink-ripple A color string `#FF0000` or boolean (`false` or `0`) for preventing ripple
- *
- * @usage
- * ### String values
- * <hljs lang="html">
- *   <ANY md-ink-ripple="#FF0000">
- *     Ripples in red
- *   </ANY>
- *
- *   <ANY md-ink-ripple="false">
- *     Not rippling
- *   </ANY>
- * </hljs>
- *
- * ### Interpolated values
- * <hljs lang="html">
- *   <ANY md-ink-ripple="{{ randomColor() }}">
- *     Ripples with the return value of 'randomColor' function
- *   </ANY>
- *
- *   <ANY md-ink-ripple="{{ canRipple() }}">
- *     Ripples if 'canRipple' function return value is not 'false' or '0'
- *   </ANY>
- * </hljs>
- */
-function InkRippleDirective ($mdButtonInkRipple, $mdCheckboxInkRipple) {
-  return {
-    controller: angular.noop,
-    link:       function (scope, element, attr) {
-      attr.hasOwnProperty('mdInkRippleCheckbox')
-          ? $mdCheckboxInkRipple.attach(scope, element)
-          : $mdButtonInkRipple.attach(scope, element);
-    }
-  };
-}
-InkRippleDirective.$inject = ["$mdButtonInkRipple", "$mdCheckboxInkRipple"];
-
-/**
- * @ngdoc service
- * @name $mdInkRipple
- * @module material.core.ripple
- *
- * @description
- * `$mdInkRipple` is a service for adding ripples to any element
- *
- * @usage
- * <hljs lang="js">
- * app.factory('$myElementInkRipple', function($mdInkRipple) {
- *   return {
- *     attach: function (scope, element, options) {
- *       return $mdInkRipple.attach(scope, element, angular.extend({
- *         center: false,
- *         dimBackground: true
- *       }, options));
- *     }
- *   };
- * });
- *
- * app.controller('myController', function ($scope, $element, $myElementInkRipple) {
- *   $scope.onClick = function (ev) {
- *     $myElementInkRipple.attach($scope, angular.element(ev.target), { center: true });
- *   }
- * });
- * </hljs>
- */
-
-/**
- * @ngdoc method
- * @name $mdInkRipple#attach
- *
- * @description
- * Attaching given scope, element and options to inkRipple controller
- *
- * @param {object=} scope Scope within the current context
- * @param {object=} element The element the ripple effect should be applied to
- * @param {object=} options (Optional) Configuration options to override the defaultRipple configuration
- * * `center` -  Whether the ripple should start from the center of the container element
- * * `dimBackground` - Whether the background should be dimmed with the ripple color
- * * `colorElement` - The element the ripple should take its color from, defined by css property `color`
- * * `fitRipple` - Whether the ripple should fill the element
- */
-function InkRippleService ($injector) {
-  return { attach: attach };
-  function attach (scope, element, options) {
-    if (element.controller('mdNoInk')) return angular.noop;
-    return $injector.instantiate(InkRippleCtrl, {
-      $scope:        scope,
-      $element:      element,
-      rippleOptions: options
+  function camelCase(str) {
+    return str.replace(/-[a-z]/g, function(str) {
+      return str.charAt(1).toUpperCase();
     });
   }
-}
-InkRippleService.$inject = ["$injector"];
-
-/**
- * Controller used by the ripple service in order to apply ripples
- * @ngInject
- */
-function InkRippleCtrl ($scope, $element, rippleOptions, $window, $timeout, $mdUtil) {
-  this.$window    = $window;
-  this.$timeout   = $timeout;
-  this.$mdUtil    = $mdUtil;
-  this.$scope     = $scope;
-  this.$element   = $element;
-  this.options    = rippleOptions;
-  this.mousedown  = false;
-  this.ripples    = [];
-  this.timeout    = null; // Stores a reference to the most-recent ripple timeout
-  this.lastRipple = null;
-
-  $mdUtil.valueOnUse(this, 'container', this.createContainer);
-
-  this.$element.addClass('md-ink-ripple');
-
-  // attach method for unit tests
-  ($element.controller('mdInkRipple') || {}).createRipple = angular.bind(this, this.createRipple);
-  ($element.controller('mdInkRipple') || {}).setColor = angular.bind(this, this.color);
-
-  this.bindEvents();
-}
-InkRippleCtrl.$inject = ["$scope", "$element", "rippleOptions", "$window", "$timeout", "$mdUtil"];
-
-
-/**
- * Either remove or unlock any remaining ripples when the user mouses off of the element (either by
- * mouseup or mouseleave event)
- */
-function autoCleanup (self, cleanupFn) {
-
-  if ( self.mousedown || self.lastRipple ) {
-    self.mousedown = false;
-    self.$mdUtil.nextTick( angular.bind(self, cleanupFn), false);
-  }
-
-}
-
-
-/**
- * Returns the color that the ripple should be (either based on CSS or hard-coded)
- * @returns {string}
- */
-InkRippleCtrl.prototype.color = function (value) {
-  var self = this;
-
-  // If assigning a color value, apply it to background and the ripple color
-  if (angular.isDefined(value)) {
-    self._color = self._parseColor(value);
-  }
-
-  // If color lookup, use assigned, defined, or inherited
-  return self._color || self._parseColor( self.inkRipple() ) || self._parseColor( getElementColor() );
-
-  /**
-   * Finds the color element and returns its text color for use as default ripple color
-   * @returns {string}
-   */
-  function getElementColor () {
-    var items = self.options && self.options.colorElement ? self.options.colorElement : [];
-    var elem =  items.length ? items[ 0 ] : self.$element[ 0 ];
-
-    return elem ? self.$window.getComputedStyle(elem).color : 'rgb(0,0,0)';
-  }
-};
-
-/**
- * Updating the ripple colors based on the current inkRipple value
- * or the element's computed style color
- */
-InkRippleCtrl.prototype.calculateColor = function () {
-  return this.color();
-};
-
-
-/**
- * Takes a string color and converts it to RGBA format
- * @param color {string}
- * @param [multiplier] {int}
- * @returns {string}
- */
-
-InkRippleCtrl.prototype._parseColor = function parseColor (color, multiplier) {
-  multiplier = multiplier || 1;
-
-  if (!color) return;
-  if (color.indexOf('rgba') === 0) return color.replace(/\d?\.?\d*\s*\)\s*$/, (0.1 * multiplier).toString() + ')');
-  if (color.indexOf('rgb') === 0) return rgbToRGBA(color);
-  if (color.indexOf('#') === 0) return hexToRGBA(color);
-
-  /**
-   * Converts hex value to RGBA string
-   * @param color {string}
-   * @returns {string}
-   */
-  function hexToRGBA (color) {
-    var hex   = color[ 0 ] === '#' ? color.substr(1) : color,
-      dig   = hex.length / 3,
-      red   = hex.substr(0, dig),
-      green = hex.substr(dig, dig),
-      blue  = hex.substr(dig * 2);
-    if (dig === 1) {
-      red += red;
-      green += green;
-      blue += blue;
-    }
-    return 'rgba(' + parseInt(red, 16) + ',' + parseInt(green, 16) + ',' + parseInt(blue, 16) + ',0.1)';
-  }
-
-  /**
-   * Converts an RGB color to RGBA
-   * @param color {string}
-   * @returns {string}
-   */
-  function rgbToRGBA (color) {
-    return color.replace(')', ', 0.1)').replace('(', 'a(');
-  }
-
-};
-
-/**
- * Binds events to the root element for
- */
-InkRippleCtrl.prototype.bindEvents = function () {
-  this.$element.on('mousedown', angular.bind(this, this.handleMousedown));
-  this.$element.on('mouseup touchend', angular.bind(this, this.handleMouseup));
-  this.$element.on('mouseleave', angular.bind(this, this.handleMouseup));
-  this.$element.on('touchmove', angular.bind(this, this.handleTouchmove));
-};
-
-/**
- * Create a new ripple on every mousedown event from the root element
- * @param event {MouseEvent}
- */
-InkRippleCtrl.prototype.handleMousedown = function (event) {
-  if ( this.mousedown ) return;
-
-  // When jQuery is loaded, we have to get the original event
-  if (event.hasOwnProperty('originalEvent')) event = event.originalEvent;
-  this.mousedown = true;
-  if (this.options.center) {
-    this.createRipple(this.container.prop('clientWidth') / 2, this.container.prop('clientWidth') / 2);
-  } else {
-
-    // We need to calculate the relative coordinates if the target is a sublayer of the ripple element
-    if (event.srcElement !== this.$element[0]) {
-      var layerRect = this.$element[0].getBoundingClientRect();
-      var layerX = event.clientX - layerRect.left;
-      var layerY = event.clientY - layerRect.top;
-
-      this.createRipple(layerX, layerY);
-    } else {
-      this.createRipple(event.offsetX, event.offsetY);
-    }
-  }
-};
-
-/**
- * Either remove or unlock any remaining ripples when the user mouses off of the element (either by
- * mouseup, touchend or mouseleave event)
- */
-InkRippleCtrl.prototype.handleMouseup = function () {
-  autoCleanup(this, this.clearRipples);
-};
-
-/**
- * Either remove or unlock any remaining ripples when the user mouses off of the element (by
- * touchmove)
- */
-InkRippleCtrl.prototype.handleTouchmove = function () {
-  autoCleanup(this, this.deleteRipples);
-};
-
-/**
- * Cycles through all ripples and attempts to remove them.
- */
-InkRippleCtrl.prototype.deleteRipples = function () {
-  for (var i = 0; i < this.ripples.length; i++) {
-    this.ripples[ i ].remove();
-  }
-};
-
-/**
- * Cycles through all ripples and attempts to remove them with fade.
- * Depending on logic within `fadeInComplete`, some removals will be postponed.
- */
-InkRippleCtrl.prototype.clearRipples = function () {
-  for (var i = 0; i < this.ripples.length; i++) {
-    this.fadeInComplete(this.ripples[ i ]);
-  }
-};
-
-/**
- * Creates the ripple container element
- * @returns {*}
- */
-InkRippleCtrl.prototype.createContainer = function () {
-  var container = angular.element('<div class="md-ripple-container"></div>');
-  this.$element.append(container);
-  return container;
-};
-
-InkRippleCtrl.prototype.clearTimeout = function () {
-  if (this.timeout) {
-    this.$timeout.cancel(this.timeout);
-    this.timeout = null;
-  }
-};
-
-InkRippleCtrl.prototype.isRippleAllowed = function () {
-  var element = this.$element[0];
-  do {
-    if (!element.tagName || element.tagName === 'BODY') break;
-
-    if (element && angular.isFunction(element.hasAttribute)) {
-      if (element.hasAttribute('disabled')) return false;
-      if (this.inkRipple() === 'false' || this.inkRipple() === '0') return false;
-    }
-
-  } while (element = element.parentNode);
-  return true;
-};
-
-/**
- * The attribute `md-ink-ripple` may be a static or interpolated
- * color value OR a boolean indicator (used to disable ripples)
- */
-InkRippleCtrl.prototype.inkRipple = function () {
-  return this.$element.attr('md-ink-ripple');
-};
-
-/**
- * Creates a new ripple and adds it to the container.  Also tracks ripple in `this.ripples`.
- * @param left
- * @param top
- */
-InkRippleCtrl.prototype.createRipple = function (left, top) {
-  if (!this.isRippleAllowed()) return;
-
-  var ctrl        = this;
-  var ripple      = angular.element('<div class="md-ripple"></div>');
-  var width       = this.$element.prop('clientWidth');
-  var height      = this.$element.prop('clientHeight');
-  var x           = Math.max(Math.abs(width - left), left) * 2;
-  var y           = Math.max(Math.abs(height - top), top) * 2;
-  var size        = getSize(this.options.fitRipple, x, y);
-  var color       = this.calculateColor();
-
-  ripple.css({
-    left:            left + 'px',
-    top:             top + 'px',
-    background:      'black',
-    width:           size + 'px',
-    height:          size + 'px',
-    backgroundColor: rgbaToRGB(color),
-    borderColor:     rgbaToRGB(color)
-  });
-  this.lastRipple = ripple;
-
-  // we only want one timeout to be running at a time
-  this.clearTimeout();
-  this.timeout    = this.$timeout(function () {
-    ctrl.clearTimeout();
-    if (!ctrl.mousedown) ctrl.fadeInComplete(ripple);
-  }, DURATION * 0.35, false);
-
-  if (this.options.dimBackground) this.container.css({ backgroundColor: color });
-  this.container.append(ripple);
-  this.ripples.push(ripple);
-  ripple.addClass('md-ripple-placed');
-
-  this.$mdUtil.nextTick(function () {
-
-    ripple.addClass('md-ripple-scaled md-ripple-active');
-    ctrl.$timeout(function () {
-      ctrl.clearRipples();
-    }, DURATION, false);
-
-  }, false);
-
-  function rgbaToRGB (color) {
-    return color
-        ? color.replace('rgba', 'rgb').replace(/,[^\),]+\)/, ')')
-        : 'rgb(0,0,0)';
-  }
-
-  function getSize (fit, x, y) {
-    return fit
-        ? Math.max(x, y)
-        : Math.sqrt(Math.pow(x, 2) + Math.pow(y, 2));
-  }
-};
-
-
-
-/**
- * After fadeIn finishes, either kicks off the fade-out animation or queues the element for removal on mouseup
- * @param ripple
- */
-InkRippleCtrl.prototype.fadeInComplete = function (ripple) {
-  if (this.lastRipple === ripple) {
-    if (!this.timeout && !this.mousedown) {
-      this.removeRipple(ripple);
-    }
-  } else {
-    this.removeRipple(ripple);
-  }
-};
-
-/**
- * Kicks off the animation for removing a ripple
- * @param ripple {Element}
- */
-InkRippleCtrl.prototype.removeRipple = function (ripple) {
-  var ctrl  = this;
-  var index = this.ripples.indexOf(ripple);
-  if (index < 0) return;
-  this.ripples.splice(this.ripples.indexOf(ripple), 1);
-  ripple.removeClass('md-ripple-active');
-  if (this.ripples.length === 0) this.container.css({ backgroundColor: '' });
-  // use a 2-second timeout in order to allow for the animation to finish
-  // we don't actually care how long the animation takes
-  this.$timeout(function () {
-    ctrl.fadeOutComplete(ripple);
-  }, DURATION, false);
-};
-
-/**
- * Removes the provided ripple from the DOM
- * @param ripple
- */
-InkRippleCtrl.prototype.fadeOutComplete = function (ripple) {
-  ripple.remove();
-  this.lastRipple = null;
-};
-
-/**
- * Used to create an empty directive.  This is used to track flag-directives whose children may have
- * functionality based on them.
- *
- * Example: `md-no-ink` will potentially be used by all child directives.
- */
-function attrNoDirective () {
-  return { controller: angular.noop };
-}
 
 })();
-(function(){
-"use strict";
 
-(function() {
-  'use strict';
-
-    /**
-   * @ngdoc service
-   * @name $mdTabInkRipple
-   * @module material.core
-   *
-   * @description
-   * Provides ripple effects for md-tabs.  See $mdInkRipple service for all possible configuration options.
-   *
-   * @param {object=} scope Scope within the current context
-   * @param {object=} element The element the ripple effect should be applied to
-   * @param {object=} options (Optional) Configuration options to override the defaultripple configuration
-   */
-
-  angular.module('material.core')
-    .factory('$mdTabInkRipple', MdTabInkRipple);
-
-  function MdTabInkRipple($mdInkRipple) {
-    return {
-      attach: attach
-    };
-
-    function attach(scope, element, options) {
-      return $mdInkRipple.attach(scope, element, angular.extend({
-        center: false,
-        dimBackground: true,
-        outline: false,
-        rippleSize: 'full'
-      }, options));
-    };
-  }
-  MdTabInkRipple.$inject = ["$mdInkRipple"];;
-})();
+}
 
 })();
 (function(){
@@ -6031,217 +6031,6 @@ angular.module('material.components.autocomplete', [
   'material.components.icon',
   'material.components.virtualRepeat'
 ]);
-
-})();
-(function(){
-"use strict";
-
-/*
- * @ngdoc module
- * @name material.components.backdrop
- * @description Backdrop
- */
-
-/**
- * @ngdoc directive
- * @name mdBackdrop
- * @module material.components.backdrop
- *
- * @restrict E
- *
- * @description
- * `<md-backdrop>` is a backdrop element used by other components, such as dialog and bottom sheet.
- * Apply class `opaque` to make the backdrop use the theme backdrop color.
- *
- */
-
-angular
-  .module('material.components.backdrop', ['material.core'])
-  .directive('mdBackdrop', ["$mdTheming", "$animate", "$rootElement", "$window", "$log", "$$rAF", "$document", function BackdropDirective($mdTheming, $animate, $rootElement, $window, $log, $$rAF, $document) {
-    var ERROR_CSS_POSITION = "<md-backdrop> may not work properly in a scrolled, static-positioned parent container.";
-
-    return {
-      restrict: 'E',
-      link: postLink
-    };
-
-    function postLink(scope, element, attrs) {
-
-      // If body scrolling has been disabled using mdUtil.disableBodyScroll(),
-      // adjust the 'backdrop' height to account for the fixed 'body' top offset
-      var body = $window.getComputedStyle($document[0].body);
-      if (body.position == 'fixed') {
-        var hViewport = parseInt(body.height, 10) + Math.abs(parseInt(body.top, 10));
-        element.css({
-          height: hViewport + 'px'
-        });
-      }
-
-      // backdrop may be outside the $rootElement, tell ngAnimate to animate regardless
-      if ($animate.pin) $animate.pin(element, $rootElement);
-
-      $$rAF(function () {
-
-        // Often $animate.enter() is used to append the backDrop element
-        // so let's wait until $animate is done...
-        var parent = element.parent()[0];
-        if (parent) {
-
-          if ( parent.nodeName == 'BODY' ) {
-            element.css({position : 'fixed'});
-          }
-
-          var styles = $window.getComputedStyle(parent);
-          if (styles.position == 'static') {
-            // backdrop uses position:absolute and will not work properly with parent position:static (default)
-            $log.warn(ERROR_CSS_POSITION);
-          }
-        }
-
-        // Only inherit the parent if the backdrop has a parent.
-        if (element.parent().length) {
-          $mdTheming.inherit(element, element.parent());
-        }
-      });
-
-    }
-
-  }]);
-
-})();
-(function(){
-"use strict";
-
-/**
- * @ngdoc module
- * @name material.components.button
- * @description
- *
- * Button
- */
-angular
-    .module('material.components.button', [ 'material.core' ])
-    .directive('mdButton', MdButtonDirective);
-
-/**
- * @ngdoc directive
- * @name mdButton
- * @module material.components.button
- *
- * @restrict E
- *
- * @description
- * `<md-button>` is a button directive with optional ink ripples (default enabled).
- *
- * If you supply a `href` or `ng-href` attribute, it will become an `<a>` element. Otherwise, it will
- * become a `<button>` element. As per the [Material Design specifications](http://www.google.com/design/spec/style/color.html#color-ui-color-application)
- * the FAB button background is filled with the accent color [by default]. The primary color palette may be used with
- * the `md-primary` class.
- *
- * @param {boolean=} md-no-ink If present, disable ripple ink effects.
- * @param {expression=} ng-disabled En/Disable based on the expression
- * @param {string=} md-ripple-size Overrides the default ripple size logic. Options: `full`, `partial`, `auto`
- * @param {string=} aria-label Adds alternative text to button for accessibility, useful for icon buttons.
- * If no default text is found, a warning will be logged.
- *
- * @usage
- *
- * Regular buttons:
- *
- * <hljs lang="html">
- *  <md-button> Flat Button </md-button>
- *  <md-button href="http://google.com"> Flat link </md-button>
- *  <md-button class="md-raised"> Raised Button </md-button>
- *  <md-button ng-disabled="true"> Disabled Button </md-button>
- *  <md-button>
- *    <md-icon md-svg-src="your/icon.svg"></md-icon>
- *    Register Now
- *  </md-button>
- * </hljs>
- *
- * FAB buttons:
- *
- * <hljs lang="html">
- *  <md-button class="md-fab" aria-label="FAB">
- *    <md-icon md-svg-src="your/icon.svg"></md-icon>
- *  </md-button>
- *  <!-- mini-FAB -->
- *  <md-button class="md-fab md-mini" aria-label="Mini FAB">
- *    <md-icon md-svg-src="your/icon.svg"></md-icon>
- *  </md-button>
- *  <!-- Button with SVG Icon -->
- *  <md-button class="md-icon-button" aria-label="Custom Icon Button">
- *    <md-icon md-svg-icon="path/to/your.svg"></md-icon>
- *  </md-button>
- * </hljs>
- */
-function MdButtonDirective($mdButtonInkRipple, $mdTheming, $mdAria, $timeout) {
-
-  return {
-    restrict: 'EA',
-    replace: true,
-    transclude: true,
-    template: getTemplate,
-    link: postLink
-  };
-
-  function isAnchor(attr) {
-    return angular.isDefined(attr.href) || angular.isDefined(attr.ngHref) || angular.isDefined(attr.ngLink) || angular.isDefined(attr.uiSref);
-  }
-
-  function getTemplate(element, attr) {
-    if (isAnchor(attr)) {
-      return '<a class="md-button" ng-transclude></a>';
-    } else {
-      //If buttons don't have type="button", they will submit forms automatically.
-      var btnType = (typeof attr.type === 'undefined') ? 'button' : attr.type;
-      return '<button class="md-button" type="' + btnType + '" ng-transclude></button>';
-    }
-  }
-
-  function postLink(scope, element, attr) {
-    $mdTheming(element);
-    $mdButtonInkRipple.attach(scope, element);
-
-    // Use async expect to support possible bindings in the button label
-    $mdAria.expectWithText(element, 'aria-label');
-
-    // For anchor elements, we have to set tabindex manually when the
-    // element is disabled
-    if (isAnchor(attr) && angular.isDefined(attr.ngDisabled) ) {
-      scope.$watch(attr.ngDisabled, function(isDisabled) {
-        element.attr('tabindex', isDisabled ? -1 : 0);
-      });
-    }
-
-    // disabling click event when disabled is true
-    element.on('click', function(e){
-      if (attr.disabled === true) {
-        e.preventDefault();
-        e.stopImmediatePropagation();
-      }
-    });
-
-    // restrict focus styles to the keyboard
-    scope.mouseActive = false;
-    element.on('mousedown', function() {
-        scope.mouseActive = true;
-        $timeout(function(){
-          scope.mouseActive = false;
-        }, 100);
-      })
-      .on('focus', function() {
-        if (scope.mouseActive === false) {
-          element.addClass('md-focused');
-        }
-      })
-      .on('blur', function(ev) {
-        element.removeClass('md-focused');
-      });
-  }
-
-}
-MdButtonDirective.$inject = ["$mdButtonInkRipple", "$mdTheming", "$mdAria", "$timeout"];
 
 })();
 (function(){
@@ -6527,6 +6316,217 @@ function MdBottomSheetProvider($$interimElementProvider) {
 
 }
 MdBottomSheetProvider.$inject = ["$$interimElementProvider"];
+
+})();
+(function(){
+"use strict";
+
+/*
+ * @ngdoc module
+ * @name material.components.backdrop
+ * @description Backdrop
+ */
+
+/**
+ * @ngdoc directive
+ * @name mdBackdrop
+ * @module material.components.backdrop
+ *
+ * @restrict E
+ *
+ * @description
+ * `<md-backdrop>` is a backdrop element used by other components, such as dialog and bottom sheet.
+ * Apply class `opaque` to make the backdrop use the theme backdrop color.
+ *
+ */
+
+angular
+  .module('material.components.backdrop', ['material.core'])
+  .directive('mdBackdrop', ["$mdTheming", "$animate", "$rootElement", "$window", "$log", "$$rAF", "$document", function BackdropDirective($mdTheming, $animate, $rootElement, $window, $log, $$rAF, $document) {
+    var ERROR_CSS_POSITION = "<md-backdrop> may not work properly in a scrolled, static-positioned parent container.";
+
+    return {
+      restrict: 'E',
+      link: postLink
+    };
+
+    function postLink(scope, element, attrs) {
+
+      // If body scrolling has been disabled using mdUtil.disableBodyScroll(),
+      // adjust the 'backdrop' height to account for the fixed 'body' top offset
+      var body = $window.getComputedStyle($document[0].body);
+      if (body.position == 'fixed') {
+        var hViewport = parseInt(body.height, 10) + Math.abs(parseInt(body.top, 10));
+        element.css({
+          height: hViewport + 'px'
+        });
+      }
+
+      // backdrop may be outside the $rootElement, tell ngAnimate to animate regardless
+      if ($animate.pin) $animate.pin(element, $rootElement);
+
+      $$rAF(function () {
+
+        // Often $animate.enter() is used to append the backDrop element
+        // so let's wait until $animate is done...
+        var parent = element.parent()[0];
+        if (parent) {
+
+          if ( parent.nodeName == 'BODY' ) {
+            element.css({position : 'fixed'});
+          }
+
+          var styles = $window.getComputedStyle(parent);
+          if (styles.position == 'static') {
+            // backdrop uses position:absolute and will not work properly with parent position:static (default)
+            $log.warn(ERROR_CSS_POSITION);
+          }
+        }
+
+        // Only inherit the parent if the backdrop has a parent.
+        if (element.parent().length) {
+          $mdTheming.inherit(element, element.parent());
+        }
+      });
+
+    }
+
+  }]);
+
+})();
+(function(){
+"use strict";
+
+/**
+ * @ngdoc module
+ * @name material.components.button
+ * @description
+ *
+ * Button
+ */
+angular
+    .module('material.components.button', [ 'material.core' ])
+    .directive('mdButton', MdButtonDirective);
+
+/**
+ * @ngdoc directive
+ * @name mdButton
+ * @module material.components.button
+ *
+ * @restrict E
+ *
+ * @description
+ * `<md-button>` is a button directive with optional ink ripples (default enabled).
+ *
+ * If you supply a `href` or `ng-href` attribute, it will become an `<a>` element. Otherwise, it will
+ * become a `<button>` element. As per the [Material Design specifications](http://www.google.com/design/spec/style/color.html#color-ui-color-application)
+ * the FAB button background is filled with the accent color [by default]. The primary color palette may be used with
+ * the `md-primary` class.
+ *
+ * @param {boolean=} md-no-ink If present, disable ripple ink effects.
+ * @param {expression=} ng-disabled En/Disable based on the expression
+ * @param {string=} md-ripple-size Overrides the default ripple size logic. Options: `full`, `partial`, `auto`
+ * @param {string=} aria-label Adds alternative text to button for accessibility, useful for icon buttons.
+ * If no default text is found, a warning will be logged.
+ *
+ * @usage
+ *
+ * Regular buttons:
+ *
+ * <hljs lang="html">
+ *  <md-button> Flat Button </md-button>
+ *  <md-button href="http://google.com"> Flat link </md-button>
+ *  <md-button class="md-raised"> Raised Button </md-button>
+ *  <md-button ng-disabled="true"> Disabled Button </md-button>
+ *  <md-button>
+ *    <md-icon md-svg-src="your/icon.svg"></md-icon>
+ *    Register Now
+ *  </md-button>
+ * </hljs>
+ *
+ * FAB buttons:
+ *
+ * <hljs lang="html">
+ *  <md-button class="md-fab" aria-label="FAB">
+ *    <md-icon md-svg-src="your/icon.svg"></md-icon>
+ *  </md-button>
+ *  <!-- mini-FAB -->
+ *  <md-button class="md-fab md-mini" aria-label="Mini FAB">
+ *    <md-icon md-svg-src="your/icon.svg"></md-icon>
+ *  </md-button>
+ *  <!-- Button with SVG Icon -->
+ *  <md-button class="md-icon-button" aria-label="Custom Icon Button">
+ *    <md-icon md-svg-icon="path/to/your.svg"></md-icon>
+ *  </md-button>
+ * </hljs>
+ */
+function MdButtonDirective($mdButtonInkRipple, $mdTheming, $mdAria, $timeout) {
+
+  return {
+    restrict: 'EA',
+    replace: true,
+    transclude: true,
+    template: getTemplate,
+    link: postLink
+  };
+
+  function isAnchor(attr) {
+    return angular.isDefined(attr.href) || angular.isDefined(attr.ngHref) || angular.isDefined(attr.ngLink) || angular.isDefined(attr.uiSref);
+  }
+
+  function getTemplate(element, attr) {
+    if (isAnchor(attr)) {
+      return '<a class="md-button" ng-transclude></a>';
+    } else {
+      //If buttons don't have type="button", they will submit forms automatically.
+      var btnType = (typeof attr.type === 'undefined') ? 'button' : attr.type;
+      return '<button class="md-button" type="' + btnType + '" ng-transclude></button>';
+    }
+  }
+
+  function postLink(scope, element, attr) {
+    $mdTheming(element);
+    $mdButtonInkRipple.attach(scope, element);
+
+    // Use async expect to support possible bindings in the button label
+    $mdAria.expectWithText(element, 'aria-label');
+
+    // For anchor elements, we have to set tabindex manually when the
+    // element is disabled
+    if (isAnchor(attr) && angular.isDefined(attr.ngDisabled) ) {
+      scope.$watch(attr.ngDisabled, function(isDisabled) {
+        element.attr('tabindex', isDisabled ? -1 : 0);
+      });
+    }
+
+    // disabling click event when disabled is true
+    element.on('click', function(e){
+      if (attr.disabled === true) {
+        e.preventDefault();
+        e.stopImmediatePropagation();
+      }
+    });
+
+    // restrict focus styles to the keyboard
+    scope.mouseActive = false;
+    element.on('mousedown', function() {
+        scope.mouseActive = true;
+        $timeout(function(){
+          scope.mouseActive = false;
+        }, 100);
+      })
+      .on('focus', function() {
+        if (scope.mouseActive === false) {
+          element.addClass('md-focused');
+        }
+      })
+      .on('blur', function(ev) {
+        element.removeClass('md-focused');
+      });
+  }
+
+}
+MdButtonDirective.$inject = ["$mdButtonInkRipple", "$mdTheming", "$mdAria", "$timeout"];
 
 })();
 (function(){
@@ -10018,46 +10018,6 @@ MdDialogProvider.$inject = ["$$interimElementProvider"];
 (function(){
 "use strict";
 
-/**
- * @ngdoc module
- * @name material.components.divider
- * @description Divider module!
- */
-angular.module('material.components.divider', [
-  'material.core'
-])
-  .directive('mdDivider', MdDividerDirective);
-
-/**
- * @ngdoc directive
- * @name mdDivider
- * @module material.components.divider
- * @restrict E
- *
- * @description
- * Dividers group and separate content within lists and page layouts using strong visual and spatial distinctions. This divider is a thin rule, lightweight enough to not distract the user from content.
- *
- * @param {boolean=} md-inset Add this attribute to activate the inset divider style.
- * @usage
- * <hljs lang="html">
- * <md-divider></md-divider>
- *
- * <md-divider md-inset></md-divider>
- * </hljs>
- *
- */
-function MdDividerDirective($mdTheming) {
-  return {
-    restrict: 'E',
-    link: $mdTheming
-  };
-}
-MdDividerDirective.$inject = ["$mdTheming"];
-
-})();
-(function(){
-"use strict";
-
 (function() {
   'use strict';
 
@@ -10679,6 +10639,46 @@ MdDividerDirective.$inject = ["$mdTheming"];
 (function(){
 "use strict";
 
+/**
+ * @ngdoc module
+ * @name material.components.divider
+ * @description Divider module!
+ */
+angular.module('material.components.divider', [
+  'material.core'
+])
+  .directive('mdDivider', MdDividerDirective);
+
+/**
+ * @ngdoc directive
+ * @name mdDivider
+ * @module material.components.divider
+ * @restrict E
+ *
+ * @description
+ * Dividers group and separate content within lists and page layouts using strong visual and spatial distinctions. This divider is a thin rule, lightweight enough to not distract the user from content.
+ *
+ * @param {boolean=} md-inset Add this attribute to activate the inset divider style.
+ * @usage
+ * <hljs lang="html">
+ * <md-divider></md-divider>
+ *
+ * <md-divider md-inset></md-divider>
+ * </hljs>
+ *
+ */
+function MdDividerDirective($mdTheming) {
+  return {
+    restrict: 'E',
+    link: $mdTheming
+  };
+}
+MdDividerDirective.$inject = ["$mdTheming"];
+
+})();
+(function(){
+"use strict";
+
 (function() {
   'use strict';
 
@@ -10915,785 +10915,6 @@ MdDividerDirective.$inject = ["$mdTheming"];
   }
 })();
 
-
-})();
-(function(){
-"use strict";
-
-/**
- * @ngdoc module
- * @name material.components.gridList
- */
-angular.module('material.components.gridList', ['material.core'])
-       .directive('mdGridList', GridListDirective)
-       .directive('mdGridTile', GridTileDirective)
-       .directive('mdGridTileFooter', GridTileCaptionDirective)
-       .directive('mdGridTileHeader', GridTileCaptionDirective)
-       .factory('$mdGridLayout', GridLayoutFactory);
-
-/**
- * @ngdoc directive
- * @name mdGridList
- * @module material.components.gridList
- * @restrict E
- * @description
- * Grid lists are an alternative to standard list views. Grid lists are distinct
- * from grids used for layouts and other visual presentations.
- *
- * A grid list is best suited to presenting a homogenous data type, typically
- * images, and is optimized for visual comprehension and differentiating between
- * like data types.
- *
- * A grid list is a continuous element consisting of tessellated, regular
- * subdivisions called cells that contain tiles (`md-grid-tile`).
- *
- * <img src="//material-design.storage.googleapis.com/publish/v_2/material_ext_publish/0Bx4BSt6jniD7OVlEaXZ5YmU1Xzg/components_grids_usage2.png"
- *    style="width: 300px; height: auto; margin-right: 16px;" alt="Concept of grid explained visually">
- * <img src="//material-design.storage.googleapis.com/publish/v_2/material_ext_publish/0Bx4BSt6jniD7VGhsOE5idWlJWXM/components_grids_usage3.png"
- *    style="width: 300px; height: auto;" alt="Grid concepts legend">
- *
- * Cells are arrayed vertically and horizontally within the grid.
- *
- * Tiles hold content and can span one or more cells vertically or horizontally.
- *
- * ### Responsive Attributes
- *
- * The `md-grid-list` directive supports "responsive" attributes, which allow
- * different `md-cols`, `md-gutter` and `md-row-height` values depending on the
- * currently matching media query.
- *
- * In order to set a responsive attribute, first define the fallback value with
- * the standard attribute name, then add additional attributes with the
- * following convention: `{base-attribute-name}-{media-query-name}="{value}"`
- * (ie. `md-cols-lg="8"`)
- *
- * @param {number} md-cols Number of columns in the grid.
- * @param {string} md-row-height One of
- * <ul>
- *   <li>CSS length - Fixed height rows (eg. `8px` or `1rem`)</li>
- *   <li>`{width}:{height}` - Ratio of width to height (eg.
- *   `md-row-height="16:9"`)</li>
- *   <li>`"fit"` - Height will be determined by subdividing the available
- *   height by the number of rows</li>
- * </ul>
- * @param {string=} md-gutter The amount of space between tiles in CSS units
- *     (default 1px)
- * @param {expression=} md-on-layout Expression to evaluate after layout. Event
- *     object is available as `$event`, and contains performance information.
- *
- * @usage
- * Basic:
- * <hljs lang="html">
- * <md-grid-list md-cols="5" md-gutter="1em" md-row-height="4:3">
- *   <md-grid-tile></md-grid-tile>
- * </md-grid-list>
- * </hljs>
- *
- * Fixed-height rows:
- * <hljs lang="html">
- * <md-grid-list md-cols="4" md-row-height="200px" ...>
- *   <md-grid-tile></md-grid-tile>
- * </md-grid-list>
- * </hljs>
- *
- * Fit rows:
- * <hljs lang="html">
- * <md-grid-list md-cols="4" md-row-height="fit" style="height: 400px;" ...>
- *   <md-grid-tile></md-grid-tile>
- * </md-grid-list>
- * </hljs>
- *
- * Using responsive attributes:
- * <hljs lang="html">
- * <md-grid-list
- *     md-cols-sm="2"
- *     md-cols-md="4"
- *     md-cols-lg="8"
- *     md-cols-gt-lg="12"
- *     ...>
- *   <md-grid-tile></md-grid-tile>
- * </md-grid-list>
- * </hljs>
- */
-function GridListDirective($interpolate, $mdConstant, $mdGridLayout, $mdMedia) {
-  return {
-    restrict: 'E',
-    controller: GridListController,
-    scope: {
-      mdOnLayout: '&'
-    },
-    link: postLink
-  };
-
-  function postLink(scope, element, attrs, ctrl) {
-    // Apply semantics
-    element.attr('role', 'list');
-
-    // Provide the controller with a way to trigger layouts.
-    ctrl.layoutDelegate = layoutDelegate;
-
-    var invalidateLayout = angular.bind(ctrl, ctrl.invalidateLayout),
-        unwatchAttrs = watchMedia();
-      scope.$on('$destroy', unwatchMedia);
-
-    /**
-     * Watches for changes in media, invalidating layout as necessary.
-     */
-    function watchMedia() {
-      for (var mediaName in $mdConstant.MEDIA) {
-        $mdMedia(mediaName); // initialize
-        $mdMedia.getQuery($mdConstant.MEDIA[mediaName])
-            .addListener(invalidateLayout);
-      }
-      return $mdMedia.watchResponsiveAttributes(
-          ['md-cols', 'md-row-height', 'md-gutter'], attrs, layoutIfMediaMatch);
-    }
-
-    function unwatchMedia() {
-      ctrl.layoutDelegate = angular.noop;
-
-      unwatchAttrs();
-      for (var mediaName in $mdConstant.MEDIA) {
-        $mdMedia.getQuery($mdConstant.MEDIA[mediaName])
-            .removeListener(invalidateLayout);
-      }
-    }
-
-    /**
-     * Performs grid layout if the provided mediaName matches the currently
-     * active media type.
-     */
-    function layoutIfMediaMatch(mediaName) {
-      if (mediaName == null) {
-        // TODO(shyndman): It would be nice to only layout if we have
-        // instances of attributes using this media type
-        ctrl.invalidateLayout();
-      } else if ($mdMedia(mediaName)) {
-        ctrl.invalidateLayout();
-      }
-    }
-
-    var lastLayoutProps;
-
-    /**
-     * Invokes the layout engine, and uses its results to lay out our
-     * tile elements.
-     *
-     * @param {boolean} tilesInvalidated Whether tiles have been
-     *    added/removed/moved since the last layout. This is to avoid situations
-     *    where tiles are replaced with properties identical to their removed
-     *    counterparts.
-     */
-    function layoutDelegate(tilesInvalidated) {
-      var tiles = getTileElements();
-      var props = {
-        tileSpans: getTileSpans(tiles),
-        colCount: getColumnCount(),
-        rowMode: getRowMode(),
-        rowHeight: getRowHeight(),
-        gutter: getGutter()
-      };
-
-      if (!tilesInvalidated && angular.equals(props, lastLayoutProps)) {
-        return;
-      }
-
-      var performance =
-        $mdGridLayout(props.colCount, props.tileSpans, tiles)
-          .map(function(tilePositions, rowCount) {
-            return {
-              grid: {
-                element: element,
-                style: getGridStyle(props.colCount, rowCount,
-                    props.gutter, props.rowMode, props.rowHeight)
-              },
-              tiles: tilePositions.map(function(ps, i) {
-                return {
-                  element: angular.element(tiles[i]),
-                  style: getTileStyle(ps.position, ps.spans,
-                      props.colCount, rowCount,
-                      props.gutter, props.rowMode, props.rowHeight)
-                }
-              })
-            }
-          })
-          .reflow()
-          .performance();
-
-      // Report layout
-      scope.mdOnLayout({
-        $event: {
-          performance: performance
-        }
-      });
-
-      lastLayoutProps = props;
-    }
-
-    // Use $interpolate to do some simple string interpolation as a convenience.
-
-    var startSymbol = $interpolate.startSymbol();
-    var endSymbol = $interpolate.endSymbol();
-
-    // Returns an expression wrapped in the interpolator's start and end symbols.
-    function expr(exprStr) {
-      return startSymbol + exprStr + endSymbol;
-    }
-
-    // The amount of space a single 1x1 tile would take up (either width or height), used as
-    // a basis for other calculations. This consists of taking the base size percent (as would be
-    // if evenly dividing the size between cells), and then subtracting the size of one gutter.
-    // However, since there are no gutters on the edges, each tile only uses a fration
-    // (gutterShare = numGutters / numCells) of the gutter size. (Imagine having one gutter per
-    // tile, and then breaking up the extra gutter on the edge evenly among the cells).
-    var UNIT = $interpolate(expr('share') + '% - (' + expr('gutter') + ' * ' + expr('gutterShare') + ')');
-
-    // The horizontal or vertical position of a tile, e.g., the 'top' or 'left' property value.
-    // The position comes the size of a 1x1 tile plus gutter for each previous tile in the
-    // row/column (offset).
-    var POSITION  = $interpolate('calc((' + expr('unit') + ' + ' + expr('gutter') + ') * ' + expr('offset') + ')');
-
-    // The actual size of a tile, e.g., width or height, taking rowSpan or colSpan into account.
-    // This is computed by multiplying the base unit by the rowSpan/colSpan, and then adding back
-    // in the space that the gutter would normally have used (which was already accounted for in
-    // the base unit calculation).
-    var DIMENSION = $interpolate('calc((' + expr('unit') + ') * ' + expr('span') + ' + (' + expr('span') + ' - 1) * ' + expr('gutter') + ')');
-
-    /**
-     * Gets the styles applied to a tile element described by the given parameters.
-     * @param {{row: number, col: number}} position The row and column indices of the tile.
-     * @param {{row: number, col: number}} spans The rowSpan and colSpan of the tile.
-     * @param {number} colCount The number of columns.
-     * @param {number} rowCount The number of rows.
-     * @param {string} gutter The amount of space between tiles. This will be something like
-     *     '5px' or '2em'.
-     * @param {string} rowMode The row height mode. Can be one of:
-     *     'fixed': all rows have a fixed size, given by rowHeight,
-     *     'ratio': row height defined as a ratio to width, or
-     *     'fit': fit to the grid-list element height, divinding evenly among rows.
-     * @param {string|number} rowHeight The height of a row. This is only used for 'fixed' mode and
-     *     for 'ratio' mode. For 'ratio' mode, this is the *ratio* of width-to-height (e.g., 0.75).
-     * @returns {Object} Map of CSS properties to be applied to the style element. Will define
-     *     values for top, left, width, height, marginTop, and paddingTop.
-     */
-    function getTileStyle(position, spans, colCount, rowCount, gutter, rowMode, rowHeight) {
-      // TODO(shyndman): There are style caching opportunities here.
-
-      // Percent of the available horizontal space that one column takes up.
-      var hShare = (1 / colCount) * 100;
-
-      // Fraction of the gutter size that each column takes up.
-      var hGutterShare = (colCount - 1) / colCount;
-
-      // Base horizontal size of a column.
-      var hUnit = UNIT({share: hShare, gutterShare: hGutterShare, gutter: gutter});
-
-      // The width and horizontal position of each tile is always calculated the same way, but the
-      // height and vertical position depends on the rowMode.
-      var style = {
-        left: POSITION({ unit: hUnit, offset: position.col, gutter: gutter }),
-        width: DIMENSION({ unit: hUnit, span: spans.col, gutter: gutter }),
-        // resets
-        paddingTop: '',
-        marginTop: '',
-        top: '',
-        height: ''
-      };
-
-      switch (rowMode) {
-        case 'fixed':
-          // In fixed mode, simply use the given rowHeight.
-          style.top = POSITION({ unit: rowHeight, offset: position.row, gutter: gutter });
-          style.height = DIMENSION({ unit: rowHeight, span: spans.row, gutter: gutter });
-          break;
-
-        case 'ratio':
-          // Percent of the available vertical space that one row takes up. Here, rowHeight holds
-          // the ratio value. For example, if the width:height ratio is 4:3, rowHeight = 1.333.
-          var vShare = hShare / rowHeight;
-
-          // Base veritcal size of a row.
-          var vUnit = UNIT({ share: vShare, gutterShare: hGutterShare, gutter: gutter });
-
-          // padidngTop and marginTop are used to maintain the given aspect ratio, as
-          // a percentage-based value for these properties is applied to the *width* of the
-          // containing block. See http://www.w3.org/TR/CSS2/box.html#margin-properties
-          style.paddingTop = DIMENSION({ unit: vUnit, span: spans.row, gutter: gutter});
-          style.marginTop = POSITION({ unit: vUnit, offset: position.row, gutter: gutter });
-          break;
-
-        case 'fit':
-          // Fraction of the gutter size that each column takes up.
-          var vGutterShare = (rowCount - 1) / rowCount;
-
-          // Percent of the available vertical space that one row takes up.
-          var vShare = (1 / rowCount) * 100;
-
-          // Base vertical size of a row.
-          var vUnit = UNIT({share: vShare, gutterShare: vGutterShare, gutter: gutter});
-
-          style.top = POSITION({unit: vUnit, offset: position.row, gutter: gutter});
-          style.height = DIMENSION({unit: vUnit, span: spans.row, gutter: gutter});
-          break;
-      }
-
-      return style;
-    }
-
-    function getGridStyle(colCount, rowCount, gutter, rowMode, rowHeight) {
-      var style = {};
-
-      switch(rowMode) {
-        case 'fixed':
-          style.height = DIMENSION({ unit: rowHeight, span: rowCount, gutter: gutter });
-          style.paddingBottom = '';
-          break;
-
-        case 'ratio':
-          // rowHeight is width / height
-          var hGutterShare = colCount === 1 ? 0 : (colCount - 1) / colCount,
-              hShare = (1 / colCount) * 100,
-              vShare = hShare * (1 / rowHeight),
-              vUnit = UNIT({ share: vShare, gutterShare: hGutterShare, gutter: gutter });
-
-          style.height = '';
-          style.paddingBottom = DIMENSION({ unit: vUnit, span: rowCount, gutter: gutter});
-          break;
-
-        case 'fit':
-          // noop, as the height is user set
-          break;
-      }
-
-      return style;
-    }
-
-    function getTileElements() {
-      return [].filter.call(element.children(), function(ele) {
-        return ele.tagName == 'MD-GRID-TILE' && !ele.$$mdDestroyed;
-      });
-    }
-
-    /**
-     * Gets an array of objects containing the rowspan and colspan for each tile.
-     * @returns {Array<{row: number, col: number}>}
-     */
-    function getTileSpans(tileElements) {
-      return [].map.call(tileElements, function(ele) {
-        var ctrl = angular.element(ele).controller('mdGridTile');
-        return {
-          row: parseInt(
-              $mdMedia.getResponsiveAttribute(ctrl.$attrs, 'md-rowspan'), 10) || 1,
-          col: parseInt(
-              $mdMedia.getResponsiveAttribute(ctrl.$attrs, 'md-colspan'), 10) || 1
-        };
-      });
-    }
-
-    function getColumnCount() {
-      var colCount = parseInt($mdMedia.getResponsiveAttribute(attrs, 'md-cols'), 10);
-      if (isNaN(colCount)) {
-        throw 'md-grid-list: md-cols attribute was not found, or contained a non-numeric value';
-      }
-      return colCount;
-    }
-
-    function getGutter() {
-      return applyDefaultUnit($mdMedia.getResponsiveAttribute(attrs, 'md-gutter') || 1);
-    }
-
-    function getRowHeight() {
-      var rowHeight = $mdMedia.getResponsiveAttribute(attrs, 'md-row-height');
-      if (!rowHeight) {
-        throw 'md-grid-list: md-row-height attribute was not found';
-      }
-
-      switch (getRowMode()) {
-        case 'fixed':
-          return applyDefaultUnit(rowHeight);
-        case 'ratio':
-          var whRatio = rowHeight.split(':');
-          return parseFloat(whRatio[0]) / parseFloat(whRatio[1]);
-        case 'fit':
-          return 0; // N/A
-      }
-    }
-
-    function getRowMode() {
-      var rowHeight = $mdMedia.getResponsiveAttribute(attrs, 'md-row-height');
-      if (!rowHeight) {
-        throw 'md-grid-list: md-row-height attribute was not found';
-      }
-
-      if (rowHeight == 'fit') {
-        return 'fit';
-      } else if (rowHeight.indexOf(':') !== -1) {
-        return 'ratio';
-      } else {
-        return 'fixed';
-      }
-    }
-
-    function applyDefaultUnit(val) {
-      return /\D$/.test(val) ? val : val + 'px';
-    }
-  }
-}
-GridListDirective.$inject = ["$interpolate", "$mdConstant", "$mdGridLayout", "$mdMedia"];
-
-/* @ngInject */
-function GridListController($mdUtil) {
-  this.layoutInvalidated = false;
-  this.tilesInvalidated = false;
-  this.$timeout_ = $mdUtil.nextTick;
-  this.layoutDelegate = angular.noop;
-}
-GridListController.$inject = ["$mdUtil"];
-
-GridListController.prototype = {
-  invalidateTiles: function() {
-    this.tilesInvalidated = true;
-    this.invalidateLayout();
-  },
-
-  invalidateLayout: function() {
-    if (this.layoutInvalidated) {
-      return;
-    }
-    this.layoutInvalidated = true;
-    this.$timeout_(angular.bind(this, this.layout));
-  },
-
-  layout: function() {
-    try {
-      this.layoutDelegate(this.tilesInvalidated);
-    } finally {
-      this.layoutInvalidated = false;
-      this.tilesInvalidated = false;
-    }
-  }
-};
-
-
-/* @ngInject */
-function GridLayoutFactory($mdUtil) {
-  var defaultAnimator = GridTileAnimator;
-
-  /**
-   * Set the reflow animator callback
-   */
-  GridLayout.animateWith = function(customAnimator) {
-    defaultAnimator = !angular.isFunction(customAnimator) ? GridTileAnimator : customAnimator;
-  };
-
-  return GridLayout;
-
-  /**
-   * Publish layout function
-   */
-  function GridLayout(colCount, tileSpans) {
-      var self, layoutInfo, gridStyles, layoutTime, mapTime, reflowTime;
-
-      layoutTime = $mdUtil.time(function() {
-        layoutInfo = calculateGridFor(colCount, tileSpans);
-      });
-
-      return self = {
-
-        /**
-         * An array of objects describing each tile's position in the grid.
-         */
-        layoutInfo: function() {
-          return layoutInfo;
-        },
-
-        /**
-         * Maps grid positioning to an element and a set of styles using the
-         * provided updateFn.
-         */
-        map: function(updateFn) {
-          mapTime = $mdUtil.time(function() {
-            var info = self.layoutInfo();
-            gridStyles = updateFn(info.positioning, info.rowCount);
-          });
-          return self;
-        },
-
-        /**
-         * Default animator simply sets the element.css( <styles> ). An alternate
-         * animator can be provided as an argument. The function has the following
-         * signature:
-         *
-         *    function({grid: {element: JQLite, style: Object}, tiles: Array<{element: JQLite, style: Object}>)
-         */
-        reflow: function(animatorFn) {
-          reflowTime = $mdUtil.time(function() {
-            var animator = animatorFn || defaultAnimator;
-            animator(gridStyles.grid, gridStyles.tiles);
-          });
-          return self;
-        },
-
-        /**
-         * Timing for the most recent layout run.
-         */
-        performance: function() {
-          return {
-            tileCount: tileSpans.length,
-            layoutTime: layoutTime,
-            mapTime: mapTime,
-            reflowTime: reflowTime,
-            totalTime: layoutTime + mapTime + reflowTime
-          };
-        }
-      };
-    }
-
-  /**
-   * Default Gridlist animator simple sets the css for each element;
-   * NOTE: any transitions effects must be manually set in the CSS.
-   * e.g.
-   *
-   *  md-grid-tile {
-   *    transition: all 700ms ease-out 50ms;
-   *  }
-   *
-   */
-  function GridTileAnimator(grid, tiles) {
-    grid.element.css(grid.style);
-    tiles.forEach(function(t) {
-      t.element.css(t.style);
-    })
-  }
-
-  /**
-   * Calculates the positions of tiles.
-   *
-   * The algorithm works as follows:
-   *    An Array<Number> with length colCount (spaceTracker) keeps track of
-   *    available tiling positions, where elements of value 0 represents an
-   *    empty position. Space for a tile is reserved by finding a sequence of
-   *    0s with length <= than the tile's colspan. When such a space has been
-   *    found, the occupied tile positions are incremented by the tile's
-   *    rowspan value, as these positions have become unavailable for that
-   *    many rows.
-   *
-   *    If the end of a row has been reached without finding space for the
-   *    tile, spaceTracker's elements are each decremented by 1 to a minimum
-   *    of 0. Rows are searched in this fashion until space is found.
-   */
-  function calculateGridFor(colCount, tileSpans) {
-    var curCol = 0,
-        curRow = 0,
-        spaceTracker = newSpaceTracker();
-
-    return {
-      positioning: tileSpans.map(function(spans, i) {
-        return {
-          spans: spans,
-          position: reserveSpace(spans, i)
-        };
-      }),
-      rowCount: curRow + Math.max.apply(Math, spaceTracker)
-    };
-
-    function reserveSpace(spans, i) {
-      if (spans.col > colCount) {
-        throw 'md-grid-list: Tile at position ' + i + ' has a colspan ' +
-            '(' + spans.col + ') that exceeds the column count ' +
-            '(' + colCount + ')';
-      }
-
-      var start = 0,
-          end = 0;
-
-      // TODO(shyndman): This loop isn't strictly necessary if you can
-      // determine the minimum number of rows before a space opens up. To do
-      // this, recognize that you've iterated across an entire row looking for
-      // space, and if so fast-forward by the minimum rowSpan count. Repeat
-      // until the required space opens up.
-      while (end - start < spans.col) {
-        if (curCol >= colCount) {
-          nextRow();
-          continue;
-        }
-
-        start = spaceTracker.indexOf(0, curCol);
-        if (start === -1 || (end = findEnd(start + 1)) === -1) {
-          start = end = 0;
-          nextRow();
-          continue;
-        }
-
-        curCol = end + 1;
-      }
-
-      adjustRow(start, spans.col, spans.row);
-      curCol = start + spans.col;
-
-      return {
-        col: start,
-        row: curRow
-      };
-    }
-
-    function nextRow() {
-      curCol = 0;
-      curRow++;
-      adjustRow(0, colCount, -1); // Decrement row spans by one
-    }
-
-    function adjustRow(from, cols, by) {
-      for (var i = from; i < from + cols; i++) {
-        spaceTracker[i] = Math.max(spaceTracker[i] + by, 0);
-      }
-    }
-
-    function findEnd(start) {
-      var i;
-      for (i = start; i < spaceTracker.length; i++) {
-        if (spaceTracker[i] !== 0) {
-          return i;
-        }
-      }
-
-      if (i === spaceTracker.length) {
-        return i;
-      }
-    }
-
-    function newSpaceTracker() {
-      var tracker = [];
-      for (var i = 0; i < colCount; i++) {
-        tracker.push(0);
-      }
-      return tracker;
-    }
-  }
-}
-GridLayoutFactory.$inject = ["$mdUtil"];
-
-/**
- * @ngdoc directive
- * @name mdGridTile
- * @module material.components.gridList
- * @restrict E
- * @description
- * Tiles contain the content of an `md-grid-list`. They span one or more grid
- * cells vertically or horizontally, and use `md-grid-tile-{footer,header}` to
- * display secondary content.
- *
- * ### Responsive Attributes
- *
- * The `md-grid-tile` directive supports "responsive" attributes, which allow
- * different `md-rowspan` and `md-colspan` values depending on the currently
- * matching media query.
- *
- * In order to set a responsive attribute, first define the fallback value with
- * the standard attribute name, then add additional attributes with the
- * following convention: `{base-attribute-name}-{media-query-name}="{value}"`
- * (ie. `md-colspan-sm="4"`)
- *
- * @param {number=} md-colspan The number of columns to span (default 1). Cannot
- *    exceed the number of columns in the grid. Supports interpolation.
- * @param {number=} md-rowspan The number of rows to span (default 1). Supports
- *     interpolation.
- *
- * @usage
- * With header:
- * <hljs lang="html">
- * <md-grid-tile>
- *   <md-grid-tile-header>
- *     <h3>This is a header</h3>
- *   </md-grid-tile-header>
- * </md-grid-tile>
- * </hljs>
- *
- * With footer:
- * <hljs lang="html">
- * <md-grid-tile>
- *   <md-grid-tile-footer>
- *     <h3>This is a footer</h3>
- *   </md-grid-tile-footer>
- * </md-grid-tile>
- * </hljs>
- *
- * Spanning multiple rows/columns:
- * <hljs lang="html">
- * <md-grid-tile md-colspan="2" md-rowspan="3">
- * </md-grid-tile>
- * </hljs>
- *
- * Responsive attributes:
- * <hljs lang="html">
- * <md-grid-tile md-colspan="1" md-colspan-sm="3" md-colspan-md="5">
- * </md-grid-tile>
- * </hljs>
- */
-function GridTileDirective($mdMedia) {
-  return {
-    restrict: 'E',
-    require: '^mdGridList',
-    template: '<figure ng-transclude></figure>',
-    transclude: true,
-    scope: {},
-    // Simple controller that exposes attributes to the grid directive
-    controller: ["$attrs", function($attrs) {
-      this.$attrs = $attrs;
-    }],
-    link: postLink
-  };
-
-  function postLink(scope, element, attrs, gridCtrl) {
-    // Apply semantics
-    element.attr('role', 'listitem');
-
-    // If our colspan or rowspan changes, trigger a layout
-    var unwatchAttrs = $mdMedia.watchResponsiveAttributes(['md-colspan', 'md-rowspan'],
-        attrs, angular.bind(gridCtrl, gridCtrl.invalidateLayout));
-
-    // Tile registration/deregistration
-    gridCtrl.invalidateTiles();
-    scope.$on('$destroy', function() {
-      // Mark the tile as destroyed so it is no longer considered in layout,
-      // even if the DOM element sticks around (like during a leave animation)
-      element[0].$$mdDestroyed = true;
-      unwatchAttrs();
-      gridCtrl.invalidateLayout();
-    });
-
-    if (angular.isDefined(scope.$parent.$index)) {
-      scope.$watch(function() { return scope.$parent.$index; },
-        function indexChanged(newIdx, oldIdx) {
-          if (newIdx === oldIdx) {
-            return;
-          }
-          gridCtrl.invalidateTiles();
-        });
-    }
-  }
-}
-GridTileDirective.$inject = ["$mdMedia"];
-
-
-function GridTileCaptionDirective() {
-  return {
-    template: '<figcaption ng-transclude></figcaption>',
-    transclude: true
-  };
-}
-
-})();
-(function(){
-"use strict";
-
-/**
- * @ngdoc module
- * @name material.components.icon
- * @description
- * Icon
- */
-angular.module('material.components.icon', ['material.core']);
 
 })();
 (function(){
@@ -12520,6 +11741,785 @@ function getMessagesElement(element) {
 
 /**
  * @ngdoc module
+ * @name material.components.gridList
+ */
+angular.module('material.components.gridList', ['material.core'])
+       .directive('mdGridList', GridListDirective)
+       .directive('mdGridTile', GridTileDirective)
+       .directive('mdGridTileFooter', GridTileCaptionDirective)
+       .directive('mdGridTileHeader', GridTileCaptionDirective)
+       .factory('$mdGridLayout', GridLayoutFactory);
+
+/**
+ * @ngdoc directive
+ * @name mdGridList
+ * @module material.components.gridList
+ * @restrict E
+ * @description
+ * Grid lists are an alternative to standard list views. Grid lists are distinct
+ * from grids used for layouts and other visual presentations.
+ *
+ * A grid list is best suited to presenting a homogenous data type, typically
+ * images, and is optimized for visual comprehension and differentiating between
+ * like data types.
+ *
+ * A grid list is a continuous element consisting of tessellated, regular
+ * subdivisions called cells that contain tiles (`md-grid-tile`).
+ *
+ * <img src="//material-design.storage.googleapis.com/publish/v_2/material_ext_publish/0Bx4BSt6jniD7OVlEaXZ5YmU1Xzg/components_grids_usage2.png"
+ *    style="width: 300px; height: auto; margin-right: 16px;" alt="Concept of grid explained visually">
+ * <img src="//material-design.storage.googleapis.com/publish/v_2/material_ext_publish/0Bx4BSt6jniD7VGhsOE5idWlJWXM/components_grids_usage3.png"
+ *    style="width: 300px; height: auto;" alt="Grid concepts legend">
+ *
+ * Cells are arrayed vertically and horizontally within the grid.
+ *
+ * Tiles hold content and can span one or more cells vertically or horizontally.
+ *
+ * ### Responsive Attributes
+ *
+ * The `md-grid-list` directive supports "responsive" attributes, which allow
+ * different `md-cols`, `md-gutter` and `md-row-height` values depending on the
+ * currently matching media query.
+ *
+ * In order to set a responsive attribute, first define the fallback value with
+ * the standard attribute name, then add additional attributes with the
+ * following convention: `{base-attribute-name}-{media-query-name}="{value}"`
+ * (ie. `md-cols-lg="8"`)
+ *
+ * @param {number} md-cols Number of columns in the grid.
+ * @param {string} md-row-height One of
+ * <ul>
+ *   <li>CSS length - Fixed height rows (eg. `8px` or `1rem`)</li>
+ *   <li>`{width}:{height}` - Ratio of width to height (eg.
+ *   `md-row-height="16:9"`)</li>
+ *   <li>`"fit"` - Height will be determined by subdividing the available
+ *   height by the number of rows</li>
+ * </ul>
+ * @param {string=} md-gutter The amount of space between tiles in CSS units
+ *     (default 1px)
+ * @param {expression=} md-on-layout Expression to evaluate after layout. Event
+ *     object is available as `$event`, and contains performance information.
+ *
+ * @usage
+ * Basic:
+ * <hljs lang="html">
+ * <md-grid-list md-cols="5" md-gutter="1em" md-row-height="4:3">
+ *   <md-grid-tile></md-grid-tile>
+ * </md-grid-list>
+ * </hljs>
+ *
+ * Fixed-height rows:
+ * <hljs lang="html">
+ * <md-grid-list md-cols="4" md-row-height="200px" ...>
+ *   <md-grid-tile></md-grid-tile>
+ * </md-grid-list>
+ * </hljs>
+ *
+ * Fit rows:
+ * <hljs lang="html">
+ * <md-grid-list md-cols="4" md-row-height="fit" style="height: 400px;" ...>
+ *   <md-grid-tile></md-grid-tile>
+ * </md-grid-list>
+ * </hljs>
+ *
+ * Using responsive attributes:
+ * <hljs lang="html">
+ * <md-grid-list
+ *     md-cols-sm="2"
+ *     md-cols-md="4"
+ *     md-cols-lg="8"
+ *     md-cols-gt-lg="12"
+ *     ...>
+ *   <md-grid-tile></md-grid-tile>
+ * </md-grid-list>
+ * </hljs>
+ */
+function GridListDirective($interpolate, $mdConstant, $mdGridLayout, $mdMedia) {
+  return {
+    restrict: 'E',
+    controller: GridListController,
+    scope: {
+      mdOnLayout: '&'
+    },
+    link: postLink
+  };
+
+  function postLink(scope, element, attrs, ctrl) {
+    // Apply semantics
+    element.attr('role', 'list');
+
+    // Provide the controller with a way to trigger layouts.
+    ctrl.layoutDelegate = layoutDelegate;
+
+    var invalidateLayout = angular.bind(ctrl, ctrl.invalidateLayout),
+        unwatchAttrs = watchMedia();
+      scope.$on('$destroy', unwatchMedia);
+
+    /**
+     * Watches for changes in media, invalidating layout as necessary.
+     */
+    function watchMedia() {
+      for (var mediaName in $mdConstant.MEDIA) {
+        $mdMedia(mediaName); // initialize
+        $mdMedia.getQuery($mdConstant.MEDIA[mediaName])
+            .addListener(invalidateLayout);
+      }
+      return $mdMedia.watchResponsiveAttributes(
+          ['md-cols', 'md-row-height', 'md-gutter'], attrs, layoutIfMediaMatch);
+    }
+
+    function unwatchMedia() {
+      ctrl.layoutDelegate = angular.noop;
+
+      unwatchAttrs();
+      for (var mediaName in $mdConstant.MEDIA) {
+        $mdMedia.getQuery($mdConstant.MEDIA[mediaName])
+            .removeListener(invalidateLayout);
+      }
+    }
+
+    /**
+     * Performs grid layout if the provided mediaName matches the currently
+     * active media type.
+     */
+    function layoutIfMediaMatch(mediaName) {
+      if (mediaName == null) {
+        // TODO(shyndman): It would be nice to only layout if we have
+        // instances of attributes using this media type
+        ctrl.invalidateLayout();
+      } else if ($mdMedia(mediaName)) {
+        ctrl.invalidateLayout();
+      }
+    }
+
+    var lastLayoutProps;
+
+    /**
+     * Invokes the layout engine, and uses its results to lay out our
+     * tile elements.
+     *
+     * @param {boolean} tilesInvalidated Whether tiles have been
+     *    added/removed/moved since the last layout. This is to avoid situations
+     *    where tiles are replaced with properties identical to their removed
+     *    counterparts.
+     */
+    function layoutDelegate(tilesInvalidated) {
+      var tiles = getTileElements();
+      var props = {
+        tileSpans: getTileSpans(tiles),
+        colCount: getColumnCount(),
+        rowMode: getRowMode(),
+        rowHeight: getRowHeight(),
+        gutter: getGutter()
+      };
+
+      if (!tilesInvalidated && angular.equals(props, lastLayoutProps)) {
+        return;
+      }
+
+      var performance =
+        $mdGridLayout(props.colCount, props.tileSpans, tiles)
+          .map(function(tilePositions, rowCount) {
+            return {
+              grid: {
+                element: element,
+                style: getGridStyle(props.colCount, rowCount,
+                    props.gutter, props.rowMode, props.rowHeight)
+              },
+              tiles: tilePositions.map(function(ps, i) {
+                return {
+                  element: angular.element(tiles[i]),
+                  style: getTileStyle(ps.position, ps.spans,
+                      props.colCount, rowCount,
+                      props.gutter, props.rowMode, props.rowHeight)
+                }
+              })
+            }
+          })
+          .reflow()
+          .performance();
+
+      // Report layout
+      scope.mdOnLayout({
+        $event: {
+          performance: performance
+        }
+      });
+
+      lastLayoutProps = props;
+    }
+
+    // Use $interpolate to do some simple string interpolation as a convenience.
+
+    var startSymbol = $interpolate.startSymbol();
+    var endSymbol = $interpolate.endSymbol();
+
+    // Returns an expression wrapped in the interpolator's start and end symbols.
+    function expr(exprStr) {
+      return startSymbol + exprStr + endSymbol;
+    }
+
+    // The amount of space a single 1x1 tile would take up (either width or height), used as
+    // a basis for other calculations. This consists of taking the base size percent (as would be
+    // if evenly dividing the size between cells), and then subtracting the size of one gutter.
+    // However, since there are no gutters on the edges, each tile only uses a fration
+    // (gutterShare = numGutters / numCells) of the gutter size. (Imagine having one gutter per
+    // tile, and then breaking up the extra gutter on the edge evenly among the cells).
+    var UNIT = $interpolate(expr('share') + '% - (' + expr('gutter') + ' * ' + expr('gutterShare') + ')');
+
+    // The horizontal or vertical position of a tile, e.g., the 'top' or 'left' property value.
+    // The position comes the size of a 1x1 tile plus gutter for each previous tile in the
+    // row/column (offset).
+    var POSITION  = $interpolate('calc((' + expr('unit') + ' + ' + expr('gutter') + ') * ' + expr('offset') + ')');
+
+    // The actual size of a tile, e.g., width or height, taking rowSpan or colSpan into account.
+    // This is computed by multiplying the base unit by the rowSpan/colSpan, and then adding back
+    // in the space that the gutter would normally have used (which was already accounted for in
+    // the base unit calculation).
+    var DIMENSION = $interpolate('calc((' + expr('unit') + ') * ' + expr('span') + ' + (' + expr('span') + ' - 1) * ' + expr('gutter') + ')');
+
+    /**
+     * Gets the styles applied to a tile element described by the given parameters.
+     * @param {{row: number, col: number}} position The row and column indices of the tile.
+     * @param {{row: number, col: number}} spans The rowSpan and colSpan of the tile.
+     * @param {number} colCount The number of columns.
+     * @param {number} rowCount The number of rows.
+     * @param {string} gutter The amount of space between tiles. This will be something like
+     *     '5px' or '2em'.
+     * @param {string} rowMode The row height mode. Can be one of:
+     *     'fixed': all rows have a fixed size, given by rowHeight,
+     *     'ratio': row height defined as a ratio to width, or
+     *     'fit': fit to the grid-list element height, divinding evenly among rows.
+     * @param {string|number} rowHeight The height of a row. This is only used for 'fixed' mode and
+     *     for 'ratio' mode. For 'ratio' mode, this is the *ratio* of width-to-height (e.g., 0.75).
+     * @returns {Object} Map of CSS properties to be applied to the style element. Will define
+     *     values for top, left, width, height, marginTop, and paddingTop.
+     */
+    function getTileStyle(position, spans, colCount, rowCount, gutter, rowMode, rowHeight) {
+      // TODO(shyndman): There are style caching opportunities here.
+
+      // Percent of the available horizontal space that one column takes up.
+      var hShare = (1 / colCount) * 100;
+
+      // Fraction of the gutter size that each column takes up.
+      var hGutterShare = (colCount - 1) / colCount;
+
+      // Base horizontal size of a column.
+      var hUnit = UNIT({share: hShare, gutterShare: hGutterShare, gutter: gutter});
+
+      // The width and horizontal position of each tile is always calculated the same way, but the
+      // height and vertical position depends on the rowMode.
+      var style = {
+        left: POSITION({ unit: hUnit, offset: position.col, gutter: gutter }),
+        width: DIMENSION({ unit: hUnit, span: spans.col, gutter: gutter }),
+        // resets
+        paddingTop: '',
+        marginTop: '',
+        top: '',
+        height: ''
+      };
+
+      switch (rowMode) {
+        case 'fixed':
+          // In fixed mode, simply use the given rowHeight.
+          style.top = POSITION({ unit: rowHeight, offset: position.row, gutter: gutter });
+          style.height = DIMENSION({ unit: rowHeight, span: spans.row, gutter: gutter });
+          break;
+
+        case 'ratio':
+          // Percent of the available vertical space that one row takes up. Here, rowHeight holds
+          // the ratio value. For example, if the width:height ratio is 4:3, rowHeight = 1.333.
+          var vShare = hShare / rowHeight;
+
+          // Base veritcal size of a row.
+          var vUnit = UNIT({ share: vShare, gutterShare: hGutterShare, gutter: gutter });
+
+          // padidngTop and marginTop are used to maintain the given aspect ratio, as
+          // a percentage-based value for these properties is applied to the *width* of the
+          // containing block. See http://www.w3.org/TR/CSS2/box.html#margin-properties
+          style.paddingTop = DIMENSION({ unit: vUnit, span: spans.row, gutter: gutter});
+          style.marginTop = POSITION({ unit: vUnit, offset: position.row, gutter: gutter });
+          break;
+
+        case 'fit':
+          // Fraction of the gutter size that each column takes up.
+          var vGutterShare = (rowCount - 1) / rowCount;
+
+          // Percent of the available vertical space that one row takes up.
+          var vShare = (1 / rowCount) * 100;
+
+          // Base vertical size of a row.
+          var vUnit = UNIT({share: vShare, gutterShare: vGutterShare, gutter: gutter});
+
+          style.top = POSITION({unit: vUnit, offset: position.row, gutter: gutter});
+          style.height = DIMENSION({unit: vUnit, span: spans.row, gutter: gutter});
+          break;
+      }
+
+      return style;
+    }
+
+    function getGridStyle(colCount, rowCount, gutter, rowMode, rowHeight) {
+      var style = {};
+
+      switch(rowMode) {
+        case 'fixed':
+          style.height = DIMENSION({ unit: rowHeight, span: rowCount, gutter: gutter });
+          style.paddingBottom = '';
+          break;
+
+        case 'ratio':
+          // rowHeight is width / height
+          var hGutterShare = colCount === 1 ? 0 : (colCount - 1) / colCount,
+              hShare = (1 / colCount) * 100,
+              vShare = hShare * (1 / rowHeight),
+              vUnit = UNIT({ share: vShare, gutterShare: hGutterShare, gutter: gutter });
+
+          style.height = '';
+          style.paddingBottom = DIMENSION({ unit: vUnit, span: rowCount, gutter: gutter});
+          break;
+
+        case 'fit':
+          // noop, as the height is user set
+          break;
+      }
+
+      return style;
+    }
+
+    function getTileElements() {
+      return [].filter.call(element.children(), function(ele) {
+        return ele.tagName == 'MD-GRID-TILE' && !ele.$$mdDestroyed;
+      });
+    }
+
+    /**
+     * Gets an array of objects containing the rowspan and colspan for each tile.
+     * @returns {Array<{row: number, col: number}>}
+     */
+    function getTileSpans(tileElements) {
+      return [].map.call(tileElements, function(ele) {
+        var ctrl = angular.element(ele).controller('mdGridTile');
+        return {
+          row: parseInt(
+              $mdMedia.getResponsiveAttribute(ctrl.$attrs, 'md-rowspan'), 10) || 1,
+          col: parseInt(
+              $mdMedia.getResponsiveAttribute(ctrl.$attrs, 'md-colspan'), 10) || 1
+        };
+      });
+    }
+
+    function getColumnCount() {
+      var colCount = parseInt($mdMedia.getResponsiveAttribute(attrs, 'md-cols'), 10);
+      if (isNaN(colCount)) {
+        throw 'md-grid-list: md-cols attribute was not found, or contained a non-numeric value';
+      }
+      return colCount;
+    }
+
+    function getGutter() {
+      return applyDefaultUnit($mdMedia.getResponsiveAttribute(attrs, 'md-gutter') || 1);
+    }
+
+    function getRowHeight() {
+      var rowHeight = $mdMedia.getResponsiveAttribute(attrs, 'md-row-height');
+      if (!rowHeight) {
+        throw 'md-grid-list: md-row-height attribute was not found';
+      }
+
+      switch (getRowMode()) {
+        case 'fixed':
+          return applyDefaultUnit(rowHeight);
+        case 'ratio':
+          var whRatio = rowHeight.split(':');
+          return parseFloat(whRatio[0]) / parseFloat(whRatio[1]);
+        case 'fit':
+          return 0; // N/A
+      }
+    }
+
+    function getRowMode() {
+      var rowHeight = $mdMedia.getResponsiveAttribute(attrs, 'md-row-height');
+      if (!rowHeight) {
+        throw 'md-grid-list: md-row-height attribute was not found';
+      }
+
+      if (rowHeight == 'fit') {
+        return 'fit';
+      } else if (rowHeight.indexOf(':') !== -1) {
+        return 'ratio';
+      } else {
+        return 'fixed';
+      }
+    }
+
+    function applyDefaultUnit(val) {
+      return /\D$/.test(val) ? val : val + 'px';
+    }
+  }
+}
+GridListDirective.$inject = ["$interpolate", "$mdConstant", "$mdGridLayout", "$mdMedia"];
+
+/* @ngInject */
+function GridListController($mdUtil) {
+  this.layoutInvalidated = false;
+  this.tilesInvalidated = false;
+  this.$timeout_ = $mdUtil.nextTick;
+  this.layoutDelegate = angular.noop;
+}
+GridListController.$inject = ["$mdUtil"];
+
+GridListController.prototype = {
+  invalidateTiles: function() {
+    this.tilesInvalidated = true;
+    this.invalidateLayout();
+  },
+
+  invalidateLayout: function() {
+    if (this.layoutInvalidated) {
+      return;
+    }
+    this.layoutInvalidated = true;
+    this.$timeout_(angular.bind(this, this.layout));
+  },
+
+  layout: function() {
+    try {
+      this.layoutDelegate(this.tilesInvalidated);
+    } finally {
+      this.layoutInvalidated = false;
+      this.tilesInvalidated = false;
+    }
+  }
+};
+
+
+/* @ngInject */
+function GridLayoutFactory($mdUtil) {
+  var defaultAnimator = GridTileAnimator;
+
+  /**
+   * Set the reflow animator callback
+   */
+  GridLayout.animateWith = function(customAnimator) {
+    defaultAnimator = !angular.isFunction(customAnimator) ? GridTileAnimator : customAnimator;
+  };
+
+  return GridLayout;
+
+  /**
+   * Publish layout function
+   */
+  function GridLayout(colCount, tileSpans) {
+      var self, layoutInfo, gridStyles, layoutTime, mapTime, reflowTime;
+
+      layoutTime = $mdUtil.time(function() {
+        layoutInfo = calculateGridFor(colCount, tileSpans);
+      });
+
+      return self = {
+
+        /**
+         * An array of objects describing each tile's position in the grid.
+         */
+        layoutInfo: function() {
+          return layoutInfo;
+        },
+
+        /**
+         * Maps grid positioning to an element and a set of styles using the
+         * provided updateFn.
+         */
+        map: function(updateFn) {
+          mapTime = $mdUtil.time(function() {
+            var info = self.layoutInfo();
+            gridStyles = updateFn(info.positioning, info.rowCount);
+          });
+          return self;
+        },
+
+        /**
+         * Default animator simply sets the element.css( <styles> ). An alternate
+         * animator can be provided as an argument. The function has the following
+         * signature:
+         *
+         *    function({grid: {element: JQLite, style: Object}, tiles: Array<{element: JQLite, style: Object}>)
+         */
+        reflow: function(animatorFn) {
+          reflowTime = $mdUtil.time(function() {
+            var animator = animatorFn || defaultAnimator;
+            animator(gridStyles.grid, gridStyles.tiles);
+          });
+          return self;
+        },
+
+        /**
+         * Timing for the most recent layout run.
+         */
+        performance: function() {
+          return {
+            tileCount: tileSpans.length,
+            layoutTime: layoutTime,
+            mapTime: mapTime,
+            reflowTime: reflowTime,
+            totalTime: layoutTime + mapTime + reflowTime
+          };
+        }
+      };
+    }
+
+  /**
+   * Default Gridlist animator simple sets the css for each element;
+   * NOTE: any transitions effects must be manually set in the CSS.
+   * e.g.
+   *
+   *  md-grid-tile {
+   *    transition: all 700ms ease-out 50ms;
+   *  }
+   *
+   */
+  function GridTileAnimator(grid, tiles) {
+    grid.element.css(grid.style);
+    tiles.forEach(function(t) {
+      t.element.css(t.style);
+    })
+  }
+
+  /**
+   * Calculates the positions of tiles.
+   *
+   * The algorithm works as follows:
+   *    An Array<Number> with length colCount (spaceTracker) keeps track of
+   *    available tiling positions, where elements of value 0 represents an
+   *    empty position. Space for a tile is reserved by finding a sequence of
+   *    0s with length <= than the tile's colspan. When such a space has been
+   *    found, the occupied tile positions are incremented by the tile's
+   *    rowspan value, as these positions have become unavailable for that
+   *    many rows.
+   *
+   *    If the end of a row has been reached without finding space for the
+   *    tile, spaceTracker's elements are each decremented by 1 to a minimum
+   *    of 0. Rows are searched in this fashion until space is found.
+   */
+  function calculateGridFor(colCount, tileSpans) {
+    var curCol = 0,
+        curRow = 0,
+        spaceTracker = newSpaceTracker();
+
+    return {
+      positioning: tileSpans.map(function(spans, i) {
+        return {
+          spans: spans,
+          position: reserveSpace(spans, i)
+        };
+      }),
+      rowCount: curRow + Math.max.apply(Math, spaceTracker)
+    };
+
+    function reserveSpace(spans, i) {
+      if (spans.col > colCount) {
+        throw 'md-grid-list: Tile at position ' + i + ' has a colspan ' +
+            '(' + spans.col + ') that exceeds the column count ' +
+            '(' + colCount + ')';
+      }
+
+      var start = 0,
+          end = 0;
+
+      // TODO(shyndman): This loop isn't strictly necessary if you can
+      // determine the minimum number of rows before a space opens up. To do
+      // this, recognize that you've iterated across an entire row looking for
+      // space, and if so fast-forward by the minimum rowSpan count. Repeat
+      // until the required space opens up.
+      while (end - start < spans.col) {
+        if (curCol >= colCount) {
+          nextRow();
+          continue;
+        }
+
+        start = spaceTracker.indexOf(0, curCol);
+        if (start === -1 || (end = findEnd(start + 1)) === -1) {
+          start = end = 0;
+          nextRow();
+          continue;
+        }
+
+        curCol = end + 1;
+      }
+
+      adjustRow(start, spans.col, spans.row);
+      curCol = start + spans.col;
+
+      return {
+        col: start,
+        row: curRow
+      };
+    }
+
+    function nextRow() {
+      curCol = 0;
+      curRow++;
+      adjustRow(0, colCount, -1); // Decrement row spans by one
+    }
+
+    function adjustRow(from, cols, by) {
+      for (var i = from; i < from + cols; i++) {
+        spaceTracker[i] = Math.max(spaceTracker[i] + by, 0);
+      }
+    }
+
+    function findEnd(start) {
+      var i;
+      for (i = start; i < spaceTracker.length; i++) {
+        if (spaceTracker[i] !== 0) {
+          return i;
+        }
+      }
+
+      if (i === spaceTracker.length) {
+        return i;
+      }
+    }
+
+    function newSpaceTracker() {
+      var tracker = [];
+      for (var i = 0; i < colCount; i++) {
+        tracker.push(0);
+      }
+      return tracker;
+    }
+  }
+}
+GridLayoutFactory.$inject = ["$mdUtil"];
+
+/**
+ * @ngdoc directive
+ * @name mdGridTile
+ * @module material.components.gridList
+ * @restrict E
+ * @description
+ * Tiles contain the content of an `md-grid-list`. They span one or more grid
+ * cells vertically or horizontally, and use `md-grid-tile-{footer,header}` to
+ * display secondary content.
+ *
+ * ### Responsive Attributes
+ *
+ * The `md-grid-tile` directive supports "responsive" attributes, which allow
+ * different `md-rowspan` and `md-colspan` values depending on the currently
+ * matching media query.
+ *
+ * In order to set a responsive attribute, first define the fallback value with
+ * the standard attribute name, then add additional attributes with the
+ * following convention: `{base-attribute-name}-{media-query-name}="{value}"`
+ * (ie. `md-colspan-sm="4"`)
+ *
+ * @param {number=} md-colspan The number of columns to span (default 1). Cannot
+ *    exceed the number of columns in the grid. Supports interpolation.
+ * @param {number=} md-rowspan The number of rows to span (default 1). Supports
+ *     interpolation.
+ *
+ * @usage
+ * With header:
+ * <hljs lang="html">
+ * <md-grid-tile>
+ *   <md-grid-tile-header>
+ *     <h3>This is a header</h3>
+ *   </md-grid-tile-header>
+ * </md-grid-tile>
+ * </hljs>
+ *
+ * With footer:
+ * <hljs lang="html">
+ * <md-grid-tile>
+ *   <md-grid-tile-footer>
+ *     <h3>This is a footer</h3>
+ *   </md-grid-tile-footer>
+ * </md-grid-tile>
+ * </hljs>
+ *
+ * Spanning multiple rows/columns:
+ * <hljs lang="html">
+ * <md-grid-tile md-colspan="2" md-rowspan="3">
+ * </md-grid-tile>
+ * </hljs>
+ *
+ * Responsive attributes:
+ * <hljs lang="html">
+ * <md-grid-tile md-colspan="1" md-colspan-sm="3" md-colspan-md="5">
+ * </md-grid-tile>
+ * </hljs>
+ */
+function GridTileDirective($mdMedia) {
+  return {
+    restrict: 'E',
+    require: '^mdGridList',
+    template: '<figure ng-transclude></figure>',
+    transclude: true,
+    scope: {},
+    // Simple controller that exposes attributes to the grid directive
+    controller: ["$attrs", function($attrs) {
+      this.$attrs = $attrs;
+    }],
+    link: postLink
+  };
+
+  function postLink(scope, element, attrs, gridCtrl) {
+    // Apply semantics
+    element.attr('role', 'listitem');
+
+    // If our colspan or rowspan changes, trigger a layout
+    var unwatchAttrs = $mdMedia.watchResponsiveAttributes(['md-colspan', 'md-rowspan'],
+        attrs, angular.bind(gridCtrl, gridCtrl.invalidateLayout));
+
+    // Tile registration/deregistration
+    gridCtrl.invalidateTiles();
+    scope.$on('$destroy', function() {
+      // Mark the tile as destroyed so it is no longer considered in layout,
+      // even if the DOM element sticks around (like during a leave animation)
+      element[0].$$mdDestroyed = true;
+      unwatchAttrs();
+      gridCtrl.invalidateLayout();
+    });
+
+    if (angular.isDefined(scope.$parent.$index)) {
+      scope.$watch(function() { return scope.$parent.$index; },
+        function indexChanged(newIdx, oldIdx) {
+          if (newIdx === oldIdx) {
+            return;
+          }
+          gridCtrl.invalidateTiles();
+        });
+    }
+  }
+}
+GridTileDirective.$inject = ["$mdMedia"];
+
+
+function GridTileCaptionDirective() {
+  return {
+    template: '<figcaption ng-transclude></figcaption>',
+    transclude: true
+  };
+}
+
+})();
+(function(){
+"use strict";
+
+/**
+ * @ngdoc module
+ * @name material.components.icon
+ * @description
+ * Icon
+ */
+angular.module('material.components.icon', ['material.core']);
+
+})();
+(function(){
+"use strict";
+
+/**
+ * @ngdoc module
  * @name material.components.list
  * @description
  * List module
@@ -12854,20 +12854,6 @@ angular.module('material.components.menu', [
 
 /**
  * @ngdoc module
- * @name material.components.menu-bar
- */
-
-angular.module('material.components.menuBar', [
-  'material.core',
-  'material.components.menu'
-]);
-
-})();
-(function(){
-"use strict";
-
-/**
- * @ngdoc module
  * @name material.components.progressCircular
  * @description Circular Progress module!
  */
@@ -13131,6 +13117,20 @@ MdProgressCircularDirective.$inject = ["$mdTheming", "$mdUtil", "$log"];
 
 /**
  * @ngdoc module
+ * @name material.components.menu-bar
+ */
+
+angular.module('material.components.menuBar', [
+  'material.core',
+  'material.components.menu'
+]);
+
+})();
+(function(){
+"use strict";
+
+/**
+ * @ngdoc module
  * @name material.components.progressLinear
  * @description Linear Progress module!
  */
@@ -13323,361 +13323,43 @@ MdProgressLinearDirective.$inject = ["$mdTheming", "$mdUtil", "$log"];
 
 /**
  * @ngdoc module
- * @name material.components.radioButton
- * @description radioButton module!
+ * @name material.components.showHide
  */
-angular.module('material.components.radioButton', [
+
+// Add additional handlers to ng-show and ng-hide that notify directives
+// contained within that they should recompute their size.
+// These run in addition to Angular's built-in ng-hide and ng-show directives.
+angular.module('material.components.showHide', [
   'material.core'
 ])
-  .directive('mdRadioGroup', mdRadioGroupDirective)
-  .directive('mdRadioButton', mdRadioButtonDirective);
+  .directive('ngShow', createDirective('ngShow', true))
+  .directive('ngHide', createDirective('ngHide', false));
 
-/**
- * @ngdoc directive
- * @module material.components.radioButton
- * @name mdRadioGroup
- *
- * @restrict E
- *
- * @description
- * The `<md-radio-group>` directive identifies a grouping
- * container for the 1..n grouped radio buttons; specified using nested
- * `<md-radio-button>` tags.
- *
- * As per the [material design spec](http://www.google.com/design/spec/style/color.html#color-ui-color-application)
- * the radio button is in the accent color by default. The primary color palette may be used with
- * the `md-primary` class.
- *
- * Note: `<md-radio-group>` and `<md-radio-button>` handle tabindex differently
- * than the native `<input type='radio'>` controls. Whereas the native controls
- * force the user to tab through all the radio buttons, `<md-radio-group>`
- * is focusable, and by default the `<md-radio-button>`s are not.
- *
- * @param {string} ng-model Assignable angular expression to data-bind to.
- * @param {boolean=} md-no-ink Use of attribute indicates flag to disable ink ripple effects.
- *
- * @usage
- * <hljs lang="html">
- * <md-radio-group ng-model="selected">
- *
- *   <md-radio-button
- *        ng-repeat="d in colorOptions"
- *        ng-value="d.value" aria-label="{{ d.label }}">
- *
- *          {{ d.label }}
- *
- *   </md-radio-button>
- *
- * </md-radio-group>
- * </hljs>
- *
- */
-function mdRadioGroupDirective($mdUtil, $mdConstant, $mdTheming, $timeout) {
-  RadioGroupController.prototype = createRadioGroupControllerProto();
 
-  return {
-    restrict: 'E',
-    controller: ['$element', RadioGroupController],
-    require: ['mdRadioGroup', '?ngModel'],
-    link: { pre: linkRadioGroup }
-  };
-
-  function linkRadioGroup(scope, element, attr, ctrls) {
-    $mdTheming(element);
-    var rgCtrl = ctrls[0];
-    var ngModelCtrl = ctrls[1] || $mdUtil.fakeNgModel();
-
-    rgCtrl.init(ngModelCtrl);
-
-    scope.mouseActive = false;
-    element.attr({
-              'role': 'radiogroup',
-              'tabIndex': element.attr('tabindex') || '0'
-            })
-            .on('keydown', keydownListener)
-            .on('mousedown', function(event) {
-              scope.mouseActive = true;
-              $timeout(function() {
-                scope.mouseActive = false;
-              }, 100);
-            })
-            .on('focus', function() {
-              if(scope.mouseActive === false) { rgCtrl.$element.addClass('md-focused'); }
-            })
-            .on('blur', function() { rgCtrl.$element.removeClass('md-focused'); });
-
-    /**
-     *
-     */
-    function setFocus() {
-      if (!element.hasClass('md-focused')) { element.addClass('md-focused'); }
-    }
-
-    /**
-     *
-     */
-    function keydownListener(ev) {
-      var keyCode = ev.which || ev.keyCode;
-
-      // Only listen to events that we originated ourselves
-      // so that we don't trigger on things like arrow keys in
-      // inputs.
-
-      if (keyCode != $mdConstant.KEY_CODE.ENTER &&
-          ev.currentTarget != ev.target) {
-        return;
-      }
-
-      switch (keyCode) {
-        case $mdConstant.KEY_CODE.LEFT_ARROW:
-        case $mdConstant.KEY_CODE.UP_ARROW:
-          ev.preventDefault();
-          rgCtrl.selectPrevious();
-          setFocus();
-          break;
-
-        case $mdConstant.KEY_CODE.RIGHT_ARROW:
-        case $mdConstant.KEY_CODE.DOWN_ARROW:
-          ev.preventDefault();
-          rgCtrl.selectNext();
-          setFocus();
-          break;
-
-        case $mdConstant.KEY_CODE.ENTER:
-          var form = angular.element($mdUtil.getClosest(element[0], 'form'));
-          if (form.length > 0) {
-            form.triggerHandler('submit');
-          }
-          break;
-      }
-
-    }
-  }
-
-  function RadioGroupController($element) {
-    this._radioButtonRenderFns = [];
-    this.$element = $element;
-  }
-
-  function createRadioGroupControllerProto() {
+function createDirective(name, targetValue) {
+  return ['$mdUtil', function($mdUtil) {
     return {
-      init: function(ngModelCtrl) {
-        this._ngModelCtrl = ngModelCtrl;
-        this._ngModelCtrl.$render = angular.bind(this, this.render);
-      },
-      add: function(rbRender) {
-        this._radioButtonRenderFns.push(rbRender);
-      },
-      remove: function(rbRender) {
-        var index = this._radioButtonRenderFns.indexOf(rbRender);
-        if (index !== -1) {
-          this._radioButtonRenderFns.splice(index, 1);
-        }
-      },
-      render: function() {
-        this._radioButtonRenderFns.forEach(function(rbRender) {
-          rbRender();
+      restrict: 'A',
+      multiElement: true,
+      link: function($scope, $element, $attr) {
+        var unregister = $scope.$on('$md-resize-enable', function() {
+          unregister();
+
+          $scope.$watch($attr[name], function(value) {
+            if (!!value === targetValue) {
+              $mdUtil.nextTick(function() {
+                $scope.$broadcast('$md-resize');
+              });
+              $mdUtil.dom.animator.waitTransitionEnd($element).then(function() {
+                $scope.$broadcast('$md-resize');
+              });
+            }
+          });
         });
-      },
-      setViewValue: function(value, eventType) {
-        this._ngModelCtrl.$setViewValue(value, eventType);
-        // update the other radio buttons as well
-        this.render();
-      },
-      getViewValue: function() {
-        return this._ngModelCtrl.$viewValue;
-      },
-      selectNext: function() {
-        return changeSelectedButton(this.$element, 1);
-      },
-      selectPrevious: function() {
-        return changeSelectedButton(this.$element, -1);
-      },
-      setActiveDescendant: function (radioId) {
-        this.$element.attr('aria-activedescendant', radioId);
       }
     };
-  }
-  /**
-   * Change the radio group's selected button by a given increment.
-   * If no button is selected, select the first button.
-   */
-  function changeSelectedButton(parent, increment) {
-    // Coerce all child radio buttons into an array, then wrap then in an iterator
-    var buttons = $mdUtil.iterator(parent[0].querySelectorAll('md-radio-button'), true);
-
-    if (buttons.count()) {
-      var validate = function (button) {
-        // If disabled, then NOT valid
-        return !angular.element(button).attr("disabled");
-      };
-
-      var selected = parent[0].querySelector('md-radio-button.md-checked');
-      var target = buttons[increment < 0 ? 'previous' : 'next'](selected, validate) || buttons.first();
-
-      // Activate radioButton's click listener (triggerHandler won't create a real click event)
-      angular.element(target).triggerHandler('click');
-
-
-    }
-  }
-
+  }];
 }
-mdRadioGroupDirective.$inject = ["$mdUtil", "$mdConstant", "$mdTheming", "$timeout"];
-
-/**
- * @ngdoc directive
- * @module material.components.radioButton
- * @name mdRadioButton
- *
- * @restrict E
- *
- * @description
- * The `<md-radio-button>`directive is the child directive required to be used within `<md-radio-group>` elements.
- *
- * While similar to the `<input type="radio" ng-model="" value="">` directive,
- * the `<md-radio-button>` directive provides ink effects, ARIA support, and
- * supports use within named radio groups.
- *
- * @param {string} ngModel Assignable angular expression to data-bind to.
- * @param {string=} ngChange Angular expression to be executed when input changes due to user
- *    interaction with the input element.
- * @param {string} ngValue Angular expression which sets the value to which the expression should
- *    be set when selected.
- * @param {string} value The value to which the expression should be set when selected.
- * @param {string=} name Property name of the form under which the control is published.
- * @param {string=} aria-label Adds label to radio button for accessibility.
- * Defaults to radio button's text. If no text content is available, a warning will be logged.
- *
- * @usage
- * <hljs lang="html">
- *
- * <md-radio-button value="1" aria-label="Label 1">
- *   Label 1
- * </md-radio-button>
- *
- * <md-radio-button ng-model="color" ng-value="specialValue" aria-label="Green">
- *   Green
- * </md-radio-button>
- *
- * </hljs>
- *
- */
-function mdRadioButtonDirective($mdAria, $mdUtil, $mdTheming) {
-
-  var CHECKED_CSS = 'md-checked';
-
-  return {
-    restrict: 'E',
-    require: '^mdRadioGroup',
-    transclude: true,
-    template: '<div class="md-container" md-ink-ripple md-ink-ripple-checkbox>' +
-                '<div class="md-off"></div>' +
-                '<div class="md-on"></div>' +
-              '</div>' +
-              '<div ng-transclude class="md-label"></div>',
-    link: link
-  };
-
-  function link(scope, element, attr, rgCtrl) {
-    var lastChecked;
-
-    $mdTheming(element);
-    configureAria(element, scope);
-
-    initialize();
-
-    /**
-     *
-     */
-    function initialize(controller) {
-      if ( !rgCtrl ) {
-        throw 'RadioGroupController not found.';
-      }
-
-      rgCtrl.add(render);
-      attr.$observe('value', render);
-
-      element
-        .on('click', listener)
-        .on('$destroy', function() {
-          rgCtrl.remove(render);
-        });
-    }
-
-    /**
-     *
-     */
-    function listener(ev) {
-      if (element[0].hasAttribute('disabled')) return;
-
-      scope.$apply(function() {
-        rgCtrl.setViewValue(attr.value, ev && ev.type);
-      });
-    }
-
-    /**
-     *  Add or remove the `.md-checked` class from the RadioButton (and conditionally its parent).
-     *  Update the `aria-activedescendant` attribute.
-     */
-    function render() {
-      var checked = (rgCtrl.getViewValue() == attr.value);
-      if (checked === lastChecked) {
-        return;
-      }
-
-      lastChecked = checked;
-      element.attr('aria-checked', checked);
-
-      if (checked) {
-        markParentAsChecked(true);
-        element.addClass(CHECKED_CSS);
-
-        rgCtrl.setActiveDescendant(element.attr('id'));
-
-      } else {
-        markParentAsChecked(false);
-        element.removeClass(CHECKED_CSS);
-      }
-
-      /**
-       * If the radioButton is inside a div, then add class so highlighting will work...
-       */
-      function markParentAsChecked(addClass ) {
-        if ( element.parent()[0].nodeName != "MD-RADIO-GROUP") {
-          element.parent()[ !!addClass ? 'addClass' : 'removeClass'](CHECKED_CSS);
-        }
-
-      }
-    }
-
-    /**
-     * Inject ARIA-specific attributes appropriate for each radio button
-     */
-    function configureAria( element, scope ){
-      scope.ariaId = buildAriaID();
-
-      element.attr({
-        'id' :  scope.ariaId,
-        'role' : 'radio',
-        'aria-checked' : 'false'
-      });
-
-      $mdAria.expectWithText(element, 'aria-label');
-
-      /**
-       * Build a unique ID for each radio button that will be used with aria-activedescendant.
-       * Preserve existing ID if already specified.
-       * @returns {*|string}
-       */
-      function buildAriaID() {
-        return attr.id || ( 'radio' + "_" + $mdUtil.nextUid() );
-      }
-    }
-  }
-}
-mdRadioButtonDirective.$inject = ["$mdAria", "$mdUtil", "$mdTheming"];
-
 })();
 (function(){
 "use strict";
@@ -15172,49 +14854,6 @@ SelectProvider.$inject = ["$$interimElementProvider"];
 
 /**
  * @ngdoc module
- * @name material.components.showHide
- */
-
-// Add additional handlers to ng-show and ng-hide that notify directives
-// contained within that they should recompute their size.
-// These run in addition to Angular's built-in ng-hide and ng-show directives.
-angular.module('material.components.showHide', [
-  'material.core'
-])
-  .directive('ngShow', createDirective('ngShow', true))
-  .directive('ngHide', createDirective('ngHide', false));
-
-
-function createDirective(name, targetValue) {
-  return ['$mdUtil', function($mdUtil) {
-    return {
-      restrict: 'A',
-      multiElement: true,
-      link: function($scope, $element, $attr) {
-        var unregister = $scope.$on('$md-resize-enable', function() {
-          unregister();
-
-          $scope.$watch($attr[name], function(value) {
-            if (!!value === targetValue) {
-              $mdUtil.nextTick(function() {
-                $scope.$broadcast('$md-resize');
-              });
-              $mdUtil.dom.animator.waitTransitionEnd($element).then(function() {
-                $scope.$broadcast('$md-resize');
-              });
-            }
-          });
-        });
-      }
-    };
-  }];
-}
-})();
-(function(){
-"use strict";
-
-/**
- * @ngdoc module
  * @name material.components.sidenav
  *
  * @description
@@ -15629,6 +15268,367 @@ function SidenavController($scope, $element, $attrs, $mdComponentRegistry, $q) {
   self.destroy = $mdComponentRegistry.register(self, $attrs.mdComponentId);
 }
 SidenavController.$inject = ["$scope", "$element", "$attrs", "$mdComponentRegistry", "$q"];
+
+})();
+(function(){
+"use strict";
+
+/**
+ * @ngdoc module
+ * @name material.components.radioButton
+ * @description radioButton module!
+ */
+angular.module('material.components.radioButton', [
+  'material.core'
+])
+  .directive('mdRadioGroup', mdRadioGroupDirective)
+  .directive('mdRadioButton', mdRadioButtonDirective);
+
+/**
+ * @ngdoc directive
+ * @module material.components.radioButton
+ * @name mdRadioGroup
+ *
+ * @restrict E
+ *
+ * @description
+ * The `<md-radio-group>` directive identifies a grouping
+ * container for the 1..n grouped radio buttons; specified using nested
+ * `<md-radio-button>` tags.
+ *
+ * As per the [material design spec](http://www.google.com/design/spec/style/color.html#color-ui-color-application)
+ * the radio button is in the accent color by default. The primary color palette may be used with
+ * the `md-primary` class.
+ *
+ * Note: `<md-radio-group>` and `<md-radio-button>` handle tabindex differently
+ * than the native `<input type='radio'>` controls. Whereas the native controls
+ * force the user to tab through all the radio buttons, `<md-radio-group>`
+ * is focusable, and by default the `<md-radio-button>`s are not.
+ *
+ * @param {string} ng-model Assignable angular expression to data-bind to.
+ * @param {boolean=} md-no-ink Use of attribute indicates flag to disable ink ripple effects.
+ *
+ * @usage
+ * <hljs lang="html">
+ * <md-radio-group ng-model="selected">
+ *
+ *   <md-radio-button
+ *        ng-repeat="d in colorOptions"
+ *        ng-value="d.value" aria-label="{{ d.label }}">
+ *
+ *          {{ d.label }}
+ *
+ *   </md-radio-button>
+ *
+ * </md-radio-group>
+ * </hljs>
+ *
+ */
+function mdRadioGroupDirective($mdUtil, $mdConstant, $mdTheming, $timeout) {
+  RadioGroupController.prototype = createRadioGroupControllerProto();
+
+  return {
+    restrict: 'E',
+    controller: ['$element', RadioGroupController],
+    require: ['mdRadioGroup', '?ngModel'],
+    link: { pre: linkRadioGroup }
+  };
+
+  function linkRadioGroup(scope, element, attr, ctrls) {
+    $mdTheming(element);
+    var rgCtrl = ctrls[0];
+    var ngModelCtrl = ctrls[1] || $mdUtil.fakeNgModel();
+
+    rgCtrl.init(ngModelCtrl);
+
+    scope.mouseActive = false;
+    element.attr({
+              'role': 'radiogroup',
+              'tabIndex': element.attr('tabindex') || '0'
+            })
+            .on('keydown', keydownListener)
+            .on('mousedown', function(event) {
+              scope.mouseActive = true;
+              $timeout(function() {
+                scope.mouseActive = false;
+              }, 100);
+            })
+            .on('focus', function() {
+              if(scope.mouseActive === false) { rgCtrl.$element.addClass('md-focused'); }
+            })
+            .on('blur', function() { rgCtrl.$element.removeClass('md-focused'); });
+
+    /**
+     *
+     */
+    function setFocus() {
+      if (!element.hasClass('md-focused')) { element.addClass('md-focused'); }
+    }
+
+    /**
+     *
+     */
+    function keydownListener(ev) {
+      var keyCode = ev.which || ev.keyCode;
+
+      // Only listen to events that we originated ourselves
+      // so that we don't trigger on things like arrow keys in
+      // inputs.
+
+      if (keyCode != $mdConstant.KEY_CODE.ENTER &&
+          ev.currentTarget != ev.target) {
+        return;
+      }
+
+      switch (keyCode) {
+        case $mdConstant.KEY_CODE.LEFT_ARROW:
+        case $mdConstant.KEY_CODE.UP_ARROW:
+          ev.preventDefault();
+          rgCtrl.selectPrevious();
+          setFocus();
+          break;
+
+        case $mdConstant.KEY_CODE.RIGHT_ARROW:
+        case $mdConstant.KEY_CODE.DOWN_ARROW:
+          ev.preventDefault();
+          rgCtrl.selectNext();
+          setFocus();
+          break;
+
+        case $mdConstant.KEY_CODE.ENTER:
+          var form = angular.element($mdUtil.getClosest(element[0], 'form'));
+          if (form.length > 0) {
+            form.triggerHandler('submit');
+          }
+          break;
+      }
+
+    }
+  }
+
+  function RadioGroupController($element) {
+    this._radioButtonRenderFns = [];
+    this.$element = $element;
+  }
+
+  function createRadioGroupControllerProto() {
+    return {
+      init: function(ngModelCtrl) {
+        this._ngModelCtrl = ngModelCtrl;
+        this._ngModelCtrl.$render = angular.bind(this, this.render);
+      },
+      add: function(rbRender) {
+        this._radioButtonRenderFns.push(rbRender);
+      },
+      remove: function(rbRender) {
+        var index = this._radioButtonRenderFns.indexOf(rbRender);
+        if (index !== -1) {
+          this._radioButtonRenderFns.splice(index, 1);
+        }
+      },
+      render: function() {
+        this._radioButtonRenderFns.forEach(function(rbRender) {
+          rbRender();
+        });
+      },
+      setViewValue: function(value, eventType) {
+        this._ngModelCtrl.$setViewValue(value, eventType);
+        // update the other radio buttons as well
+        this.render();
+      },
+      getViewValue: function() {
+        return this._ngModelCtrl.$viewValue;
+      },
+      selectNext: function() {
+        return changeSelectedButton(this.$element, 1);
+      },
+      selectPrevious: function() {
+        return changeSelectedButton(this.$element, -1);
+      },
+      setActiveDescendant: function (radioId) {
+        this.$element.attr('aria-activedescendant', radioId);
+      }
+    };
+  }
+  /**
+   * Change the radio group's selected button by a given increment.
+   * If no button is selected, select the first button.
+   */
+  function changeSelectedButton(parent, increment) {
+    // Coerce all child radio buttons into an array, then wrap then in an iterator
+    var buttons = $mdUtil.iterator(parent[0].querySelectorAll('md-radio-button'), true);
+
+    if (buttons.count()) {
+      var validate = function (button) {
+        // If disabled, then NOT valid
+        return !angular.element(button).attr("disabled");
+      };
+
+      var selected = parent[0].querySelector('md-radio-button.md-checked');
+      var target = buttons[increment < 0 ? 'previous' : 'next'](selected, validate) || buttons.first();
+
+      // Activate radioButton's click listener (triggerHandler won't create a real click event)
+      angular.element(target).triggerHandler('click');
+
+
+    }
+  }
+
+}
+mdRadioGroupDirective.$inject = ["$mdUtil", "$mdConstant", "$mdTheming", "$timeout"];
+
+/**
+ * @ngdoc directive
+ * @module material.components.radioButton
+ * @name mdRadioButton
+ *
+ * @restrict E
+ *
+ * @description
+ * The `<md-radio-button>`directive is the child directive required to be used within `<md-radio-group>` elements.
+ *
+ * While similar to the `<input type="radio" ng-model="" value="">` directive,
+ * the `<md-radio-button>` directive provides ink effects, ARIA support, and
+ * supports use within named radio groups.
+ *
+ * @param {string} ngModel Assignable angular expression to data-bind to.
+ * @param {string=} ngChange Angular expression to be executed when input changes due to user
+ *    interaction with the input element.
+ * @param {string} ngValue Angular expression which sets the value to which the expression should
+ *    be set when selected.
+ * @param {string} value The value to which the expression should be set when selected.
+ * @param {string=} name Property name of the form under which the control is published.
+ * @param {string=} aria-label Adds label to radio button for accessibility.
+ * Defaults to radio button's text. If no text content is available, a warning will be logged.
+ *
+ * @usage
+ * <hljs lang="html">
+ *
+ * <md-radio-button value="1" aria-label="Label 1">
+ *   Label 1
+ * </md-radio-button>
+ *
+ * <md-radio-button ng-model="color" ng-value="specialValue" aria-label="Green">
+ *   Green
+ * </md-radio-button>
+ *
+ * </hljs>
+ *
+ */
+function mdRadioButtonDirective($mdAria, $mdUtil, $mdTheming) {
+
+  var CHECKED_CSS = 'md-checked';
+
+  return {
+    restrict: 'E',
+    require: '^mdRadioGroup',
+    transclude: true,
+    template: '<div class="md-container" md-ink-ripple md-ink-ripple-checkbox>' +
+                '<div class="md-off"></div>' +
+                '<div class="md-on"></div>' +
+              '</div>' +
+              '<div ng-transclude class="md-label"></div>',
+    link: link
+  };
+
+  function link(scope, element, attr, rgCtrl) {
+    var lastChecked;
+
+    $mdTheming(element);
+    configureAria(element, scope);
+
+    initialize();
+
+    /**
+     *
+     */
+    function initialize(controller) {
+      if ( !rgCtrl ) {
+        throw 'RadioGroupController not found.';
+      }
+
+      rgCtrl.add(render);
+      attr.$observe('value', render);
+
+      element
+        .on('click', listener)
+        .on('$destroy', function() {
+          rgCtrl.remove(render);
+        });
+    }
+
+    /**
+     *
+     */
+    function listener(ev) {
+      if (element[0].hasAttribute('disabled')) return;
+
+      scope.$apply(function() {
+        rgCtrl.setViewValue(attr.value, ev && ev.type);
+      });
+    }
+
+    /**
+     *  Add or remove the `.md-checked` class from the RadioButton (and conditionally its parent).
+     *  Update the `aria-activedescendant` attribute.
+     */
+    function render() {
+      var checked = (rgCtrl.getViewValue() == attr.value);
+      if (checked === lastChecked) {
+        return;
+      }
+
+      lastChecked = checked;
+      element.attr('aria-checked', checked);
+
+      if (checked) {
+        markParentAsChecked(true);
+        element.addClass(CHECKED_CSS);
+
+        rgCtrl.setActiveDescendant(element.attr('id'));
+
+      } else {
+        markParentAsChecked(false);
+        element.removeClass(CHECKED_CSS);
+      }
+
+      /**
+       * If the radioButton is inside a div, then add class so highlighting will work...
+       */
+      function markParentAsChecked(addClass ) {
+        if ( element.parent()[0].nodeName != "MD-RADIO-GROUP") {
+          element.parent()[ !!addClass ? 'addClass' : 'removeClass'](CHECKED_CSS);
+        }
+
+      }
+    }
+
+    /**
+     * Inject ARIA-specific attributes appropriate for each radio button
+     */
+    function configureAria( element, scope ){
+      scope.ariaId = buildAriaID();
+
+      element.attr({
+        'id' :  scope.ariaId,
+        'role' : 'radio',
+        'aria-checked' : 'false'
+      });
+
+      $mdAria.expectWithText(element, 'aria-label');
+
+      /**
+       * Build a unique ID for each radio button that will be used with aria-activedescendant.
+       * Preserve existing ID if already specified.
+       * @returns {*|string}
+       */
+      function buildAriaID() {
+        return attr.id || ( 'radio' + "_" + $mdUtil.nextUid() );
+      }
+    }
+  }
+}
+mdRadioButtonDirective.$inject = ["$mdAria", "$mdUtil", "$mdTheming"];
 
 })();
 (function(){
@@ -16416,105 +16416,6 @@ MdSticky.$inject = ["$document", "$mdConstant", "$$rAF", "$mdUtil", "$compile"];
 
 /**
  * @ngdoc module
- * @name material.components.subheader
- * @description
- * SubHeader module
- *
- *  Subheaders are special list tiles that delineate distinct sections of a
- *  list or grid list and are typically related to the current filtering or
- *  sorting criteria. Subheader tiles are either displayed inline with tiles or
- *  can be associated with content, for example, in an adjacent column.
- *
- *  Upon scrolling, subheaders remain pinned to the top of the screen and remain
- *  pinned until pushed on or off screen by the next subheader. @see [Material
- *  Design Specifications](https://www.google.com/design/spec/components/subheaders.html)
- *
- *  > To improve the visual grouping of content, use the system color for your subheaders.
- *
- */
-angular
-  .module('material.components.subheader', [
-    'material.core',
-    'material.components.sticky'
-  ])
-  .directive('mdSubheader', MdSubheaderDirective);
-
-/**
- * @ngdoc directive
- * @name mdSubheader
- * @module material.components.subheader
- *
- * @restrict E
- *
- * @description
- * The `<md-subheader>` directive is a subheader for a section. By default it is sticky.
- * You can make it not sticky by applying the `md-no-sticky` class to the subheader.
- *
- *
- * @usage
- * <hljs lang="html">
- * <md-subheader>Online Friends</md-subheader>
- * </hljs>
- */
-
-function MdSubheaderDirective($mdSticky, $compile, $mdTheming, $mdUtil) {
-  return {
-    restrict: 'E',
-    replace: true,
-    transclude: true,
-    template: (
-    '<div class="md-subheader">' +
-    '  <div class="md-subheader-inner">' +
-    '    <span class="md-subheader-content"></span>' +
-    '  </div>' +
-    '</div>'
-    ),
-    link: function postLink(scope, element, attr, controllers, transclude) {
-      $mdTheming(element);
-      var outerHTML = element[0].outerHTML;
-
-      function getContent(el) {
-        return angular.element(el[0].querySelector('.md-subheader-content'));
-      }
-
-      // Transclude the user-given contents of the subheader
-      // the conventional way.
-      transclude(scope, function(clone) {
-        getContent(element).append(clone);
-      });
-
-      // Create another clone, that uses the outer and inner contents
-      // of the element, that will be 'stickied' as the user scrolls.
-      if (!element.hasClass('md-no-sticky')) {
-        transclude(scope, function(clone) {
-          // If the user adds an ng-if or ng-repeat directly to the md-subheader element, the
-          // compiled clone below will only be a comment tag (since they replace their elements with
-          // a comment) which cannot be properly passed to the $mdSticky; so we wrap it in our own
-          // DIV to ensure we have something $mdSticky can use
-          var wrapperHtml = '<div class="md-subheader-wrapper">' + outerHTML + '</div>';
-          var stickyClone = $compile(wrapperHtml)(scope);
-
-          // Append the sticky
-          $mdSticky(scope, element, stickyClone);
-
-          // Delay initialization until after any `ng-if`/`ng-repeat`/etc has finished before
-          // attempting to create the clone
-          $mdUtil.nextTick(function() {
-            getContent(stickyClone).append(clone);
-          });
-        });
-      }
-    }
-  }
-}
-MdSubheaderDirective.$inject = ["$mdSticky", "$compile", "$mdTheming", "$mdUtil"];
-
-})();
-(function(){
-"use strict";
-
-/**
- * @ngdoc module
  * @name material.components.swipe
  * @description Swipe module!
  */
@@ -16615,168 +16516,99 @@ function getDirective(name) {
 "use strict";
 
 /**
- * @private
  * @ngdoc module
- * @name material.components.switch
+ * @name material.components.subheader
+ * @description
+ * SubHeader module
+ *
+ *  Subheaders are special list tiles that delineate distinct sections of a
+ *  list or grid list and are typically related to the current filtering or
+ *  sorting criteria. Subheader tiles are either displayed inline with tiles or
+ *  can be associated with content, for example, in an adjacent column.
+ *
+ *  Upon scrolling, subheaders remain pinned to the top of the screen and remain
+ *  pinned until pushed on or off screen by the next subheader. @see [Material
+ *  Design Specifications](https://www.google.com/design/spec/components/subheaders.html)
+ *
+ *  > To improve the visual grouping of content, use the system color for your subheaders.
+ *
  */
-
-angular.module('material.components.switch', [
-  'material.core',
-  'material.components.checkbox'
-])
-  .directive('mdSwitch', MdSwitch);
+angular
+  .module('material.components.subheader', [
+    'material.core',
+    'material.components.sticky'
+  ])
+  .directive('mdSubheader', MdSubheaderDirective);
 
 /**
- * @private
  * @ngdoc directive
- * @module material.components.switch
- * @name mdSwitch
+ * @name mdSubheader
+ * @module material.components.subheader
+ *
  * @restrict E
  *
- * The switch directive is used very much like the normal [angular checkbox](https://docs.angularjs.org/api/ng/input/input%5Bcheckbox%5D).
+ * @description
+ * The `<md-subheader>` directive is a subheader for a section. By default it is sticky.
+ * You can make it not sticky by applying the `md-no-sticky` class to the subheader.
  *
- * As per the [material design spec](http://www.google.com/design/spec/style/color.html#color-ui-color-application)
- * the switch is in the accent color by default. The primary color palette may be used with
- * the `md-primary` class.
- *
- * @param {string} ng-model Assignable angular expression to data-bind to.
- * @param {string=} name Property name of the form under which the control is published.
- * @param {expression=} ng-true-value The value to which the expression should be set when selected.
- * @param {expression=} ng-false-value The value to which the expression should be set when not selected.
- * @param {string=} ng-change Angular expression to be executed when input changes due to user interaction with the input element.
- * @param {expression=} ng-disabled En/Disable based on the expression.
- * @param {boolean=} md-no-ink Use of attribute indicates use of ripple ink effects.
- * @param {string=} aria-label Publish the button label used by screen-readers for accessibility. Defaults to the switch's text.
  *
  * @usage
  * <hljs lang="html">
- * <md-switch ng-model="isActive" aria-label="Finished?">
- *   Finished ?
- * </md-switch>
- *
- * <md-switch md-no-ink ng-model="hasInk" aria-label="No Ink Effects">
- *   No Ink Effects
- * </md-switch>
- *
- * <md-switch ng-disabled="true" ng-model="isDisabled" aria-label="Disabled">
- *   Disabled
- * </md-switch>
- *
+ * <md-subheader>Online Friends</md-subheader>
  * </hljs>
  */
-function MdSwitch(mdCheckboxDirective, $mdUtil, $mdConstant, $parse, $$rAF, $mdGesture) {
-  var checkboxDirective = mdCheckboxDirective[0];
 
+function MdSubheaderDirective($mdSticky, $compile, $mdTheming, $mdUtil) {
   return {
     restrict: 'E',
-    priority: 210, // Run before ngAria
+    replace: true,
     transclude: true,
-    template:
-      '<div class="md-container">' +
-        '<div class="md-bar"></div>' +
-        '<div class="md-thumb-container">' +
-          '<div class="md-thumb" md-ink-ripple md-ink-ripple-checkbox></div>' +
-        '</div>'+
-      '</div>' +
-      '<div ng-transclude class="md-label"></div>',
-    require: '?ngModel',
-    compile: mdSwitchCompile
-  };
+    template: (
+    '<div class="md-subheader">' +
+    '  <div class="md-subheader-inner">' +
+    '    <span class="md-subheader-content"></span>' +
+    '  </div>' +
+    '</div>'
+    ),
+    link: function postLink(scope, element, attr, controllers, transclude) {
+      $mdTheming(element);
+      var outerHTML = element[0].outerHTML;
 
-  function mdSwitchCompile(element, attr) {
-    var checkboxLink = checkboxDirective.compile(element, attr);
-    // No transition on initial load.
-    element.addClass('md-dragging');
-
-    return function (scope, element, attr, ngModel) {
-      ngModel = ngModel || $mdUtil.fakeNgModel();
-
-      var disabledGetter = null;
-      if (attr.disabled != null) {
-        disabledGetter = function() { return true; };
-      } else if (attr.ngDisabled) {
-        disabledGetter = $parse(attr.ngDisabled);
+      function getContent(el) {
+        return angular.element(el[0].querySelector('.md-subheader-content'));
       }
 
-      var thumbContainer = angular.element(element[0].querySelector('.md-thumb-container'));
-      var switchContainer = angular.element(element[0].querySelector('.md-container'));
-
-      // no transition on initial load
-      $$rAF(function() {
-        element.removeClass('md-dragging');
+      // Transclude the user-given contents of the subheader
+      // the conventional way.
+      transclude(scope, function(clone) {
+        getContent(element).append(clone);
       });
 
-      checkboxLink(scope, element, attr, ngModel);
+      // Create another clone, that uses the outer and inner contents
+      // of the element, that will be 'stickied' as the user scrolls.
+      if (!element.hasClass('md-no-sticky')) {
+        transclude(scope, function(clone) {
+          // If the user adds an ng-if or ng-repeat directly to the md-subheader element, the
+          // compiled clone below will only be a comment tag (since they replace their elements with
+          // a comment) which cannot be properly passed to the $mdSticky; so we wrap it in our own
+          // DIV to ensure we have something $mdSticky can use
+          var wrapperHtml = '<div class="md-subheader-wrapper">' + outerHTML + '</div>';
+          var stickyClone = $compile(wrapperHtml)(scope);
 
-      if (disabledGetter) {
-        scope.$watch(disabledGetter, function(isDisabled) {
-          element.attr('tabindex', isDisabled ? -1 : 0);
+          // Append the sticky
+          $mdSticky(scope, element, stickyClone);
+
+          // Delay initialization until after any `ng-if`/`ng-repeat`/etc has finished before
+          // attempting to create the clone
+          $mdUtil.nextTick(function() {
+            getContent(stickyClone).append(clone);
+          });
         });
       }
-
-      // These events are triggered by setup drag
-      $mdGesture.register(switchContainer, 'drag');
-      switchContainer
-        .on('$md.dragstart', onDragStart)
-        .on('$md.drag', onDrag)
-        .on('$md.dragend', onDragEnd);
-
-      var drag;
-      function onDragStart(ev) {
-        // Don't go if the switch is disabled.
-        if (disabledGetter && disabledGetter(scope)) return;
-        ev.stopPropagation();
-
-        element.addClass('md-dragging');
-        drag = {width: thumbContainer.prop('offsetWidth')};
-        element.removeClass('transition');
-      }
-
-      function onDrag(ev) {
-        if (!drag) return;
-        ev.stopPropagation();
-        ev.srcEvent && ev.srcEvent.preventDefault();
-
-        var percent = ev.pointer.distanceX / drag.width;
-
-        //if checked, start from right. else, start from left
-        var translate = ngModel.$viewValue ?  1 + percent : percent;
-        // Make sure the switch stays inside its bounds, 0-1%
-        translate = Math.max(0, Math.min(1, translate));
-
-        thumbContainer.css($mdConstant.CSS.TRANSFORM, 'translate3d(' + (100*translate) + '%,0,0)');
-        drag.translate = translate;
-      }
-
-      function onDragEnd(ev) {
-        if (!drag) return;
-        ev.stopPropagation();
-
-        element.removeClass('md-dragging');
-        thumbContainer.css($mdConstant.CSS.TRANSFORM, '');
-
-        // We changed if there is no distance (this is a click a click),
-        // or if the drag distance is >50% of the total.
-        var isChanged = ngModel.$viewValue ? drag.translate > 0.5 : drag.translate < 0.5;
-        if (isChanged) {
-          applyModelValue(!ngModel.$viewValue);
-        }
-        drag = null;
-      }
-
-      function applyModelValue(newValue) {
-        scope.$apply(function() {
-          ngModel.$setViewValue(newValue);
-          ngModel.$render();
-        });
-      }
-
-    };
+    }
   }
-
-
 }
-MdSwitch.$inject = ["mdCheckboxDirective", "$mdUtil", "$mdConstant", "$parse", "$$rAF", "$mdGesture"];
+MdSubheaderDirective.$inject = ["$mdSticky", "$compile", "$mdTheming", "$mdUtil"];
 
 })();
 (function(){
@@ -18072,133 +17904,6 @@ MdSwitch.$inject = ["mdCheckboxDirective", "$mdUtil", "$mdConstant", "$parse", "
 (function(){
     'use strict';
 
-    /**
-     * @ngdoc directive
-     * @name mdtColumn
-     * @restrict E
-     * @requires mdtTable
-     *
-     * @description
-     * Representing a header column cell which should be placed inside `mdt-header-row` element directive.
-     *
-     * @param {string=} alignRule align cell content. This settings will have affect on each data cells in the same
-     *  column (e.g. every x.th cell in every row).
-     *
-     *  Assignable values:
-     *    - 'left'
-     *    - 'right'
-     *
-     * @param {function()=} sortBy compareFunction callback for sorting the column data's. As every compare function,
-     *  should get two parameters and return with the comapred result (-1,1,0)
-     *
-     * @param {string=} columnDefinition displays a tooltip on hover.
-     *
-     * @example
-     * <pre>
-     *  <mdt-table>
-     *      <mdt-header-row>
-     *          <mdt-column align-rule="left">Product name</mdt-column>
-     *          <mdt-column
-     *              align-rule="right"
-     *              column-definition="The price of the product in gross.">Price</mdt-column>
-     *      </mdt-header-row>
-     *
-     *      <mdt-row ng-repeat="product in ctrl.products">
-     *          <mdt-cell>{{product.name}}</mdt-cell>
-     *          <mdt-cell>{{product.price}}</mdt-cell>
-     *      </mdt-row>
-     *  </mdt-table>
-     * </pre>
-     */
-    function mdtColumnDirective(){
-        return {
-            restrict: 'E',
-            transclude: true,
-            replace: true,
-            scope: {
-                alignRule: '@',
-                sortBy: '=',
-                columnDefinition: '@'
-            },
-            require: ['^mdtTable'],
-            link: function ($scope, element, attrs, ctrl, transclude) {
-                var mdtTableCtrl = ctrl[0];
-
-                transclude(function (clone) {
-                    mdtTableCtrl.addHeaderCell({
-                        alignRule: $scope.alignRule,
-                        sortBy: $scope.sortBy,
-                        columnDefinition: $scope.columnDefinition,
-                        columnName: clone.html()
-                    });
-                });
-            }
-        };
-    }
-
-    angular
-        .module('material.components.table')
-        .directive('mdtColumn', mdtColumnDirective);
-}());
-(function(){
-    'use strict';
-
-    function mdtGeneratedHeaderCellContentDirective(){
-        return {
-            restrict: 'E',
-            templateUrl: '/main/templates/mdtGeneratedHeaderCellContent.html',
-            replace: true,
-            scope: false,
-            link: function(){
-
-            }
-        };
-    }
-
-    angular
-        .module('material.components.table')
-        .directive('mdtGeneratedHeaderCellContent', mdtGeneratedHeaderCellContentDirective);
-}());
-(function(){
-    'use strict';
-
-    /**
-     * @ngdoc directive
-     * @name mdtHeaderRow
-     * @restrict E
-     * @requires mdtTable
-     *
-     * @description
-     * Representing a header row which should be placed inside `mdt-table` element directive.
-     * The main responsibility of this directive is to execute all the transcluded `mdt-column` element directives.
-     *
-     */
-    function mdtHeaderRowDirective(){
-        return {
-            restrict: 'E',
-            replace: true,
-            transclude: true,
-            require: '^mdtTable',
-            scope: true,
-            link: function($scope, element, attrs, mdtCtrl, transclude){
-                appendColumns();
-
-                function appendColumns(){
-                    transclude(function (clone) {
-                        element.append(clone);
-                    });
-                }
-            }
-        };
-    }
-
-    angular
-        .module('material.components.table')
-        .directive('mdtHeaderRow', mdtHeaderRowDirective);
-}());
-(function(){
-    'use strict';
-
     function mdtAddAlignClass(ColumnAlignmentHelper){
         return {
             restrict: 'A',
@@ -18357,6 +18062,133 @@ MdSwitch.$inject = ["mdCheckboxDirective", "$mdUtil", "$mdConstant", "$parse", "
 (function(){
     'use strict';
 
+    /**
+     * @ngdoc directive
+     * @name mdtColumn
+     * @restrict E
+     * @requires mdtTable
+     *
+     * @description
+     * Representing a header column cell which should be placed inside `mdt-header-row` element directive.
+     *
+     * @param {string=} alignRule align cell content. This settings will have affect on each data cells in the same
+     *  column (e.g. every x.th cell in every row).
+     *
+     *  Assignable values:
+     *    - 'left'
+     *    - 'right'
+     *
+     * @param {function()=} sortBy compareFunction callback for sorting the column data's. As every compare function,
+     *  should get two parameters and return with the comapred result (-1,1,0)
+     *
+     * @param {string=} columnDefinition displays a tooltip on hover.
+     *
+     * @example
+     * <pre>
+     *  <mdt-table>
+     *      <mdt-header-row>
+     *          <mdt-column align-rule="left">Product name</mdt-column>
+     *          <mdt-column
+     *              align-rule="right"
+     *              column-definition="The price of the product in gross.">Price</mdt-column>
+     *      </mdt-header-row>
+     *
+     *      <mdt-row ng-repeat="product in ctrl.products">
+     *          <mdt-cell>{{product.name}}</mdt-cell>
+     *          <mdt-cell>{{product.price}}</mdt-cell>
+     *      </mdt-row>
+     *  </mdt-table>
+     * </pre>
+     */
+    function mdtColumnDirective(){
+        return {
+            restrict: 'E',
+            transclude: true,
+            replace: true,
+            scope: {
+                alignRule: '@',
+                sortBy: '=',
+                columnDefinition: '@'
+            },
+            require: ['^mdtTable'],
+            link: function ($scope, element, attrs, ctrl, transclude) {
+                var mdtTableCtrl = ctrl[0];
+
+                transclude(function (clone) {
+                    mdtTableCtrl.addHeaderCell({
+                        alignRule: $scope.alignRule,
+                        sortBy: $scope.sortBy,
+                        columnDefinition: $scope.columnDefinition,
+                        columnName: clone.html()
+                    });
+                });
+            }
+        };
+    }
+
+    angular
+        .module('material.components.table')
+        .directive('mdtColumn', mdtColumnDirective);
+}());
+(function(){
+    'use strict';
+
+    function mdtGeneratedHeaderCellContentDirective(){
+        return {
+            restrict: 'E',
+            templateUrl: '/main/templates/mdtGeneratedHeaderCellContent.html',
+            replace: true,
+            scope: false,
+            link: function(){
+
+            }
+        };
+    }
+
+    angular
+        .module('material.components.table')
+        .directive('mdtGeneratedHeaderCellContent', mdtGeneratedHeaderCellContentDirective);
+}());
+(function(){
+    'use strict';
+
+    /**
+     * @ngdoc directive
+     * @name mdtHeaderRow
+     * @restrict E
+     * @requires mdtTable
+     *
+     * @description
+     * Representing a header row which should be placed inside `mdt-table` element directive.
+     * The main responsibility of this directive is to execute all the transcluded `mdt-column` element directives.
+     *
+     */
+    function mdtHeaderRowDirective(){
+        return {
+            restrict: 'E',
+            replace: true,
+            transclude: true,
+            require: '^mdtTable',
+            scope: true,
+            link: function($scope, element, attrs, mdtCtrl, transclude){
+                appendColumns();
+
+                function appendColumns(){
+                    transclude(function (clone) {
+                        element.append(clone);
+                    });
+                }
+            }
+        };
+    }
+
+    angular
+        .module('material.components.table')
+        .directive('mdtHeaderRow', mdtHeaderRowDirective);
+}());
+(function(){
+    'use strict';
+
     function mdtCardFooterDirective(){
         return {
             restrict: 'E',
@@ -18410,6 +18242,174 @@ $templateCache.put("/main/templates/mdtCardHeader.html","<div class=\"mdt-header
 $templateCache.put("/main/templates/mdtDropdown.html","<md-whiteframe class=\"md-whiteframe-z1\" layout=\"column\">\n  <md-button ng-if=\"menuItem.enabled\" class=\"mdt-dropdown-menu-item\" ng-repeat=\"menuItem in menuList\" ng-click=\"onMenuSelected(menuItem)\" layout=\"row\" aria-label=\"{{::menuItem.name}}\">\n    <md-icon md-font-icon=\"material-icons\">{{::menuItem.icon}}</md-icon> <span class=\"name\" ng-bind=\"::menuItem.name\" flex></span>\n  </md-button>\n</md-whiteframe>\n");
 $templateCache.put("/main/templates/mdtGeneratedHeaderCellContent.html","<div>\n    <div layout=\"row\" ng-if=\"sortableColumns\" style=\"display: inline-block;\">\n        <md-tooltip ng-show=\"headerRowData.columnDefinition\">{{headerRowData.columnDefinition}}</md-tooltip>\n\n        <span ng-show=\"headerRowData.alignRule == \'right\'\">\n            <span class=\"hoverSortIcons\" ng-if=\"!isSorted()\">\n                <ng-md-icon icon=\"arrow_forward\" size=\"16\"></ng-md-icon>\n            </span>\n\n            <span class=\"sortedColumn\" ng-if=\"isSorted()\" ng-class=\"direction == -1 ? \'ascending\' : \'descending\'\">\n                <ng-md-icon icon=\"arrow_forward\" size=\"16\"></ng-md-icon>\n            </span>\n        </span>\n\n        <span>\n            {{headerRowData.columnName}}\n        </span>\n\n        <span ng-show=\"headerRowData.alignRule == \'left\'\">\n            <span class=\"hoverSortIcons\" ng-if=\"!isSorted()\">\n                <ng-md-icon icon=\"arrow_forward\" size=\"16\"></ng-md-icon>\n            </span>\n\n            <span class=\"sortedColumn\" ng-if=\"isSorted()\" ng-class=\"direction == -1 ? \'ascending\' : \'descending\'\">\n                <ng-md-icon icon=\"arrow_forward\" size=\"16\"></ng-md-icon>\n            </span>\n        </span>\n    </div>\n    <div ng-if=\"!sortableColumns\">\n        <md-tooltip ng-show=\"headerRowData.columnDefinition\">{{headerRowData.columnDefinition}}</md-tooltip>\n\n        <span>\n            {{headerRowData.columnName}}\n        </span>\n    </div>\n</div>");
 $templateCache.put("/main/templates/mdtTable.html","<md-content flex class=\"mdtTable md-whiteframe-z1\" layout=\"column\" style=\"box-shadow: none;\" ng-cloak ng-class=\"{\'invisible\': !tableIsReady}\">\n    <md-content ng-hide=\"mdtPaginationHelper.getRows().length\" flex layout=\"column\" layout-align=\"center center\">\n        <span class=\"md-subhead\" ng-bind=\"mdtEmptyTitle\"></span>\n    </md-content>\n    <div id=\"visible-header\" class=\"row-header\" style=\"display: block\" ng-show=\"mdtPaginationHelper.getRows().length\">\n        <div layout=\"row\" mdt-animate-sort-icon-handler flex>\n            <div\n                    ng-style=\"headerRowData.style\"\n                    class=\"th\"\n                    mdt-add-align-class=\"headerRowData.alignRule\"\n                    mdt-sort-handler\n                    md-ink-ripple=\"{{rippleEffect}}\"\n                    ng-repeat=\"headerRowData in tableDataStorageService.header | filter: {enabled : true} track by $index\" ng-class=\"headerRowData.class\">\n                <mdt-generated-header-cell-content></mdt-generated-header-cell-content>\n            </div>\n            <div class=\"th flex-order-{{tableDataStorageService.header.length}}\" ng-if=\"isScrollVisible\" ng-style=\"{\'width\':scrollWidth,\'padding-right\':\'0\'}\"></div>\n        </div>\n    </div>\n    <div class=\"data-container\" flex layout=\"column\" ng-show=\"mdtPaginationHelper.getRows().length\">\n        <md-list flex mtd-context-menu\n                 menu-list=\"menuList\"\n                 on-menu-selected=\"onMenuSelected(menuItem)\"\n                 on-popup=\"onPopup()\">\n            <!--<div vs-repeat style=\"width: 100%;height: 100%\">-->\n            <md-virtual-repeat-container style=\"top:57px;bottom:0;left:0;right:0;position: absolute\">\n                <md-list-item md-virtual-repeat=\"rowData in mdtPaginationHelper.getRows()\"\n                              md-item-size=\"49\"\n                              class=\"row-container\"\n                              ng-class=\"{\'selectedRow\': rowData.optionList.selected}\"\n                              ng-click=\"mdtPaginationHelper.selectRow(rowData)\"\n                              on-long-press=\"mdtPaginationHelper.selectRow(rowData)\"\n                              ng-dblclick=\"mdtPaginationHelper.dblclick(rowData)\"\n                              aria-label=\"{{$index}}\"\n                              mtd-right-click=\"mdtPaginationHelper.selectRow(rowData)\">\n                    <div class=\"td\"\n                         ng-repeat=\"headerRowData in tableDataStorageService.header | filter: {enabled : true} track by $index\"\n                         ng-class=\"headerRowData.class\"\n                         ng-switch=\"headerRowData.type\"\n                         ng-style=\"headerRowData.style\">\n\n                        <div class=\"first-column-section\">\n                            <span ng-switch-when=\"html\" mdt-add-html-content-to-cell=\"headerRowData.content(rowData)\"></span>\n                            <span ng-switch-when=\"date\">{{(headerRowData.content(rowData) || rowData.data[headerRowData.id]) | date:\'MMM dd, yyyy\' | ifEmpty:\'&#8212\'}}</span>\n                            <span ng-switch-default>{{headerRowData.content(rowData) || rowData.data[headerRowData.id] | ifEmpty:\'&#8212\'}}</span>\n                        </div>\n                        <div ng-if=\"headerRowData.secondColumn\" class=\"second-column-section\" ng-class=\"headerRowData.secondColumn.class\" ng-switch=\"headerRowData.secondColumn.type\">\n                            <span ng-switch-when=\"html\" mdt-add-html-content-to-cell=\"headerRowData.secondColumn.content(rowData)\"></span>\n                            <span ng-switch-when=\"date\">{{headerRowData.secondColumn.content(rowData) | date:\'MMM dd, yyyy\' | ifEmpty:\'&#8212\'}}</span>\n                            <span ng-switch-default>{{headerRowData.secondColumn.content(rowData) | ifEmpty:\'&#8212\'}}</span>\n                        </div>\n                    </div>\n                </md-list-item>\n                <!--</div>-->\n            </md-virtual-repeat-container>\n        </md-list>\n    </div>\n\n\n    <!-- table card -->\n    <mdt-card-footer></mdt-card-footer>\n    <!-- table card end -->\n</md-content>");}]);
+})();
+(function(){
+"use strict";
+
+/**
+ * @private
+ * @ngdoc module
+ * @name material.components.switch
+ */
+
+angular.module('material.components.switch', [
+  'material.core',
+  'material.components.checkbox'
+])
+  .directive('mdSwitch', MdSwitch);
+
+/**
+ * @private
+ * @ngdoc directive
+ * @module material.components.switch
+ * @name mdSwitch
+ * @restrict E
+ *
+ * The switch directive is used very much like the normal [angular checkbox](https://docs.angularjs.org/api/ng/input/input%5Bcheckbox%5D).
+ *
+ * As per the [material design spec](http://www.google.com/design/spec/style/color.html#color-ui-color-application)
+ * the switch is in the accent color by default. The primary color palette may be used with
+ * the `md-primary` class.
+ *
+ * @param {string} ng-model Assignable angular expression to data-bind to.
+ * @param {string=} name Property name of the form under which the control is published.
+ * @param {expression=} ng-true-value The value to which the expression should be set when selected.
+ * @param {expression=} ng-false-value The value to which the expression should be set when not selected.
+ * @param {string=} ng-change Angular expression to be executed when input changes due to user interaction with the input element.
+ * @param {expression=} ng-disabled En/Disable based on the expression.
+ * @param {boolean=} md-no-ink Use of attribute indicates use of ripple ink effects.
+ * @param {string=} aria-label Publish the button label used by screen-readers for accessibility. Defaults to the switch's text.
+ *
+ * @usage
+ * <hljs lang="html">
+ * <md-switch ng-model="isActive" aria-label="Finished?">
+ *   Finished ?
+ * </md-switch>
+ *
+ * <md-switch md-no-ink ng-model="hasInk" aria-label="No Ink Effects">
+ *   No Ink Effects
+ * </md-switch>
+ *
+ * <md-switch ng-disabled="true" ng-model="isDisabled" aria-label="Disabled">
+ *   Disabled
+ * </md-switch>
+ *
+ * </hljs>
+ */
+function MdSwitch(mdCheckboxDirective, $mdUtil, $mdConstant, $parse, $$rAF, $mdGesture) {
+  var checkboxDirective = mdCheckboxDirective[0];
+
+  return {
+    restrict: 'E',
+    priority: 210, // Run before ngAria
+    transclude: true,
+    template:
+      '<div class="md-container">' +
+        '<div class="md-bar"></div>' +
+        '<div class="md-thumb-container">' +
+          '<div class="md-thumb" md-ink-ripple md-ink-ripple-checkbox></div>' +
+        '</div>'+
+      '</div>' +
+      '<div ng-transclude class="md-label"></div>',
+    require: '?ngModel',
+    compile: mdSwitchCompile
+  };
+
+  function mdSwitchCompile(element, attr) {
+    var checkboxLink = checkboxDirective.compile(element, attr);
+    // No transition on initial load.
+    element.addClass('md-dragging');
+
+    return function (scope, element, attr, ngModel) {
+      ngModel = ngModel || $mdUtil.fakeNgModel();
+
+      var disabledGetter = null;
+      if (attr.disabled != null) {
+        disabledGetter = function() { return true; };
+      } else if (attr.ngDisabled) {
+        disabledGetter = $parse(attr.ngDisabled);
+      }
+
+      var thumbContainer = angular.element(element[0].querySelector('.md-thumb-container'));
+      var switchContainer = angular.element(element[0].querySelector('.md-container'));
+
+      // no transition on initial load
+      $$rAF(function() {
+        element.removeClass('md-dragging');
+      });
+
+      checkboxLink(scope, element, attr, ngModel);
+
+      if (disabledGetter) {
+        scope.$watch(disabledGetter, function(isDisabled) {
+          element.attr('tabindex', isDisabled ? -1 : 0);
+        });
+      }
+
+      // These events are triggered by setup drag
+      $mdGesture.register(switchContainer, 'drag');
+      switchContainer
+        .on('$md.dragstart', onDragStart)
+        .on('$md.drag', onDrag)
+        .on('$md.dragend', onDragEnd);
+
+      var drag;
+      function onDragStart(ev) {
+        // Don't go if the switch is disabled.
+        if (disabledGetter && disabledGetter(scope)) return;
+        ev.stopPropagation();
+
+        element.addClass('md-dragging');
+        drag = {width: thumbContainer.prop('offsetWidth')};
+        element.removeClass('transition');
+      }
+
+      function onDrag(ev) {
+        if (!drag) return;
+        ev.stopPropagation();
+        ev.srcEvent && ev.srcEvent.preventDefault();
+
+        var percent = ev.pointer.distanceX / drag.width;
+
+        //if checked, start from right. else, start from left
+        var translate = ngModel.$viewValue ?  1 + percent : percent;
+        // Make sure the switch stays inside its bounds, 0-1%
+        translate = Math.max(0, Math.min(1, translate));
+
+        thumbContainer.css($mdConstant.CSS.TRANSFORM, 'translate3d(' + (100*translate) + '%,0,0)');
+        drag.translate = translate;
+      }
+
+      function onDragEnd(ev) {
+        if (!drag) return;
+        ev.stopPropagation();
+
+        element.removeClass('md-dragging');
+        thumbContainer.css($mdConstant.CSS.TRANSFORM, '');
+
+        // We changed if there is no distance (this is a click a click),
+        // or if the drag distance is >50% of the total.
+        var isChanged = ngModel.$viewValue ? drag.translate > 0.5 : drag.translate < 0.5;
+        if (isChanged) {
+          applyModelValue(!ngModel.$viewValue);
+        }
+        drag = null;
+      }
+
+      function applyModelValue(newValue) {
+        scope.$apply(function() {
+          ngModel.$setViewValue(newValue);
+          ngModel.$render();
+        });
+      }
+
+    };
+  }
+
+
+}
+MdSwitch.$inject = ["mdCheckboxDirective", "$mdUtil", "$mdConstant", "$parse", "$$rAF", "$mdGesture"];
+
 })();
 (function(){
 "use strict";
@@ -19376,6 +19376,65 @@ MdTooltipDirective.$inject = ["$timeout", "$window", "$$rAF", "$document", "$mdU
 
 /**
  * @ngdoc module
+ * @name material.components.whiteframe
+ */
+angular
+  .module('material.components.whiteframe', ['material.core'])
+  .directive('mdWhiteframe', MdWhiteframeDirective);
+
+/**
+ * @private
+ * @ngdoc directive
+ * @module material.components.whiteframe
+ * @name mdWhiteframe
+ * @restrict A
+ *
+ * @description
+ * The md-whiteframe directive allows you to apply an elevation shadow to an element.
+ *
+ * The attribute values needs to be a number between 1 and 24.
+ *
+ * ### Notes
+ * - If there is no value specified it defaults to 4dp.
+ * - If the value is not valid it defaults to 4dp.
+
+ * @usage
+ * <hljs lang="html">
+ * <div md-whiteframe="3">
+ *   <span>Elevation of 3dp</span>
+ * </div>
+ * </hljs>
+ */
+function MdWhiteframeDirective($log) {
+  var MIN_DP = 1;
+  var MAX_DP = 24;
+  var DEFAULT_DP = 4;
+
+  return {
+    restrict: 'A',
+    link: postLink
+  };
+
+  function postLink(scope, element, attr) {
+    var elevation = parseInt(attr.mdWhiteframe, 10) || DEFAULT_DP;
+
+    if (elevation > MAX_DP || elevation < MIN_DP) {
+      $log.warn('md-whiteframe attribute value is invalid. It should be a number between ' + MIN_DP + ' and ' + MAX_DP, element[0]);
+      elevation = DEFAULT_DP;
+    }
+
+    element.addClass('md-whiteframe-' + elevation + 'dp');
+  }
+}
+MdWhiteframeDirective.$inject = ["$log"];
+
+
+})();
+(function(){
+"use strict";
+
+/**
+ * @ngdoc module
  * @name material.components.virtualRepeat
  */
 angular.module('material.components.virtualRepeat', [
@@ -20276,65 +20335,6 @@ VirtualRepeatModelArrayLike.prototype.$$includeIndexes = function(start, end) {
 function abstractMethod() {
   throw Error('Non-overridden abstract method called.');
 }
-
-})();
-(function(){
-"use strict";
-
-/**
- * @ngdoc module
- * @name material.components.whiteframe
- */
-angular
-  .module('material.components.whiteframe', ['material.core'])
-  .directive('mdWhiteframe', MdWhiteframeDirective);
-
-/**
- * @private
- * @ngdoc directive
- * @module material.components.whiteframe
- * @name mdWhiteframe
- * @restrict A
- *
- * @description
- * The md-whiteframe directive allows you to apply an elevation shadow to an element.
- *
- * The attribute values needs to be a number between 1 and 24.
- *
- * ### Notes
- * - If there is no value specified it defaults to 4dp.
- * - If the value is not valid it defaults to 4dp.
-
- * @usage
- * <hljs lang="html">
- * <div md-whiteframe="3">
- *   <span>Elevation of 3dp</span>
- * </div>
- * </hljs>
- */
-function MdWhiteframeDirective($log) {
-  var MIN_DP = 1;
-  var MAX_DP = 24;
-  var DEFAULT_DP = 4;
-
-  return {
-    restrict: 'A',
-    link: postLink
-  };
-
-  function postLink(scope, element, attr) {
-    var elevation = parseInt(attr.mdWhiteframe, 10) || DEFAULT_DP;
-
-    if (elevation > MAX_DP || elevation < MIN_DP) {
-      $log.warn('md-whiteframe attribute value is invalid. It should be a number between ' + MIN_DP + ' and ' + MAX_DP, element[0]);
-      elevation = DEFAULT_DP;
-    }
-
-    element.addClass('md-whiteframe-' + elevation + 'dp');
-  }
-}
-MdWhiteframeDirective.$inject = ["$log"];
-
 
 })();
 (function(){
@@ -26490,7 +26490,7 @@ MdTabsTemplate.$inject = ["$compile", "$mdUtil"];
 
 })();
 (function(){ 
-angular.module("material.core").constant("$MD_THEME_CSS", "md-autocomplete.md-THEME_NAME-theme {  background: '{{background-50}}'; }  md-autocomplete.md-THEME_NAME-theme[disabled] {    background: '{{background-100}}'; }  md-autocomplete.md-THEME_NAME-theme button md-icon path {    fill: '{{background-600}}'; }  md-autocomplete.md-THEME_NAME-theme button:after {    background: '{{background-600-0.3}}'; }.md-autocomplete-suggestions-container.md-THEME_NAME-theme {  background: '{{background-50}}'; }  .md-autocomplete-suggestions-container.md-THEME_NAME-theme li {    color: '{{background-900}}'; }    .md-autocomplete-suggestions-container.md-THEME_NAME-theme li .highlight {      color: '{{background-600}}'; }    .md-autocomplete-suggestions-container.md-THEME_NAME-theme li:hover, .md-autocomplete-suggestions-container.md-THEME_NAME-theme li.selected {      background: '{{background-200}}'; }md-backdrop {  background-color: '{{background-900-0.0}}'; }  md-backdrop.md-opaque.md-THEME_NAME-theme {    background-color: '{{background-900-1.0}}'; }a.md-button.md-THEME_NAME-theme:not([disabled]):hover,.md-button.md-THEME_NAME-theme:not([disabled]):hover {  background-color: '{{background-500-0.2}}'; }a.md-button.md-THEME_NAME-theme:not([disabled]).md-focused,.md-button.md-THEME_NAME-theme:not([disabled]).md-focused {  background-color: '{{background-500-0.2}}'; }a.md-button.md-THEME_NAME-theme:not([disabled]).md-icon-button:hover,.md-button.md-THEME_NAME-theme:not([disabled]).md-icon-button:hover {  background-color: transparent; }a.md-button.md-THEME_NAME-theme.md-fab,.md-button.md-THEME_NAME-theme.md-fab {  background-color: '{{accent-color}}';  color: '{{accent-contrast}}'; }  a.md-button.md-THEME_NAME-theme.md-fab md-icon,  .md-button.md-THEME_NAME-theme.md-fab md-icon {    color: '{{accent-contrast}}'; }  a.md-button.md-THEME_NAME-theme.md-fab:not([disabled]):hover,  .md-button.md-THEME_NAME-theme.md-fab:not([disabled]):hover {    background-color: '{{accent-color}}'; }  a.md-button.md-THEME_NAME-theme.md-fab:not([disabled]).md-focused,  .md-button.md-THEME_NAME-theme.md-fab:not([disabled]).md-focused {    background-color: '{{accent-A700}}'; }a.md-button.md-THEME_NAME-theme.md-primary,.md-button.md-THEME_NAME-theme.md-primary {  color: '{{primary-color}}'; }  a.md-button.md-THEME_NAME-theme.md-primary.md-raised, a.md-button.md-THEME_NAME-theme.md-primary.md-fab,  .md-button.md-THEME_NAME-theme.md-primary.md-raised,  .md-button.md-THEME_NAME-theme.md-primary.md-fab {    color: '{{primary-contrast}}';    background-color: '{{primary-color}}'; }    a.md-button.md-THEME_NAME-theme.md-primary.md-raised:not([disabled]) md-icon, a.md-button.md-THEME_NAME-theme.md-primary.md-fab:not([disabled]) md-icon,    .md-button.md-THEME_NAME-theme.md-primary.md-raised:not([disabled]) md-icon,    .md-button.md-THEME_NAME-theme.md-primary.md-fab:not([disabled]) md-icon {      color: '{{primary-contrast}}'; }    a.md-button.md-THEME_NAME-theme.md-primary.md-raised:not([disabled]):hover, a.md-button.md-THEME_NAME-theme.md-primary.md-fab:not([disabled]):hover,    .md-button.md-THEME_NAME-theme.md-primary.md-raised:not([disabled]):hover,    .md-button.md-THEME_NAME-theme.md-primary.md-fab:not([disabled]):hover {      background-color: '{{primary-color}}'; }    a.md-button.md-THEME_NAME-theme.md-primary.md-raised:not([disabled]).md-focused, a.md-button.md-THEME_NAME-theme.md-primary.md-fab:not([disabled]).md-focused,    .md-button.md-THEME_NAME-theme.md-primary.md-raised:not([disabled]).md-focused,    .md-button.md-THEME_NAME-theme.md-primary.md-fab:not([disabled]).md-focused {      background-color: '{{primary-600}}'; }  a.md-button.md-THEME_NAME-theme.md-primary:not([disabled]) md-icon,  .md-button.md-THEME_NAME-theme.md-primary:not([disabled]) md-icon {    color: '{{primary-color}}'; }a.md-button.md-THEME_NAME-theme.md-fab,.md-button.md-THEME_NAME-theme.md-fab {  background-color: '{{accent-color}}';  color: '{{accent-contrast}}'; }  a.md-button.md-THEME_NAME-theme.md-fab:not([disabled]) .md-icon,  .md-button.md-THEME_NAME-theme.md-fab:not([disabled]) .md-icon {    color: '{{accent-contrast}}'; }  a.md-button.md-THEME_NAME-theme.md-fab:not([disabled]):hover,  .md-button.md-THEME_NAME-theme.md-fab:not([disabled]):hover {    background-color: '{{accent-color}}'; }  a.md-button.md-THEME_NAME-theme.md-fab:not([disabled]).md-focused,  .md-button.md-THEME_NAME-theme.md-fab:not([disabled]).md-focused {    background-color: '{{accent-A700}}'; }a.md-button.md-THEME_NAME-theme.md-raised,.md-button.md-THEME_NAME-theme.md-raised {  color: '{{background-900}}';  background-color: '{{background-50}}'; }  a.md-button.md-THEME_NAME-theme.md-raised:not([disabled]) md-icon,  .md-button.md-THEME_NAME-theme.md-raised:not([disabled]) md-icon {    color: '{{background-900}}'; }  a.md-button.md-THEME_NAME-theme.md-raised:not([disabled]):hover,  .md-button.md-THEME_NAME-theme.md-raised:not([disabled]):hover {    background-color: '{{background-50}}'; }  a.md-button.md-THEME_NAME-theme.md-raised:not([disabled]).md-focused,  .md-button.md-THEME_NAME-theme.md-raised:not([disabled]).md-focused {    background-color: '{{background-200}}'; }a.md-button.md-THEME_NAME-theme.md-warn,.md-button.md-THEME_NAME-theme.md-warn {  color: '{{warn-color}}'; }  a.md-button.md-THEME_NAME-theme.md-warn.md-raised, a.md-button.md-THEME_NAME-theme.md-warn.md-fab,  .md-button.md-THEME_NAME-theme.md-warn.md-raised,  .md-button.md-THEME_NAME-theme.md-warn.md-fab {    color: '{{warn-contrast}}';    background-color: '{{warn-color}}'; }    a.md-button.md-THEME_NAME-theme.md-warn.md-raised:not([disabled]) md-icon, a.md-button.md-THEME_NAME-theme.md-warn.md-fab:not([disabled]) md-icon,    .md-button.md-THEME_NAME-theme.md-warn.md-raised:not([disabled]) md-icon,    .md-button.md-THEME_NAME-theme.md-warn.md-fab:not([disabled]) md-icon {      color: '{{warn-contrast}}'; }    a.md-button.md-THEME_NAME-theme.md-warn.md-raised:not([disabled]):hover, a.md-button.md-THEME_NAME-theme.md-warn.md-fab:not([disabled]):hover,    .md-button.md-THEME_NAME-theme.md-warn.md-raised:not([disabled]):hover,    .md-button.md-THEME_NAME-theme.md-warn.md-fab:not([disabled]):hover {      background-color: '{{warn-color}}'; }    a.md-button.md-THEME_NAME-theme.md-warn.md-raised:not([disabled]).md-focused, a.md-button.md-THEME_NAME-theme.md-warn.md-fab:not([disabled]).md-focused,    .md-button.md-THEME_NAME-theme.md-warn.md-raised:not([disabled]).md-focused,    .md-button.md-THEME_NAME-theme.md-warn.md-fab:not([disabled]).md-focused {      background-color: '{{warn-700}}'; }  a.md-button.md-THEME_NAME-theme.md-warn:not([disabled]) md-icon,  .md-button.md-THEME_NAME-theme.md-warn:not([disabled]) md-icon {    color: '{{warn-color}}'; }a.md-button.md-THEME_NAME-theme.md-accent,.md-button.md-THEME_NAME-theme.md-accent {  color: '{{accent-color}}'; }  a.md-button.md-THEME_NAME-theme.md-accent.md-raised, a.md-button.md-THEME_NAME-theme.md-accent.md-fab,  .md-button.md-THEME_NAME-theme.md-accent.md-raised,  .md-button.md-THEME_NAME-theme.md-accent.md-fab {    color: '{{accent-contrast}}';    background-color: '{{accent-color}}'; }    a.md-button.md-THEME_NAME-theme.md-accent.md-raised:not([disabled]) md-icon, a.md-button.md-THEME_NAME-theme.md-accent.md-fab:not([disabled]) md-icon,    .md-button.md-THEME_NAME-theme.md-accent.md-raised:not([disabled]) md-icon,    .md-button.md-THEME_NAME-theme.md-accent.md-fab:not([disabled]) md-icon {      color: '{{accent-contrast}}'; }    a.md-button.md-THEME_NAME-theme.md-accent.md-raised:not([disabled]):hover, a.md-button.md-THEME_NAME-theme.md-accent.md-fab:not([disabled]):hover,    .md-button.md-THEME_NAME-theme.md-accent.md-raised:not([disabled]):hover,    .md-button.md-THEME_NAME-theme.md-accent.md-fab:not([disabled]):hover {      background-color: '{{accent-color}}'; }    a.md-button.md-THEME_NAME-theme.md-accent.md-raised:not([disabled]).md-focused, a.md-button.md-THEME_NAME-theme.md-accent.md-fab:not([disabled]).md-focused,    .md-button.md-THEME_NAME-theme.md-accent.md-raised:not([disabled]).md-focused,    .md-button.md-THEME_NAME-theme.md-accent.md-fab:not([disabled]).md-focused {      background-color: '{{accent-700}}'; }  a.md-button.md-THEME_NAME-theme.md-accent:not([disabled]) md-icon,  .md-button.md-THEME_NAME-theme.md-accent:not([disabled]) md-icon {    color: '{{accent-color}}'; }a.md-button.md-THEME_NAME-theme[disabled], a.md-button.md-THEME_NAME-theme.md-raised[disabled], a.md-button.md-THEME_NAME-theme.md-fab[disabled], a.md-button.md-THEME_NAME-theme.md-accent[disabled], a.md-button.md-THEME_NAME-theme.md-warn[disabled],.md-button.md-THEME_NAME-theme[disabled],.md-button.md-THEME_NAME-theme.md-raised[disabled],.md-button.md-THEME_NAME-theme.md-fab[disabled],.md-button.md-THEME_NAME-theme.md-accent[disabled],.md-button.md-THEME_NAME-theme.md-warn[disabled] {  color: '{{foreground-3}}' !important;  cursor: default; }  a.md-button.md-THEME_NAME-theme[disabled] md-icon, a.md-button.md-THEME_NAME-theme.md-raised[disabled] md-icon, a.md-button.md-THEME_NAME-theme.md-fab[disabled] md-icon, a.md-button.md-THEME_NAME-theme.md-accent[disabled] md-icon, a.md-button.md-THEME_NAME-theme.md-warn[disabled] md-icon,  .md-button.md-THEME_NAME-theme[disabled] md-icon,  .md-button.md-THEME_NAME-theme.md-raised[disabled] md-icon,  .md-button.md-THEME_NAME-theme.md-fab[disabled] md-icon,  .md-button.md-THEME_NAME-theme.md-accent[disabled] md-icon,  .md-button.md-THEME_NAME-theme.md-warn[disabled] md-icon {    color: '{{foreground-3}}'; }a.md-button.md-THEME_NAME-theme.md-raised[disabled], a.md-button.md-THEME_NAME-theme.md-fab[disabled],.md-button.md-THEME_NAME-theme.md-raised[disabled],.md-button.md-THEME_NAME-theme.md-fab[disabled] {  background-color: '{{foreground-4}}'; }a.md-button.md-THEME_NAME-theme[disabled],.md-button.md-THEME_NAME-theme[disabled] {  background-color: transparent; }md-bottom-sheet.md-THEME_NAME-theme {  background-color: '{{background-50}}';  border-top-color: '{{background-300}}'; }  md-bottom-sheet.md-THEME_NAME-theme.md-list md-list-item {    color: '{{foreground-1}}'; }  md-bottom-sheet.md-THEME_NAME-theme .md-subheader {    background-color: '{{background-50}}'; }  md-bottom-sheet.md-THEME_NAME-theme .md-subheader {    color: '{{foreground-1}}'; }md-card.md-THEME_NAME-theme {  background-color: '{{background-color}}';  border-radius: 2px; }  md-card.md-THEME_NAME-theme .md-card-image {    border-radius: 2px 2px 0 0; }  md-card.md-THEME_NAME-theme md-card-header md-card-avatar md-icon {    color: '{{background-color}}';    background-color: '{{foreground-3}}'; }  md-card.md-THEME_NAME-theme md-card-header md-card-header-text .md-subhead {    color: '{{foreground-2}}'; }  md-card.md-THEME_NAME-theme md-card-title md-card-title-text:not(:only-child) .md-subhead {    color: '{{foreground-2}}'; }md-checkbox.md-THEME_NAME-theme .md-ripple {  color: '{{accent-600}}'; }md-checkbox.md-THEME_NAME-theme.md-checked .md-ripple {  color: '{{background-600}}'; }md-checkbox.md-THEME_NAME-theme.md-checked.md-focused .md-container:before {  background-color: '{{accent-color-0.26}}'; }md-checkbox.md-THEME_NAME-theme .md-ink-ripple {  color: '{{foreground-2}}'; }md-checkbox.md-THEME_NAME-theme.md-checked .md-ink-ripple {  color: '{{accent-color-0.87}}'; }md-checkbox.md-THEME_NAME-theme .md-icon {  border-color: '{{foreground-2}}'; }md-checkbox.md-THEME_NAME-theme.md-checked .md-icon {  background-color: '{{accent-color-0.87}}'; }md-checkbox.md-THEME_NAME-theme.md-checked .md-icon:after {  border-color: '{{accent-contrast-0.87}}'; }md-checkbox.md-THEME_NAME-theme:not([disabled]).md-primary .md-ripple {  color: '{{primary-600}}'; }md-checkbox.md-THEME_NAME-theme:not([disabled]).md-primary.md-checked .md-ripple {  color: '{{background-600}}'; }md-checkbox.md-THEME_NAME-theme:not([disabled]).md-primary .md-ink-ripple {  color: '{{foreground-2}}'; }md-checkbox.md-THEME_NAME-theme:not([disabled]).md-primary.md-checked .md-ink-ripple {  color: '{{primary-color-0.87}}'; }md-checkbox.md-THEME_NAME-theme:not([disabled]).md-primary .md-icon {  border-color: '{{foreground-2}}'; }md-checkbox.md-THEME_NAME-theme:not([disabled]).md-primary.md-checked .md-icon {  background-color: '{{primary-color-0.87}}'; }md-checkbox.md-THEME_NAME-theme:not([disabled]).md-primary.md-checked.md-focused .md-container:before {  background-color: '{{primary-color-0.26}}'; }md-checkbox.md-THEME_NAME-theme:not([disabled]).md-primary.md-checked .md-icon:after {  border-color: '{{primary-contrast-0.87}}'; }md-checkbox.md-THEME_NAME-theme:not([disabled]).md-warn .md-ripple {  color: '{{warn-600}}'; }md-checkbox.md-THEME_NAME-theme:not([disabled]).md-warn .md-ink-ripple {  color: '{{foreground-2}}'; }md-checkbox.md-THEME_NAME-theme:not([disabled]).md-warn.md-checked .md-ink-ripple {  color: '{{warn-color-0.87}}'; }md-checkbox.md-THEME_NAME-theme:not([disabled]).md-warn .md-icon {  border-color: '{{foreground-2}}'; }md-checkbox.md-THEME_NAME-theme:not([disabled]).md-warn.md-checked .md-icon {  background-color: '{{warn-color-0.87}}'; }md-checkbox.md-THEME_NAME-theme:not([disabled]).md-warn.md-checked.md-focused:not([disabled]) .md-container:before {  background-color: '{{warn-color-0.26}}'; }md-checkbox.md-THEME_NAME-theme:not([disabled]).md-warn.md-checked .md-icon:after {  border-color: '{{background-200}}'; }md-checkbox.md-THEME_NAME-theme[disabled] .md-icon {  border-color: '{{foreground-3}}'; }md-checkbox.md-THEME_NAME-theme[disabled].md-checked .md-icon {  background-color: '{{foreground-3}}'; }md-checkbox.md-THEME_NAME-theme[disabled].md-checked .md-icon:after {  border-color: '{{background-200}}'; }md-checkbox.md-THEME_NAME-theme[disabled] .md-label {  color: '{{foreground-3}}'; }md-chips.md-THEME_NAME-theme .md-chips {  box-shadow: 0 1px '{{background-300}}'; }  md-chips.md-THEME_NAME-theme .md-chips.md-focused {    box-shadow: 0 2px '{{primary-color}}'; }md-chips.md-THEME_NAME-theme .md-chip {  background: '{{background-300}}';  color: '{{background-800}}'; }  md-chips.md-THEME_NAME-theme .md-chip.md-focused {    background: '{{primary-color}}';    color: '{{primary-contrast}}'; }    md-chips.md-THEME_NAME-theme .md-chip.md-focused md-icon {      color: '{{primary-contrast}}'; }md-chips.md-THEME_NAME-theme md-chip-remove .md-button md-icon path {  fill: '{{background-500}}'; }.md-contact-suggestion span.md-contact-email {  color: '{{background-400}}'; }md-content.md-THEME_NAME-theme {  color: '{{foreground-1}}';  background-color: '{{background-color}}'; }/** Theme styles for mdCalendar. */.md-calendar.md-THEME_NAME-theme {  color: '{{foreground-1}}'; }  .md-calendar.md-THEME_NAME-theme tr:last-child td {    border-bottom-color: '{{background-200}}'; }.md-THEME_NAME-theme .md-calendar-day-header {  background: '{{background-hue-1}}';  color: '{{foreground-1}}'; }.md-THEME_NAME-theme .md-calendar-date.md-calendar-date-today .md-calendar-date-selection-indicator {  border: 1px solid '{{primary-500}}'; }.md-THEME_NAME-theme .md-calendar-date.md-calendar-date-today.md-calendar-date-disabled {  color: '{{primary-500-0.6}}'; }.md-THEME_NAME-theme .md-calendar-date.md-focus .md-calendar-date-selection-indicator {  background: '{{background-hue-1}}'; }.md-THEME_NAME-theme .md-calendar-date-selection-indicator:hover {  background: '{{background-hue-1}}'; }.md-THEME_NAME-theme .md-calendar-date.md-calendar-selected-date .md-calendar-date-selection-indicator,.md-THEME_NAME-theme .md-calendar-date.md-focus.md-calendar-selected-date .md-calendar-date-selection-indicator {  background: '{{primary-500}}';  color: '{{primary-500-contrast}}';  border-color: transparent; }.md-THEME_NAME-theme .md-calendar-date-disabled,.md-THEME_NAME-theme .md-calendar-month-label-disabled {  color: '{{foreground-3}}'; }/** Theme styles for mdDatepicker. */md-datepicker.md-THEME_NAME-theme {  background: '{{background-color}}'; }.md-THEME_NAME-theme .md-datepicker-input {  color: '{{background-contrast}}';  background: '{{background-color}}'; }  .md-THEME_NAME-theme .md-datepicker-input::-webkit-input-placeholder, .md-THEME_NAME-theme .md-datepicker-input::-moz-placeholder, .md-THEME_NAME-theme .md-datepicker-input:-moz-placeholder, .md-THEME_NAME-theme .md-datepicker-input:-ms-input-placeholder {    color: \"{{foreground-3}}\"; }.md-THEME_NAME-theme .md-datepicker-input-container {  border-bottom-color: '{{background-300}}'; }  .md-THEME_NAME-theme .md-datepicker-input-container.md-datepicker-focused {    border-bottom-color: '{{primary-500}}'; }  .md-THEME_NAME-theme .md-datepicker-input-container.md-datepicker-invalid {    border-bottom-color: '{{warn-A700}}'; }.md-THEME_NAME-theme .md-datepicker-calendar-pane {  border-color: '{{background-300}}'; }.md-THEME_NAME-theme .md-datepicker-triangle-button .md-datepicker-expand-triangle {  border-top-color: '{{foreground-3}}'; }.md-THEME_NAME-theme .md-datepicker-triangle-button:hover .md-datepicker-expand-triangle {  border-top-color: '{{foreground-2}}'; }.md-THEME_NAME-theme .md-datepicker-open .md-datepicker-calendar-icon {  fill: '{{primary-500}}'; }.md-THEME_NAME-theme .md-datepicker-calendar,.md-THEME_NAME-theme .md-datepicker-input-mask-opaque {  background: '{{background-color}}'; }md-dialog.md-THEME_NAME-theme {  border-radius: 4px;  background-color: '{{background-color}}'; }  md-dialog.md-THEME_NAME-theme.md-content-overflow .md-actions, md-dialog.md-THEME_NAME-theme.md-content-overflow md-dialog-actions {    border-top-color: '{{foreground-4}}'; }md-divider.md-THEME_NAME-theme {  border-top-color: '{{foreground-4}}'; }.layout-row > md-divider.md-THEME_NAME-theme {  border-right-color: '{{foreground-4}}'; }md-icon.md-THEME_NAME-theme {  color: '{{foreground-2}}'; }  md-icon.md-THEME_NAME-theme.md-primary {    color: '{{primary-color}}'; }  md-icon.md-THEME_NAME-theme.md-accent {    color: '{{accent-color}}'; }  md-icon.md-THEME_NAME-theme.md-warn {    color: '{{warn-color}}'; }md-input-container.md-THEME_NAME-theme .md-input {  color: '{{foreground-1}}';  border-color: '{{foreground-4}}';  text-shadow: '{{foreground-shadow}}'; }  md-input-container.md-THEME_NAME-theme .md-input::-webkit-input-placeholder, md-input-container.md-THEME_NAME-theme .md-input::-moz-placeholder, md-input-container.md-THEME_NAME-theme .md-input:-moz-placeholder, md-input-container.md-THEME_NAME-theme .md-input:-ms-input-placeholder {    color: \"{{foreground-3}}\"; }md-input-container.md-THEME_NAME-theme > md-icon {  color: '{{foreground-1}}'; }md-input-container.md-THEME_NAME-theme label,md-input-container.md-THEME_NAME-theme .md-placeholder {  text-shadow: '{{foreground-shadow}}';  color: '{{foreground-3}}'; }md-input-container.md-THEME_NAME-theme ng-messages, md-input-container.md-THEME_NAME-theme [ng-messages],md-input-container.md-THEME_NAME-theme ng-message, md-input-container.md-THEME_NAME-theme data-ng-message, md-input-container.md-THEME_NAME-theme x-ng-message,md-input-container.md-THEME_NAME-theme [ng-message], md-input-container.md-THEME_NAME-theme [data-ng-message], md-input-container.md-THEME_NAME-theme [x-ng-message],md-input-container.md-THEME_NAME-theme [ng-message-exp], md-input-container.md-THEME_NAME-theme [data-ng-message-exp], md-input-container.md-THEME_NAME-theme [x-ng-message-exp] {  color: '{{warn-A700}}'; }  md-input-container.md-THEME_NAME-theme ng-messages .md-char-counter, md-input-container.md-THEME_NAME-theme [ng-messages] .md-char-counter,  md-input-container.md-THEME_NAME-theme ng-message .md-char-counter, md-input-container.md-THEME_NAME-theme data-ng-message .md-char-counter, md-input-container.md-THEME_NAME-theme x-ng-message .md-char-counter,  md-input-container.md-THEME_NAME-theme [ng-message] .md-char-counter, md-input-container.md-THEME_NAME-theme [data-ng-message] .md-char-counter, md-input-container.md-THEME_NAME-theme [x-ng-message] .md-char-counter,  md-input-container.md-THEME_NAME-theme [ng-message-exp] .md-char-counter, md-input-container.md-THEME_NAME-theme [data-ng-message-exp] .md-char-counter, md-input-container.md-THEME_NAME-theme [x-ng-message-exp] .md-char-counter {    color: '{{foreground-1}}'; }md-input-container.md-THEME_NAME-theme:not(.md-input-invalid).md-input-has-value label {  color: '{{foreground-2}}'; }md-input-container.md-THEME_NAME-theme:not(.md-input-invalid).md-input-focused .md-input {  border-color: '{{primary-500}}'; }md-input-container.md-THEME_NAME-theme:not(.md-input-invalid).md-input-focused label {  color: '{{primary-500}}'; }md-input-container.md-THEME_NAME-theme:not(.md-input-invalid).md-input-focused md-icon {  color: '{{primary-500}}'; }md-input-container.md-THEME_NAME-theme:not(.md-input-invalid).md-input-focused.md-accent .md-input {  border-color: '{{accent-500}}'; }md-input-container.md-THEME_NAME-theme:not(.md-input-invalid).md-input-focused.md-accent label {  color: '{{accent-500}}'; }md-input-container.md-THEME_NAME-theme:not(.md-input-invalid).md-input-focused.md-warn .md-input {  border-color: '{{warn-A700}}'; }md-input-container.md-THEME_NAME-theme:not(.md-input-invalid).md-input-focused.md-warn label {  color: '{{warn-A700}}'; }md-input-container.md-THEME_NAME-theme.md-input-invalid .md-input {  border-color: '{{warn-A700}}'; }md-input-container.md-THEME_NAME-theme.md-input-invalid.md-input-focused label {  color: '{{warn-A700}}'; }md-input-container.md-THEME_NAME-theme.md-input-invalid ng-message, md-input-container.md-THEME_NAME-theme.md-input-invalid data-ng-message, md-input-container.md-THEME_NAME-theme.md-input-invalid x-ng-message,md-input-container.md-THEME_NAME-theme.md-input-invalid [ng-message], md-input-container.md-THEME_NAME-theme.md-input-invalid [data-ng-message], md-input-container.md-THEME_NAME-theme.md-input-invalid [x-ng-message],md-input-container.md-THEME_NAME-theme.md-input-invalid [ng-message-exp], md-input-container.md-THEME_NAME-theme.md-input-invalid [data-ng-message-exp], md-input-container.md-THEME_NAME-theme.md-input-invalid [x-ng-message-exp],md-input-container.md-THEME_NAME-theme.md-input-invalid .md-char-counter {  color: '{{warn-A700}}'; }md-input-container.md-THEME_NAME-theme .md-input[disabled],md-input-container.md-THEME_NAME-theme .md-input [disabled] {  border-bottom-color: transparent;  color: '{{foreground-3}}';  background-image: linear-gradient(to right, \"{{foreground-3}}\" 0%, \"{{foreground-3}}\" 33%, transparent 0%);  background-image: -ms-linear-gradient(left, transparent 0%, \"{{foreground-3}}\" 100%); }md-list.md-THEME_NAME-theme md-list-item.md-2-line .md-list-item-text h3, md-list.md-THEME_NAME-theme md-list-item.md-2-line .md-list-item-text h4,md-list.md-THEME_NAME-theme md-list-item.md-3-line .md-list-item-text h3,md-list.md-THEME_NAME-theme md-list-item.md-3-line .md-list-item-text h4 {  color: '{{foreground-1}}'; }md-list.md-THEME_NAME-theme md-list-item.md-2-line .md-list-item-text p,md-list.md-THEME_NAME-theme md-list-item.md-3-line .md-list-item-text p {  color: '{{foreground-2}}'; }md-list.md-THEME_NAME-theme .md-proxy-focus.md-focused div.md-no-style {  background-color: '{{background-100}}'; }md-list.md-THEME_NAME-theme md-list-item > .md-avatar-icon {  background-color: '{{foreground-3}}';  color: '{{background-color}}'; }md-list.md-THEME_NAME-theme md-list-item > md-icon {  color: '{{foreground-2}}'; }  md-list.md-THEME_NAME-theme md-list-item > md-icon.md-highlight {    color: '{{primary-color}}'; }    md-list.md-THEME_NAME-theme md-list-item > md-icon.md-highlight.md-accent {      color: '{{accent-color}}'; }md-menu-content.md-THEME_NAME-theme {  background-color: '{{background-color}}'; }  md-menu-content.md-THEME_NAME-theme md-menu-divider {    background-color: '{{foreground-4}}'; }md-menu-bar.md-THEME_NAME-theme > button.md-button {  color: '{{foreground-2}}';  border-radius: 2px; }md-menu-bar.md-THEME_NAME-theme md-menu.md-open > button, md-menu-bar.md-THEME_NAME-theme md-menu > button:focus {  outline: none;  background: '{{background-200}}'; }md-menu-bar.md-THEME_NAME-theme.md-open:not(.md-keyboard-mode) md-menu:hover > button {  background-color: '{{ background-500-0.2}}'; }md-menu-bar.md-THEME_NAME-theme:not(.md-keyboard-mode):not(.md-open) md-menu button:hover,md-menu-bar.md-THEME_NAME-theme:not(.md-keyboard-mode):not(.md-open) md-menu button:focus {  background: transparent; }md-menu-content.md-THEME_NAME-theme .md-menu > .md-button:after {  color: '{{foreground-2}}'; }md-menu-content.md-THEME_NAME-theme .md-menu.md-open > .md-button {  background-color: '{{ background-500-0.2}}'; }md-toolbar.md-THEME_NAME-theme.md-menu-toolbar {  background-color: '{{background-color}}';  color: '{{foreground-1}}'; }  md-toolbar.md-THEME_NAME-theme.md-menu-toolbar md-toolbar-filler {    background-color: '{{primary-color}}';    color: '{{primary-contrast}}'; }    md-toolbar.md-THEME_NAME-theme.md-menu-toolbar md-toolbar-filler md-icon {      color: '{{primary-contrast}}'; }md-progress-circular.md-THEME_NAME-theme {  background-color: transparent; }  md-progress-circular.md-THEME_NAME-theme .md-inner .md-gap {    border-top-color: '{{primary-color}}';    border-bottom-color: '{{primary-color}}'; }  md-progress-circular.md-THEME_NAME-theme .md-inner .md-left .md-half-circle, md-progress-circular.md-THEME_NAME-theme .md-inner .md-right .md-half-circle {    border-top-color: '{{primary-color}}'; }  md-progress-circular.md-THEME_NAME-theme .md-inner .md-right .md-half-circle {    border-right-color: '{{primary-color}}'; }  md-progress-circular.md-THEME_NAME-theme .md-inner .md-left .md-half-circle {    border-left-color: '{{primary-color}}'; }  md-progress-circular.md-THEME_NAME-theme.md-warn .md-inner .md-gap {    border-top-color: '{{warn-color}}';    border-bottom-color: '{{warn-color}}'; }  md-progress-circular.md-THEME_NAME-theme.md-warn .md-inner .md-left .md-half-circle, md-progress-circular.md-THEME_NAME-theme.md-warn .md-inner .md-right .md-half-circle {    border-top-color: '{{warn-color}}'; }  md-progress-circular.md-THEME_NAME-theme.md-warn .md-inner .md-right .md-half-circle {    border-right-color: '{{warn-color}}'; }  md-progress-circular.md-THEME_NAME-theme.md-warn .md-inner .md-left .md-half-circle {    border-left-color: '{{warn-color}}'; }  md-progress-circular.md-THEME_NAME-theme.md-accent .md-inner .md-gap {    border-top-color: '{{accent-color}}';    border-bottom-color: '{{accent-color}}'; }  md-progress-circular.md-THEME_NAME-theme.md-accent .md-inner .md-left .md-half-circle, md-progress-circular.md-THEME_NAME-theme.md-accent .md-inner .md-right .md-half-circle {    border-top-color: '{{accent-color}}'; }  md-progress-circular.md-THEME_NAME-theme.md-accent .md-inner .md-right .md-half-circle {    border-right-color: '{{accent-color}}'; }  md-progress-circular.md-THEME_NAME-theme.md-accent .md-inner .md-left .md-half-circle {    border-left-color: '{{accent-color}}'; }md-progress-linear.md-THEME_NAME-theme .md-container {  background-color: '{{primary-100}}'; }md-progress-linear.md-THEME_NAME-theme .md-bar {  background-color: '{{primary-color}}'; }md-progress-linear.md-THEME_NAME-theme.md-warn .md-container {  background-color: '{{warn-100}}'; }md-progress-linear.md-THEME_NAME-theme.md-warn .md-bar {  background-color: '{{warn-color}}'; }md-progress-linear.md-THEME_NAME-theme.md-accent .md-container {  background-color: '{{accent-100}}'; }md-progress-linear.md-THEME_NAME-theme.md-accent .md-bar {  background-color: '{{accent-color}}'; }md-progress-linear.md-THEME_NAME-theme[md-mode=buffer].md-warn .md-bar1 {  background-color: '{{warn-100}}'; }md-progress-linear.md-THEME_NAME-theme[md-mode=buffer].md-warn .md-dashed:before {  background: radial-gradient(\"{{warn-100}}\" 0%, \"{{warn-100}}\" 16%, transparent 42%); }md-progress-linear.md-THEME_NAME-theme[md-mode=buffer].md-accent .md-bar1 {  background-color: '{{accent-100}}'; }md-progress-linear.md-THEME_NAME-theme[md-mode=buffer].md-accent .md-dashed:before {  background: radial-gradient(\"{{accent-100}}\" 0%, \"{{accent-100}}\" 16%, transparent 42%); }md-radio-button.md-THEME_NAME-theme .md-off {  border-color: '{{foreground-2}}'; }md-radio-button.md-THEME_NAME-theme .md-on {  background-color: '{{accent-color-0.87}}'; }md-radio-button.md-THEME_NAME-theme.md-checked .md-off {  border-color: '{{accent-color-0.87}}'; }md-radio-button.md-THEME_NAME-theme.md-checked .md-ink-ripple {  color: '{{accent-color-0.87}}'; }md-radio-button.md-THEME_NAME-theme .md-container .md-ripple {  color: '{{accent-600}}'; }md-radio-group.md-THEME_NAME-theme:not([disabled]) .md-primary .md-on, md-radio-group.md-THEME_NAME-theme:not([disabled]).md-primary .md-on,md-radio-button.md-THEME_NAME-theme:not([disabled]) .md-primary .md-on,md-radio-button.md-THEME_NAME-theme:not([disabled]).md-primary .md-on {  background-color: '{{primary-color-0.87}}'; }md-radio-group.md-THEME_NAME-theme:not([disabled]) .md-primary .md-checked .md-off, md-radio-group.md-THEME_NAME-theme:not([disabled]) .md-primary.md-checked .md-off, md-radio-group.md-THEME_NAME-theme:not([disabled]).md-primary .md-checked .md-off, md-radio-group.md-THEME_NAME-theme:not([disabled]).md-primary.md-checked .md-off,md-radio-button.md-THEME_NAME-theme:not([disabled]) .md-primary .md-checked .md-off,md-radio-button.md-THEME_NAME-theme:not([disabled]) .md-primary.md-checked .md-off,md-radio-button.md-THEME_NAME-theme:not([disabled]).md-primary .md-checked .md-off,md-radio-button.md-THEME_NAME-theme:not([disabled]).md-primary.md-checked .md-off {  border-color: '{{primary-color-0.87}}'; }md-radio-group.md-THEME_NAME-theme:not([disabled]) .md-primary .md-checked .md-ink-ripple, md-radio-group.md-THEME_NAME-theme:not([disabled]) .md-primary.md-checked .md-ink-ripple, md-radio-group.md-THEME_NAME-theme:not([disabled]).md-primary .md-checked .md-ink-ripple, md-radio-group.md-THEME_NAME-theme:not([disabled]).md-primary.md-checked .md-ink-ripple,md-radio-button.md-THEME_NAME-theme:not([disabled]) .md-primary .md-checked .md-ink-ripple,md-radio-button.md-THEME_NAME-theme:not([disabled]) .md-primary.md-checked .md-ink-ripple,md-radio-button.md-THEME_NAME-theme:not([disabled]).md-primary .md-checked .md-ink-ripple,md-radio-button.md-THEME_NAME-theme:not([disabled]).md-primary.md-checked .md-ink-ripple {  color: '{{primary-color-0.87}}'; }md-radio-group.md-THEME_NAME-theme:not([disabled]) .md-primary .md-container .md-ripple, md-radio-group.md-THEME_NAME-theme:not([disabled]).md-primary .md-container .md-ripple,md-radio-button.md-THEME_NAME-theme:not([disabled]) .md-primary .md-container .md-ripple,md-radio-button.md-THEME_NAME-theme:not([disabled]).md-primary .md-container .md-ripple {  color: '{{primary-600}}'; }md-radio-group.md-THEME_NAME-theme:not([disabled]) .md-warn .md-on, md-radio-group.md-THEME_NAME-theme:not([disabled]).md-warn .md-on,md-radio-button.md-THEME_NAME-theme:not([disabled]) .md-warn .md-on,md-radio-button.md-THEME_NAME-theme:not([disabled]).md-warn .md-on {  background-color: '{{warn-color-0.87}}'; }md-radio-group.md-THEME_NAME-theme:not([disabled]) .md-warn .md-checked .md-off, md-radio-group.md-THEME_NAME-theme:not([disabled]) .md-warn.md-checked .md-off, md-radio-group.md-THEME_NAME-theme:not([disabled]).md-warn .md-checked .md-off, md-radio-group.md-THEME_NAME-theme:not([disabled]).md-warn.md-checked .md-off,md-radio-button.md-THEME_NAME-theme:not([disabled]) .md-warn .md-checked .md-off,md-radio-button.md-THEME_NAME-theme:not([disabled]) .md-warn.md-checked .md-off,md-radio-button.md-THEME_NAME-theme:not([disabled]).md-warn .md-checked .md-off,md-radio-button.md-THEME_NAME-theme:not([disabled]).md-warn.md-checked .md-off {  border-color: '{{warn-color-0.87}}'; }md-radio-group.md-THEME_NAME-theme:not([disabled]) .md-warn .md-checked .md-ink-ripple, md-radio-group.md-THEME_NAME-theme:not([disabled]) .md-warn.md-checked .md-ink-ripple, md-radio-group.md-THEME_NAME-theme:not([disabled]).md-warn .md-checked .md-ink-ripple, md-radio-group.md-THEME_NAME-theme:not([disabled]).md-warn.md-checked .md-ink-ripple,md-radio-button.md-THEME_NAME-theme:not([disabled]) .md-warn .md-checked .md-ink-ripple,md-radio-button.md-THEME_NAME-theme:not([disabled]) .md-warn.md-checked .md-ink-ripple,md-radio-button.md-THEME_NAME-theme:not([disabled]).md-warn .md-checked .md-ink-ripple,md-radio-button.md-THEME_NAME-theme:not([disabled]).md-warn.md-checked .md-ink-ripple {  color: '{{warn-color-0.87}}'; }md-radio-group.md-THEME_NAME-theme:not([disabled]) .md-warn .md-container .md-ripple, md-radio-group.md-THEME_NAME-theme:not([disabled]).md-warn .md-container .md-ripple,md-radio-button.md-THEME_NAME-theme:not([disabled]) .md-warn .md-container .md-ripple,md-radio-button.md-THEME_NAME-theme:not([disabled]).md-warn .md-container .md-ripple {  color: '{{warn-600}}'; }md-radio-group.md-THEME_NAME-theme[disabled],md-radio-button.md-THEME_NAME-theme[disabled] {  color: '{{foreground-3}}'; }  md-radio-group.md-THEME_NAME-theme[disabled] .md-container .md-off,  md-radio-button.md-THEME_NAME-theme[disabled] .md-container .md-off {    border-color: '{{foreground-3}}'; }  md-radio-group.md-THEME_NAME-theme[disabled] .md-container .md-on,  md-radio-button.md-THEME_NAME-theme[disabled] .md-container .md-on {    border-color: '{{foreground-3}}'; }md-radio-group.md-THEME_NAME-theme .md-checked .md-ink-ripple {  color: '{{accent-color-0.26}}'; }md-radio-group.md-THEME_NAME-theme.md-primary .md-checked:not([disabled]) .md-ink-ripple, md-radio-group.md-THEME_NAME-theme .md-checked:not([disabled]).md-primary .md-ink-ripple {  color: '{{primary-color-0.26}}'; }md-radio-group.md-THEME_NAME-theme .md-checked.md-primary .md-ink-ripple {  color: '{{warn-color-0.26}}'; }md-radio-group.md-THEME_NAME-theme.md-focused:not(:empty) .md-checked .md-container:before {  background-color: '{{accent-color-0.26}}'; }md-radio-group.md-THEME_NAME-theme.md-focused:not(:empty).md-primary .md-checked .md-container:before,md-radio-group.md-THEME_NAME-theme.md-focused:not(:empty) .md-checked.md-primary .md-container:before {  background-color: '{{primary-color-0.26}}'; }md-radio-group.md-THEME_NAME-theme.md-focused:not(:empty).md-warn .md-checked .md-container:before,md-radio-group.md-THEME_NAME-theme.md-focused:not(:empty) .md-checked.md-warn .md-container:before {  background-color: '{{warn-color-0.26}}'; }md-select.md-THEME_NAME-theme[disabled] .md-select-value {  border-bottom-color: transparent;  background-image: linear-gradient(to right, \"{{foreground-3}}\" 0%, \"{{foreground-3}}\" 33%, transparent 0%);  background-image: -ms-linear-gradient(left, transparent 0%, \"{{foreground-3}}\" 100%); }md-select.md-THEME_NAME-theme .md-select-value {  border-bottom-color: '{{foreground-4}}'; }  md-select.md-THEME_NAME-theme .md-select-value.md-select-placeholder {    color: '{{foreground-3}}'; }md-select.md-THEME_NAME-theme.ng-invalid.ng-dirty .md-select-value {  color: '{{warn-A700}}' !important;  border-bottom-color: '{{warn-A700}}' !important; }md-select.md-THEME_NAME-theme:not([disabled]):focus .md-select-value {  border-bottom-color: '{{primary-color}}';  color: '{{ foreground-1 }}'; }  md-select.md-THEME_NAME-theme:not([disabled]):focus .md-select-value.md-select-placeholder {    color: '{{ foreground-1 }}'; }md-select.md-THEME_NAME-theme:not([disabled]):focus.md-accent .md-select-value {  border-bottom-color: '{{accent-color}}'; }md-select.md-THEME_NAME-theme:not([disabled]):focus.md-warn .md-select-value {  border-bottom-color: '{{warn-color}}'; }md-select.md-THEME_NAME-theme[disabled] .md-select-value {  color: '{{foreground-3}}'; }  md-select.md-THEME_NAME-theme[disabled] .md-select-value.md-select-placeholder {    color: '{{foreground-3}}'; }md-select-menu.md-THEME_NAME-theme md-option[disabled] {  color: '{{foreground-3}}'; }md-select-menu.md-THEME_NAME-theme md-optgroup {  color: '{{foreground-2}}'; }  md-select-menu.md-THEME_NAME-theme md-optgroup md-option {    color: '{{foreground-1}}'; }md-select-menu.md-THEME_NAME-theme md-option[selected] {  color: '{{primary-500}}'; }  md-select-menu.md-THEME_NAME-theme md-option[selected]:focus {    color: '{{primary-600}}'; }  md-select-menu.md-THEME_NAME-theme md-option[selected].md-accent {    color: '{{accent-500}}'; }    md-select-menu.md-THEME_NAME-theme md-option[selected].md-accent:focus {      color: '{{accent-600}}'; }md-select-menu.md-THEME_NAME-theme md-option:focus:not([disabled]):not([selected]) {  background: '{{background-200}}'; }md-sidenav.md-THEME_NAME-theme {  background-color: '{{background-color}}'; }md-slider.md-THEME_NAME-theme .md-track {  background-color: '{{foreground-3}}'; }md-slider.md-THEME_NAME-theme .md-track-ticks {  background-color: '{{foreground-4}}'; }md-slider.md-THEME_NAME-theme .md-focus-thumb {  background-color: '{{foreground-2}}'; }md-slider.md-THEME_NAME-theme .md-focus-ring {  background-color: '{{accent-color}}'; }md-slider.md-THEME_NAME-theme .md-disabled-thumb {  border-color: '{{background-color}}'; }md-slider.md-THEME_NAME-theme.md-min .md-thumb:after {  background-color: '{{background-color}}'; }md-slider.md-THEME_NAME-theme .md-track.md-track-fill {  background-color: '{{accent-color}}'; }md-slider.md-THEME_NAME-theme .md-thumb:after {  border-color: '{{accent-color}}';  background-color: '{{accent-color}}'; }md-slider.md-THEME_NAME-theme .md-sign {  background-color: '{{accent-color}}'; }  md-slider.md-THEME_NAME-theme .md-sign:after {    border-top-color: '{{accent-color}}'; }md-slider.md-THEME_NAME-theme .md-thumb-text {  color: '{{accent-contrast}}'; }md-slider.md-THEME_NAME-theme.md-warn .md-focus-ring {  background-color: '{{warn-color}}'; }md-slider.md-THEME_NAME-theme.md-warn .md-track.md-track-fill {  background-color: '{{warn-color}}'; }md-slider.md-THEME_NAME-theme.md-warn .md-thumb:after {  border-color: '{{warn-color}}';  background-color: '{{warn-color}}'; }md-slider.md-THEME_NAME-theme.md-warn .md-sign {  background-color: '{{warn-color}}'; }  md-slider.md-THEME_NAME-theme.md-warn .md-sign:after {    border-top-color: '{{warn-color}}'; }md-slider.md-THEME_NAME-theme.md-warn .md-thumb-text {  color: '{{warn-contrast}}'; }md-slider.md-THEME_NAME-theme.md-primary .md-focus-ring {  background-color: '{{primary-color}}'; }md-slider.md-THEME_NAME-theme.md-primary .md-track.md-track-fill {  background-color: '{{primary-color}}'; }md-slider.md-THEME_NAME-theme.md-primary .md-thumb:after {  border-color: '{{primary-color}}';  background-color: '{{primary-color}}'; }md-slider.md-THEME_NAME-theme.md-primary .md-sign {  background-color: '{{primary-color}}'; }  md-slider.md-THEME_NAME-theme.md-primary .md-sign:after {    border-top-color: '{{primary-color}}'; }md-slider.md-THEME_NAME-theme.md-primary .md-thumb-text {  color: '{{primary-contrast}}'; }md-slider.md-THEME_NAME-theme[disabled] .md-thumb:after {  border-color: '{{foreground-3}}'; }md-slider.md-THEME_NAME-theme[disabled]:not(.md-min) .md-thumb:after {  background-color: '{{foreground-3}}'; }.md-subheader.md-THEME_NAME-theme {  color: '{{ foreground-2-0.23 }}';  background-color: '{{background-color}}'; }  .md-subheader.md-THEME_NAME-theme.md-primary {    color: '{{primary-color}}'; }  .md-subheader.md-THEME_NAME-theme.md-accent {    color: '{{accent-color}}'; }  .md-subheader.md-THEME_NAME-theme.md-warn {    color: '{{warn-color}}'; }md-switch.md-THEME_NAME-theme .md-ink-ripple {  color: '{{background-500}}'; }md-switch.md-THEME_NAME-theme .md-thumb {  background-color: '{{background-50}}'; }md-switch.md-THEME_NAME-theme .md-bar {  background-color: '{{background-500}}'; }md-switch.md-THEME_NAME-theme.md-checked .md-ink-ripple {  color: '{{accent-color}}'; }md-switch.md-THEME_NAME-theme.md-checked .md-thumb {  background-color: '{{accent-color}}'; }md-switch.md-THEME_NAME-theme.md-checked .md-bar {  background-color: '{{accent-color-0.5}}'; }md-switch.md-THEME_NAME-theme.md-checked.md-focused .md-thumb:before {  background-color: '{{accent-color-0.26}}'; }md-switch.md-THEME_NAME-theme.md-checked.md-primary .md-ink-ripple {  color: '{{primary-color}}'; }md-switch.md-THEME_NAME-theme.md-checked.md-primary .md-thumb {  background-color: '{{primary-color}}'; }md-switch.md-THEME_NAME-theme.md-checked.md-primary .md-bar {  background-color: '{{primary-color-0.5}}'; }md-switch.md-THEME_NAME-theme.md-checked.md-primary.md-focused .md-thumb:before {  background-color: '{{primary-color-0.26}}'; }md-switch.md-THEME_NAME-theme.md-checked.md-warn .md-ink-ripple {  color: '{{warn-color}}'; }md-switch.md-THEME_NAME-theme.md-checked.md-warn .md-thumb {  background-color: '{{warn-color}}'; }md-switch.md-THEME_NAME-theme.md-checked.md-warn .md-bar {  background-color: '{{warn-color-0.5}}'; }md-switch.md-THEME_NAME-theme.md-checked.md-warn.md-focused .md-thumb:before {  background-color: '{{warn-color-0.26}}'; }md-switch.md-THEME_NAME-theme[disabled] .md-thumb {  background-color: '{{background-400}}'; }md-switch.md-THEME_NAME-theme[disabled] .md-bar {  background-color: '{{foreground-4}}'; }.mdtTable.md-THEME_NAME-theme {  background-color: #FFFFFF;  color: #323232; }  .mdtTable.md-THEME_NAME-theme .selectedRow {    background-color: #EEEEEE; }md-tabs.md-THEME_NAME-theme md-tabs-wrapper {  background-color: transparent;  border-color: '{{foreground-4}}'; }md-tabs.md-THEME_NAME-theme .md-paginator md-icon {  color: '{{primary-color}}'; }md-tabs.md-THEME_NAME-theme md-ink-bar {  color: '{{accent-color}}';  background: '{{accent-color}}'; }md-tabs.md-THEME_NAME-theme .md-tab {  color: '{{foreground-2}}'; }  md-tabs.md-THEME_NAME-theme .md-tab[disabled], md-tabs.md-THEME_NAME-theme .md-tab[disabled] md-icon {    color: '{{foreground-3}}'; }  md-tabs.md-THEME_NAME-theme .md-tab.md-active, md-tabs.md-THEME_NAME-theme .md-tab.md-active md-icon, md-tabs.md-THEME_NAME-theme .md-tab.md-focused, md-tabs.md-THEME_NAME-theme .md-tab.md-focused md-icon {    color: '{{primary-color}}'; }  md-tabs.md-THEME_NAME-theme .md-tab.md-focused {    background: '{{primary-color-0.1}}'; }  md-tabs.md-THEME_NAME-theme .md-tab .md-ripple-container {    color: '{{accent-100}}'; }md-tabs.md-THEME_NAME-theme.md-accent > md-tabs-wrapper {  background-color: '{{accent-color}}'; }  md-tabs.md-THEME_NAME-theme.md-accent > md-tabs-wrapper > md-tabs-canvas > md-pagination-wrapper > md-tab-item:not([disabled]) {    color: '{{accent-100}}'; }    md-tabs.md-THEME_NAME-theme.md-accent > md-tabs-wrapper > md-tabs-canvas > md-pagination-wrapper > md-tab-item:not([disabled]).md-active, md-tabs.md-THEME_NAME-theme.md-accent > md-tabs-wrapper > md-tabs-canvas > md-pagination-wrapper > md-tab-item:not([disabled]).md-active md-icon, md-tabs.md-THEME_NAME-theme.md-accent > md-tabs-wrapper > md-tabs-canvas > md-pagination-wrapper > md-tab-item:not([disabled]).md-focused, md-tabs.md-THEME_NAME-theme.md-accent > md-tabs-wrapper > md-tabs-canvas > md-pagination-wrapper > md-tab-item:not([disabled]).md-focused md-icon {      color: '{{accent-contrast}}'; }    md-tabs.md-THEME_NAME-theme.md-accent > md-tabs-wrapper > md-tabs-canvas > md-pagination-wrapper > md-tab-item:not([disabled]).md-focused {      background: '{{accent-contrast-0.1}}'; }  md-tabs.md-THEME_NAME-theme.md-accent > md-tabs-wrapper > md-tabs-canvas > md-pagination-wrapper > md-ink-bar {    color: '{{primary-600-1}}';    background: '{{primary-600-1}}'; }md-tabs.md-THEME_NAME-theme.md-primary > md-tabs-wrapper {  background-color: '{{primary-color}}'; }  md-tabs.md-THEME_NAME-theme.md-primary > md-tabs-wrapper > md-tabs-canvas > md-pagination-wrapper > md-tab-item:not([disabled]) {    color: '{{primary-100}}'; }    md-tabs.md-THEME_NAME-theme.md-primary > md-tabs-wrapper > md-tabs-canvas > md-pagination-wrapper > md-tab-item:not([disabled]).md-active, md-tabs.md-THEME_NAME-theme.md-primary > md-tabs-wrapper > md-tabs-canvas > md-pagination-wrapper > md-tab-item:not([disabled]).md-active md-icon, md-tabs.md-THEME_NAME-theme.md-primary > md-tabs-wrapper > md-tabs-canvas > md-pagination-wrapper > md-tab-item:not([disabled]).md-focused, md-tabs.md-THEME_NAME-theme.md-primary > md-tabs-wrapper > md-tabs-canvas > md-pagination-wrapper > md-tab-item:not([disabled]).md-focused md-icon {      color: '{{primary-contrast}}'; }    md-tabs.md-THEME_NAME-theme.md-primary > md-tabs-wrapper > md-tabs-canvas > md-pagination-wrapper > md-tab-item:not([disabled]).md-focused {      background: '{{primary-contrast-0.1}}'; }md-tabs.md-THEME_NAME-theme.md-warn > md-tabs-wrapper {  background-color: '{{warn-color}}'; }  md-tabs.md-THEME_NAME-theme.md-warn > md-tabs-wrapper > md-tabs-canvas > md-pagination-wrapper > md-tab-item:not([disabled]) {    color: '{{warn-100}}'; }    md-tabs.md-THEME_NAME-theme.md-warn > md-tabs-wrapper > md-tabs-canvas > md-pagination-wrapper > md-tab-item:not([disabled]).md-active, md-tabs.md-THEME_NAME-theme.md-warn > md-tabs-wrapper > md-tabs-canvas > md-pagination-wrapper > md-tab-item:not([disabled]).md-active md-icon, md-tabs.md-THEME_NAME-theme.md-warn > md-tabs-wrapper > md-tabs-canvas > md-pagination-wrapper > md-tab-item:not([disabled]).md-focused, md-tabs.md-THEME_NAME-theme.md-warn > md-tabs-wrapper > md-tabs-canvas > md-pagination-wrapper > md-tab-item:not([disabled]).md-focused md-icon {      color: '{{warn-contrast}}'; }    md-tabs.md-THEME_NAME-theme.md-warn > md-tabs-wrapper > md-tabs-canvas > md-pagination-wrapper > md-tab-item:not([disabled]).md-focused {      background: '{{warn-contrast-0.1}}'; }md-toolbar > md-tabs.md-THEME_NAME-theme > md-tabs-wrapper {  background-color: '{{primary-color}}'; }  md-toolbar > md-tabs.md-THEME_NAME-theme > md-tabs-wrapper > md-tabs-canvas > md-pagination-wrapper > md-tab-item:not([disabled]) {    color: '{{primary-100}}'; }    md-toolbar > md-tabs.md-THEME_NAME-theme > md-tabs-wrapper > md-tabs-canvas > md-pagination-wrapper > md-tab-item:not([disabled]).md-active, md-toolbar > md-tabs.md-THEME_NAME-theme > md-tabs-wrapper > md-tabs-canvas > md-pagination-wrapper > md-tab-item:not([disabled]).md-active md-icon, md-toolbar > md-tabs.md-THEME_NAME-theme > md-tabs-wrapper > md-tabs-canvas > md-pagination-wrapper > md-tab-item:not([disabled]).md-focused, md-toolbar > md-tabs.md-THEME_NAME-theme > md-tabs-wrapper > md-tabs-canvas > md-pagination-wrapper > md-tab-item:not([disabled]).md-focused md-icon {      color: '{{primary-contrast}}'; }    md-toolbar > md-tabs.md-THEME_NAME-theme > md-tabs-wrapper > md-tabs-canvas > md-pagination-wrapper > md-tab-item:not([disabled]).md-focused {      background: '{{primary-contrast-0.1}}'; }md-toolbar.md-accent > md-tabs.md-THEME_NAME-theme > md-tabs-wrapper {  background-color: '{{accent-color}}'; }  md-toolbar.md-accent > md-tabs.md-THEME_NAME-theme > md-tabs-wrapper > md-tabs-canvas > md-pagination-wrapper > md-tab-item:not([disabled]) {    color: '{{accent-100}}'; }    md-toolbar.md-accent > md-tabs.md-THEME_NAME-theme > md-tabs-wrapper > md-tabs-canvas > md-pagination-wrapper > md-tab-item:not([disabled]).md-active, md-toolbar.md-accent > md-tabs.md-THEME_NAME-theme > md-tabs-wrapper > md-tabs-canvas > md-pagination-wrapper > md-tab-item:not([disabled]).md-active md-icon, md-toolbar.md-accent > md-tabs.md-THEME_NAME-theme > md-tabs-wrapper > md-tabs-canvas > md-pagination-wrapper > md-tab-item:not([disabled]).md-focused, md-toolbar.md-accent > md-tabs.md-THEME_NAME-theme > md-tabs-wrapper > md-tabs-canvas > md-pagination-wrapper > md-tab-item:not([disabled]).md-focused md-icon {      color: '{{accent-contrast}}'; }    md-toolbar.md-accent > md-tabs.md-THEME_NAME-theme > md-tabs-wrapper > md-tabs-canvas > md-pagination-wrapper > md-tab-item:not([disabled]).md-focused {      background: '{{accent-contrast-0.1}}'; }  md-toolbar.md-accent > md-tabs.md-THEME_NAME-theme > md-tabs-wrapper > md-tabs-canvas > md-pagination-wrapper > md-ink-bar {    color: '{{primary-600-1}}';    background: '{{primary-600-1}}'; }md-toolbar.md-warn > md-tabs.md-THEME_NAME-theme > md-tabs-wrapper {  background-color: '{{warn-color}}'; }  md-toolbar.md-warn > md-tabs.md-THEME_NAME-theme > md-tabs-wrapper > md-tabs-canvas > md-pagination-wrapper > md-tab-item:not([disabled]) {    color: '{{warn-100}}'; }    md-toolbar.md-warn > md-tabs.md-THEME_NAME-theme > md-tabs-wrapper > md-tabs-canvas > md-pagination-wrapper > md-tab-item:not([disabled]).md-active, md-toolbar.md-warn > md-tabs.md-THEME_NAME-theme > md-tabs-wrapper > md-tabs-canvas > md-pagination-wrapper > md-tab-item:not([disabled]).md-active md-icon, md-toolbar.md-warn > md-tabs.md-THEME_NAME-theme > md-tabs-wrapper > md-tabs-canvas > md-pagination-wrapper > md-tab-item:not([disabled]).md-focused, md-toolbar.md-warn > md-tabs.md-THEME_NAME-theme > md-tabs-wrapper > md-tabs-canvas > md-pagination-wrapper > md-tab-item:not([disabled]).md-focused md-icon {      color: '{{warn-contrast}}'; }    md-toolbar.md-warn > md-tabs.md-THEME_NAME-theme > md-tabs-wrapper > md-tabs-canvas > md-pagination-wrapper > md-tab-item:not([disabled]).md-focused {      background: '{{warn-contrast-0.1}}'; }md-toast.md-THEME_NAME-theme .md-toast-content {  background-color: #323232;  color: '{{background-50}}'; }  md-toast.md-THEME_NAME-theme .md-toast-content .md-button {    color: '{{background-50}}'; }    md-toast.md-THEME_NAME-theme .md-toast-content .md-button.md-highlight {      color: '{{primary-A200}}'; }      md-toast.md-THEME_NAME-theme .md-toast-content .md-button.md-highlight.md-accent {        color: '{{accent-A200}}'; }      md-toast.md-THEME_NAME-theme .md-toast-content .md-button.md-highlight.md-warn {        color: '{{warn-A200}}'; }md-toolbar.md-THEME_NAME-theme:not(.md-menu-toolbar) {  background-color: '{{primary-color}}';  color: '{{primary-contrast}}'; }  md-toolbar.md-THEME_NAME-theme:not(.md-menu-toolbar) md-icon {    color: '{{primary-contrast}}'; }  md-toolbar.md-THEME_NAME-theme:not(.md-menu-toolbar) .md-button:not(.md-raised) {    color: '{{primary-contrast}}'; }  md-toolbar.md-THEME_NAME-theme:not(.md-menu-toolbar).md-accent {    background-color: '{{accent-color}}';    color: '{{accent-contrast}}'; }  md-toolbar.md-THEME_NAME-theme:not(.md-menu-toolbar).md-warn {    background-color: '{{warn-color}}';    color: '{{warn-contrast}}'; }md-tooltip.md-THEME_NAME-theme {  color: '{{background-A100}}'; }  md-tooltip.md-THEME_NAME-theme .md-content {    background-color: '{{foreground-2}}'; }"); 
+angular.module("material.core").constant("$MD_THEME_CSS", "md-autocomplete.md-THEME_NAME-theme {  background: '{{background-50}}'; }  md-autocomplete.md-THEME_NAME-theme[disabled] {    background: '{{background-100}}'; }  md-autocomplete.md-THEME_NAME-theme button md-icon path {    fill: '{{background-600}}'; }  md-autocomplete.md-THEME_NAME-theme button:after {    background: '{{background-600-0.3}}'; }.md-autocomplete-suggestions-container.md-THEME_NAME-theme {  background: '{{background-50}}'; }  .md-autocomplete-suggestions-container.md-THEME_NAME-theme li {    color: '{{background-900}}'; }    .md-autocomplete-suggestions-container.md-THEME_NAME-theme li .highlight {      color: '{{background-600}}'; }    .md-autocomplete-suggestions-container.md-THEME_NAME-theme li:hover, .md-autocomplete-suggestions-container.md-THEME_NAME-theme li.selected {      background: '{{background-200}}'; }md-bottom-sheet.md-THEME_NAME-theme {  background-color: '{{background-50}}';  border-top-color: '{{background-300}}'; }  md-bottom-sheet.md-THEME_NAME-theme.md-list md-list-item {    color: '{{foreground-1}}'; }  md-bottom-sheet.md-THEME_NAME-theme .md-subheader {    background-color: '{{background-50}}'; }  md-bottom-sheet.md-THEME_NAME-theme .md-subheader {    color: '{{foreground-1}}'; }md-backdrop {  background-color: '{{background-900-0.0}}'; }  md-backdrop.md-opaque.md-THEME_NAME-theme {    background-color: '{{background-900-1.0}}'; }a.md-button.md-THEME_NAME-theme:not([disabled]):hover,.md-button.md-THEME_NAME-theme:not([disabled]):hover {  background-color: '{{background-500-0.2}}'; }a.md-button.md-THEME_NAME-theme:not([disabled]).md-focused,.md-button.md-THEME_NAME-theme:not([disabled]).md-focused {  background-color: '{{background-500-0.2}}'; }a.md-button.md-THEME_NAME-theme:not([disabled]).md-icon-button:hover,.md-button.md-THEME_NAME-theme:not([disabled]).md-icon-button:hover {  background-color: transparent; }a.md-button.md-THEME_NAME-theme.md-fab,.md-button.md-THEME_NAME-theme.md-fab {  background-color: '{{accent-color}}';  color: '{{accent-contrast}}'; }  a.md-button.md-THEME_NAME-theme.md-fab md-icon,  .md-button.md-THEME_NAME-theme.md-fab md-icon {    color: '{{accent-contrast}}'; }  a.md-button.md-THEME_NAME-theme.md-fab:not([disabled]):hover,  .md-button.md-THEME_NAME-theme.md-fab:not([disabled]):hover {    background-color: '{{accent-color}}'; }  a.md-button.md-THEME_NAME-theme.md-fab:not([disabled]).md-focused,  .md-button.md-THEME_NAME-theme.md-fab:not([disabled]).md-focused {    background-color: '{{accent-A700}}'; }a.md-button.md-THEME_NAME-theme.md-primary,.md-button.md-THEME_NAME-theme.md-primary {  color: '{{primary-color}}'; }  a.md-button.md-THEME_NAME-theme.md-primary.md-raised, a.md-button.md-THEME_NAME-theme.md-primary.md-fab,  .md-button.md-THEME_NAME-theme.md-primary.md-raised,  .md-button.md-THEME_NAME-theme.md-primary.md-fab {    color: '{{primary-contrast}}';    background-color: '{{primary-color}}'; }    a.md-button.md-THEME_NAME-theme.md-primary.md-raised:not([disabled]) md-icon, a.md-button.md-THEME_NAME-theme.md-primary.md-fab:not([disabled]) md-icon,    .md-button.md-THEME_NAME-theme.md-primary.md-raised:not([disabled]) md-icon,    .md-button.md-THEME_NAME-theme.md-primary.md-fab:not([disabled]) md-icon {      color: '{{primary-contrast}}'; }    a.md-button.md-THEME_NAME-theme.md-primary.md-raised:not([disabled]):hover, a.md-button.md-THEME_NAME-theme.md-primary.md-fab:not([disabled]):hover,    .md-button.md-THEME_NAME-theme.md-primary.md-raised:not([disabled]):hover,    .md-button.md-THEME_NAME-theme.md-primary.md-fab:not([disabled]):hover {      background-color: '{{primary-color}}'; }    a.md-button.md-THEME_NAME-theme.md-primary.md-raised:not([disabled]).md-focused, a.md-button.md-THEME_NAME-theme.md-primary.md-fab:not([disabled]).md-focused,    .md-button.md-THEME_NAME-theme.md-primary.md-raised:not([disabled]).md-focused,    .md-button.md-THEME_NAME-theme.md-primary.md-fab:not([disabled]).md-focused {      background-color: '{{primary-600}}'; }  a.md-button.md-THEME_NAME-theme.md-primary:not([disabled]) md-icon,  .md-button.md-THEME_NAME-theme.md-primary:not([disabled]) md-icon {    color: '{{primary-color}}'; }a.md-button.md-THEME_NAME-theme.md-fab,.md-button.md-THEME_NAME-theme.md-fab {  background-color: '{{accent-color}}';  color: '{{accent-contrast}}'; }  a.md-button.md-THEME_NAME-theme.md-fab:not([disabled]) .md-icon,  .md-button.md-THEME_NAME-theme.md-fab:not([disabled]) .md-icon {    color: '{{accent-contrast}}'; }  a.md-button.md-THEME_NAME-theme.md-fab:not([disabled]):hover,  .md-button.md-THEME_NAME-theme.md-fab:not([disabled]):hover {    background-color: '{{accent-color}}'; }  a.md-button.md-THEME_NAME-theme.md-fab:not([disabled]).md-focused,  .md-button.md-THEME_NAME-theme.md-fab:not([disabled]).md-focused {    background-color: '{{accent-A700}}'; }a.md-button.md-THEME_NAME-theme.md-raised,.md-button.md-THEME_NAME-theme.md-raised {  color: '{{background-900}}';  background-color: '{{background-50}}'; }  a.md-button.md-THEME_NAME-theme.md-raised:not([disabled]) md-icon,  .md-button.md-THEME_NAME-theme.md-raised:not([disabled]) md-icon {    color: '{{background-900}}'; }  a.md-button.md-THEME_NAME-theme.md-raised:not([disabled]):hover,  .md-button.md-THEME_NAME-theme.md-raised:not([disabled]):hover {    background-color: '{{background-50}}'; }  a.md-button.md-THEME_NAME-theme.md-raised:not([disabled]).md-focused,  .md-button.md-THEME_NAME-theme.md-raised:not([disabled]).md-focused {    background-color: '{{background-200}}'; }a.md-button.md-THEME_NAME-theme.md-warn,.md-button.md-THEME_NAME-theme.md-warn {  color: '{{warn-color}}'; }  a.md-button.md-THEME_NAME-theme.md-warn.md-raised, a.md-button.md-THEME_NAME-theme.md-warn.md-fab,  .md-button.md-THEME_NAME-theme.md-warn.md-raised,  .md-button.md-THEME_NAME-theme.md-warn.md-fab {    color: '{{warn-contrast}}';    background-color: '{{warn-color}}'; }    a.md-button.md-THEME_NAME-theme.md-warn.md-raised:not([disabled]) md-icon, a.md-button.md-THEME_NAME-theme.md-warn.md-fab:not([disabled]) md-icon,    .md-button.md-THEME_NAME-theme.md-warn.md-raised:not([disabled]) md-icon,    .md-button.md-THEME_NAME-theme.md-warn.md-fab:not([disabled]) md-icon {      color: '{{warn-contrast}}'; }    a.md-button.md-THEME_NAME-theme.md-warn.md-raised:not([disabled]):hover, a.md-button.md-THEME_NAME-theme.md-warn.md-fab:not([disabled]):hover,    .md-button.md-THEME_NAME-theme.md-warn.md-raised:not([disabled]):hover,    .md-button.md-THEME_NAME-theme.md-warn.md-fab:not([disabled]):hover {      background-color: '{{warn-color}}'; }    a.md-button.md-THEME_NAME-theme.md-warn.md-raised:not([disabled]).md-focused, a.md-button.md-THEME_NAME-theme.md-warn.md-fab:not([disabled]).md-focused,    .md-button.md-THEME_NAME-theme.md-warn.md-raised:not([disabled]).md-focused,    .md-button.md-THEME_NAME-theme.md-warn.md-fab:not([disabled]).md-focused {      background-color: '{{warn-700}}'; }  a.md-button.md-THEME_NAME-theme.md-warn:not([disabled]) md-icon,  .md-button.md-THEME_NAME-theme.md-warn:not([disabled]) md-icon {    color: '{{warn-color}}'; }a.md-button.md-THEME_NAME-theme.md-accent,.md-button.md-THEME_NAME-theme.md-accent {  color: '{{accent-color}}'; }  a.md-button.md-THEME_NAME-theme.md-accent.md-raised, a.md-button.md-THEME_NAME-theme.md-accent.md-fab,  .md-button.md-THEME_NAME-theme.md-accent.md-raised,  .md-button.md-THEME_NAME-theme.md-accent.md-fab {    color: '{{accent-contrast}}';    background-color: '{{accent-color}}'; }    a.md-button.md-THEME_NAME-theme.md-accent.md-raised:not([disabled]) md-icon, a.md-button.md-THEME_NAME-theme.md-accent.md-fab:not([disabled]) md-icon,    .md-button.md-THEME_NAME-theme.md-accent.md-raised:not([disabled]) md-icon,    .md-button.md-THEME_NAME-theme.md-accent.md-fab:not([disabled]) md-icon {      color: '{{accent-contrast}}'; }    a.md-button.md-THEME_NAME-theme.md-accent.md-raised:not([disabled]):hover, a.md-button.md-THEME_NAME-theme.md-accent.md-fab:not([disabled]):hover,    .md-button.md-THEME_NAME-theme.md-accent.md-raised:not([disabled]):hover,    .md-button.md-THEME_NAME-theme.md-accent.md-fab:not([disabled]):hover {      background-color: '{{accent-color}}'; }    a.md-button.md-THEME_NAME-theme.md-accent.md-raised:not([disabled]).md-focused, a.md-button.md-THEME_NAME-theme.md-accent.md-fab:not([disabled]).md-focused,    .md-button.md-THEME_NAME-theme.md-accent.md-raised:not([disabled]).md-focused,    .md-button.md-THEME_NAME-theme.md-accent.md-fab:not([disabled]).md-focused {      background-color: '{{accent-700}}'; }  a.md-button.md-THEME_NAME-theme.md-accent:not([disabled]) md-icon,  .md-button.md-THEME_NAME-theme.md-accent:not([disabled]) md-icon {    color: '{{accent-color}}'; }a.md-button.md-THEME_NAME-theme[disabled], a.md-button.md-THEME_NAME-theme.md-raised[disabled], a.md-button.md-THEME_NAME-theme.md-fab[disabled], a.md-button.md-THEME_NAME-theme.md-accent[disabled], a.md-button.md-THEME_NAME-theme.md-warn[disabled],.md-button.md-THEME_NAME-theme[disabled],.md-button.md-THEME_NAME-theme.md-raised[disabled],.md-button.md-THEME_NAME-theme.md-fab[disabled],.md-button.md-THEME_NAME-theme.md-accent[disabled],.md-button.md-THEME_NAME-theme.md-warn[disabled] {  color: '{{foreground-3}}' !important;  cursor: default; }  a.md-button.md-THEME_NAME-theme[disabled] md-icon, a.md-button.md-THEME_NAME-theme.md-raised[disabled] md-icon, a.md-button.md-THEME_NAME-theme.md-fab[disabled] md-icon, a.md-button.md-THEME_NAME-theme.md-accent[disabled] md-icon, a.md-button.md-THEME_NAME-theme.md-warn[disabled] md-icon,  .md-button.md-THEME_NAME-theme[disabled] md-icon,  .md-button.md-THEME_NAME-theme.md-raised[disabled] md-icon,  .md-button.md-THEME_NAME-theme.md-fab[disabled] md-icon,  .md-button.md-THEME_NAME-theme.md-accent[disabled] md-icon,  .md-button.md-THEME_NAME-theme.md-warn[disabled] md-icon {    color: '{{foreground-3}}'; }a.md-button.md-THEME_NAME-theme.md-raised[disabled], a.md-button.md-THEME_NAME-theme.md-fab[disabled],.md-button.md-THEME_NAME-theme.md-raised[disabled],.md-button.md-THEME_NAME-theme.md-fab[disabled] {  background-color: '{{foreground-4}}'; }a.md-button.md-THEME_NAME-theme[disabled],.md-button.md-THEME_NAME-theme[disabled] {  background-color: transparent; }md-card.md-THEME_NAME-theme {  background-color: '{{background-color}}';  border-radius: 2px; }  md-card.md-THEME_NAME-theme .md-card-image {    border-radius: 2px 2px 0 0; }  md-card.md-THEME_NAME-theme md-card-header md-card-avatar md-icon {    color: '{{background-color}}';    background-color: '{{foreground-3}}'; }  md-card.md-THEME_NAME-theme md-card-header md-card-header-text .md-subhead {    color: '{{foreground-2}}'; }  md-card.md-THEME_NAME-theme md-card-title md-card-title-text:not(:only-child) .md-subhead {    color: '{{foreground-2}}'; }md-checkbox.md-THEME_NAME-theme .md-ripple {  color: '{{accent-600}}'; }md-checkbox.md-THEME_NAME-theme.md-checked .md-ripple {  color: '{{background-600}}'; }md-checkbox.md-THEME_NAME-theme.md-checked.md-focused .md-container:before {  background-color: '{{accent-color-0.26}}'; }md-checkbox.md-THEME_NAME-theme .md-ink-ripple {  color: '{{foreground-2}}'; }md-checkbox.md-THEME_NAME-theme.md-checked .md-ink-ripple {  color: '{{accent-color-0.87}}'; }md-checkbox.md-THEME_NAME-theme .md-icon {  border-color: '{{foreground-2}}'; }md-checkbox.md-THEME_NAME-theme.md-checked .md-icon {  background-color: '{{accent-color-0.87}}'; }md-checkbox.md-THEME_NAME-theme.md-checked .md-icon:after {  border-color: '{{accent-contrast-0.87}}'; }md-checkbox.md-THEME_NAME-theme:not([disabled]).md-primary .md-ripple {  color: '{{primary-600}}'; }md-checkbox.md-THEME_NAME-theme:not([disabled]).md-primary.md-checked .md-ripple {  color: '{{background-600}}'; }md-checkbox.md-THEME_NAME-theme:not([disabled]).md-primary .md-ink-ripple {  color: '{{foreground-2}}'; }md-checkbox.md-THEME_NAME-theme:not([disabled]).md-primary.md-checked .md-ink-ripple {  color: '{{primary-color-0.87}}'; }md-checkbox.md-THEME_NAME-theme:not([disabled]).md-primary .md-icon {  border-color: '{{foreground-2}}'; }md-checkbox.md-THEME_NAME-theme:not([disabled]).md-primary.md-checked .md-icon {  background-color: '{{primary-color-0.87}}'; }md-checkbox.md-THEME_NAME-theme:not([disabled]).md-primary.md-checked.md-focused .md-container:before {  background-color: '{{primary-color-0.26}}'; }md-checkbox.md-THEME_NAME-theme:not([disabled]).md-primary.md-checked .md-icon:after {  border-color: '{{primary-contrast-0.87}}'; }md-checkbox.md-THEME_NAME-theme:not([disabled]).md-warn .md-ripple {  color: '{{warn-600}}'; }md-checkbox.md-THEME_NAME-theme:not([disabled]).md-warn .md-ink-ripple {  color: '{{foreground-2}}'; }md-checkbox.md-THEME_NAME-theme:not([disabled]).md-warn.md-checked .md-ink-ripple {  color: '{{warn-color-0.87}}'; }md-checkbox.md-THEME_NAME-theme:not([disabled]).md-warn .md-icon {  border-color: '{{foreground-2}}'; }md-checkbox.md-THEME_NAME-theme:not([disabled]).md-warn.md-checked .md-icon {  background-color: '{{warn-color-0.87}}'; }md-checkbox.md-THEME_NAME-theme:not([disabled]).md-warn.md-checked.md-focused:not([disabled]) .md-container:before {  background-color: '{{warn-color-0.26}}'; }md-checkbox.md-THEME_NAME-theme:not([disabled]).md-warn.md-checked .md-icon:after {  border-color: '{{background-200}}'; }md-checkbox.md-THEME_NAME-theme[disabled] .md-icon {  border-color: '{{foreground-3}}'; }md-checkbox.md-THEME_NAME-theme[disabled].md-checked .md-icon {  background-color: '{{foreground-3}}'; }md-checkbox.md-THEME_NAME-theme[disabled].md-checked .md-icon:after {  border-color: '{{background-200}}'; }md-checkbox.md-THEME_NAME-theme[disabled] .md-label {  color: '{{foreground-3}}'; }md-chips.md-THEME_NAME-theme .md-chips {  box-shadow: 0 1px '{{background-300}}'; }  md-chips.md-THEME_NAME-theme .md-chips.md-focused {    box-shadow: 0 2px '{{primary-color}}'; }md-chips.md-THEME_NAME-theme .md-chip {  background: '{{background-300}}';  color: '{{background-800}}'; }  md-chips.md-THEME_NAME-theme .md-chip.md-focused {    background: '{{primary-color}}';    color: '{{primary-contrast}}'; }    md-chips.md-THEME_NAME-theme .md-chip.md-focused md-icon {      color: '{{primary-contrast}}'; }md-chips.md-THEME_NAME-theme md-chip-remove .md-button md-icon path {  fill: '{{background-500}}'; }.md-contact-suggestion span.md-contact-email {  color: '{{background-400}}'; }md-content.md-THEME_NAME-theme {  color: '{{foreground-1}}';  background-color: '{{background-color}}'; }/** Theme styles for mdCalendar. */.md-calendar.md-THEME_NAME-theme {  color: '{{foreground-1}}'; }  .md-calendar.md-THEME_NAME-theme tr:last-child td {    border-bottom-color: '{{background-200}}'; }.md-THEME_NAME-theme .md-calendar-day-header {  background: '{{background-hue-1}}';  color: '{{foreground-1}}'; }.md-THEME_NAME-theme .md-calendar-date.md-calendar-date-today .md-calendar-date-selection-indicator {  border: 1px solid '{{primary-500}}'; }.md-THEME_NAME-theme .md-calendar-date.md-calendar-date-today.md-calendar-date-disabled {  color: '{{primary-500-0.6}}'; }.md-THEME_NAME-theme .md-calendar-date.md-focus .md-calendar-date-selection-indicator {  background: '{{background-hue-1}}'; }.md-THEME_NAME-theme .md-calendar-date-selection-indicator:hover {  background: '{{background-hue-1}}'; }.md-THEME_NAME-theme .md-calendar-date.md-calendar-selected-date .md-calendar-date-selection-indicator,.md-THEME_NAME-theme .md-calendar-date.md-focus.md-calendar-selected-date .md-calendar-date-selection-indicator {  background: '{{primary-500}}';  color: '{{primary-500-contrast}}';  border-color: transparent; }.md-THEME_NAME-theme .md-calendar-date-disabled,.md-THEME_NAME-theme .md-calendar-month-label-disabled {  color: '{{foreground-3}}'; }/** Theme styles for mdDatepicker. */md-datepicker.md-THEME_NAME-theme {  background: '{{background-color}}'; }.md-THEME_NAME-theme .md-datepicker-input {  color: '{{background-contrast}}';  background: '{{background-color}}'; }  .md-THEME_NAME-theme .md-datepicker-input::-webkit-input-placeholder, .md-THEME_NAME-theme .md-datepicker-input::-moz-placeholder, .md-THEME_NAME-theme .md-datepicker-input:-moz-placeholder, .md-THEME_NAME-theme .md-datepicker-input:-ms-input-placeholder {    color: \"{{foreground-3}}\"; }.md-THEME_NAME-theme .md-datepicker-input-container {  border-bottom-color: '{{background-300}}'; }  .md-THEME_NAME-theme .md-datepicker-input-container.md-datepicker-focused {    border-bottom-color: '{{primary-500}}'; }  .md-THEME_NAME-theme .md-datepicker-input-container.md-datepicker-invalid {    border-bottom-color: '{{warn-A700}}'; }.md-THEME_NAME-theme .md-datepicker-calendar-pane {  border-color: '{{background-300}}'; }.md-THEME_NAME-theme .md-datepicker-triangle-button .md-datepicker-expand-triangle {  border-top-color: '{{foreground-3}}'; }.md-THEME_NAME-theme .md-datepicker-triangle-button:hover .md-datepicker-expand-triangle {  border-top-color: '{{foreground-2}}'; }.md-THEME_NAME-theme .md-datepicker-open .md-datepicker-calendar-icon {  fill: '{{primary-500}}'; }.md-THEME_NAME-theme .md-datepicker-calendar,.md-THEME_NAME-theme .md-datepicker-input-mask-opaque {  background: '{{background-color}}'; }md-dialog.md-THEME_NAME-theme {  border-radius: 4px;  background-color: '{{background-color}}'; }  md-dialog.md-THEME_NAME-theme.md-content-overflow .md-actions, md-dialog.md-THEME_NAME-theme.md-content-overflow md-dialog-actions {    border-top-color: '{{foreground-4}}'; }md-divider.md-THEME_NAME-theme {  border-top-color: '{{foreground-4}}'; }.layout-row > md-divider.md-THEME_NAME-theme {  border-right-color: '{{foreground-4}}'; }md-input-container.md-THEME_NAME-theme .md-input {  color: '{{foreground-1}}';  border-color: '{{foreground-4}}';  text-shadow: '{{foreground-shadow}}'; }  md-input-container.md-THEME_NAME-theme .md-input::-webkit-input-placeholder, md-input-container.md-THEME_NAME-theme .md-input::-moz-placeholder, md-input-container.md-THEME_NAME-theme .md-input:-moz-placeholder, md-input-container.md-THEME_NAME-theme .md-input:-ms-input-placeholder {    color: \"{{foreground-3}}\"; }md-input-container.md-THEME_NAME-theme > md-icon {  color: '{{foreground-1}}'; }md-input-container.md-THEME_NAME-theme label,md-input-container.md-THEME_NAME-theme .md-placeholder {  text-shadow: '{{foreground-shadow}}';  color: '{{foreground-3}}'; }md-input-container.md-THEME_NAME-theme ng-messages, md-input-container.md-THEME_NAME-theme [ng-messages],md-input-container.md-THEME_NAME-theme ng-message, md-input-container.md-THEME_NAME-theme data-ng-message, md-input-container.md-THEME_NAME-theme x-ng-message,md-input-container.md-THEME_NAME-theme [ng-message], md-input-container.md-THEME_NAME-theme [data-ng-message], md-input-container.md-THEME_NAME-theme [x-ng-message],md-input-container.md-THEME_NAME-theme [ng-message-exp], md-input-container.md-THEME_NAME-theme [data-ng-message-exp], md-input-container.md-THEME_NAME-theme [x-ng-message-exp] {  color: '{{warn-A700}}'; }  md-input-container.md-THEME_NAME-theme ng-messages .md-char-counter, md-input-container.md-THEME_NAME-theme [ng-messages] .md-char-counter,  md-input-container.md-THEME_NAME-theme ng-message .md-char-counter, md-input-container.md-THEME_NAME-theme data-ng-message .md-char-counter, md-input-container.md-THEME_NAME-theme x-ng-message .md-char-counter,  md-input-container.md-THEME_NAME-theme [ng-message] .md-char-counter, md-input-container.md-THEME_NAME-theme [data-ng-message] .md-char-counter, md-input-container.md-THEME_NAME-theme [x-ng-message] .md-char-counter,  md-input-container.md-THEME_NAME-theme [ng-message-exp] .md-char-counter, md-input-container.md-THEME_NAME-theme [data-ng-message-exp] .md-char-counter, md-input-container.md-THEME_NAME-theme [x-ng-message-exp] .md-char-counter {    color: '{{foreground-1}}'; }md-input-container.md-THEME_NAME-theme:not(.md-input-invalid).md-input-has-value label {  color: '{{foreground-2}}'; }md-input-container.md-THEME_NAME-theme:not(.md-input-invalid).md-input-focused .md-input {  border-color: '{{primary-500}}'; }md-input-container.md-THEME_NAME-theme:not(.md-input-invalid).md-input-focused label {  color: '{{primary-500}}'; }md-input-container.md-THEME_NAME-theme:not(.md-input-invalid).md-input-focused md-icon {  color: '{{primary-500}}'; }md-input-container.md-THEME_NAME-theme:not(.md-input-invalid).md-input-focused.md-accent .md-input {  border-color: '{{accent-500}}'; }md-input-container.md-THEME_NAME-theme:not(.md-input-invalid).md-input-focused.md-accent label {  color: '{{accent-500}}'; }md-input-container.md-THEME_NAME-theme:not(.md-input-invalid).md-input-focused.md-warn .md-input {  border-color: '{{warn-A700}}'; }md-input-container.md-THEME_NAME-theme:not(.md-input-invalid).md-input-focused.md-warn label {  color: '{{warn-A700}}'; }md-input-container.md-THEME_NAME-theme.md-input-invalid .md-input {  border-color: '{{warn-A700}}'; }md-input-container.md-THEME_NAME-theme.md-input-invalid.md-input-focused label {  color: '{{warn-A700}}'; }md-input-container.md-THEME_NAME-theme.md-input-invalid ng-message, md-input-container.md-THEME_NAME-theme.md-input-invalid data-ng-message, md-input-container.md-THEME_NAME-theme.md-input-invalid x-ng-message,md-input-container.md-THEME_NAME-theme.md-input-invalid [ng-message], md-input-container.md-THEME_NAME-theme.md-input-invalid [data-ng-message], md-input-container.md-THEME_NAME-theme.md-input-invalid [x-ng-message],md-input-container.md-THEME_NAME-theme.md-input-invalid [ng-message-exp], md-input-container.md-THEME_NAME-theme.md-input-invalid [data-ng-message-exp], md-input-container.md-THEME_NAME-theme.md-input-invalid [x-ng-message-exp],md-input-container.md-THEME_NAME-theme.md-input-invalid .md-char-counter {  color: '{{warn-A700}}'; }md-input-container.md-THEME_NAME-theme .md-input[disabled],md-input-container.md-THEME_NAME-theme .md-input [disabled] {  border-bottom-color: transparent;  color: '{{foreground-3}}';  background-image: linear-gradient(to right, \"{{foreground-3}}\" 0%, \"{{foreground-3}}\" 33%, transparent 0%);  background-image: -ms-linear-gradient(left, transparent 0%, \"{{foreground-3}}\" 100%); }md-icon.md-THEME_NAME-theme {  color: '{{foreground-2}}'; }  md-icon.md-THEME_NAME-theme.md-primary {    color: '{{primary-color}}'; }  md-icon.md-THEME_NAME-theme.md-accent {    color: '{{accent-color}}'; }  md-icon.md-THEME_NAME-theme.md-warn {    color: '{{warn-color}}'; }md-list.md-THEME_NAME-theme md-list-item.md-2-line .md-list-item-text h3, md-list.md-THEME_NAME-theme md-list-item.md-2-line .md-list-item-text h4,md-list.md-THEME_NAME-theme md-list-item.md-3-line .md-list-item-text h3,md-list.md-THEME_NAME-theme md-list-item.md-3-line .md-list-item-text h4 {  color: '{{foreground-1}}'; }md-list.md-THEME_NAME-theme md-list-item.md-2-line .md-list-item-text p,md-list.md-THEME_NAME-theme md-list-item.md-3-line .md-list-item-text p {  color: '{{foreground-2}}'; }md-list.md-THEME_NAME-theme .md-proxy-focus.md-focused div.md-no-style {  background-color: '{{background-100}}'; }md-list.md-THEME_NAME-theme md-list-item > .md-avatar-icon {  background-color: '{{foreground-3}}';  color: '{{background-color}}'; }md-list.md-THEME_NAME-theme md-list-item > md-icon {  color: '{{foreground-2}}'; }  md-list.md-THEME_NAME-theme md-list-item > md-icon.md-highlight {    color: '{{primary-color}}'; }    md-list.md-THEME_NAME-theme md-list-item > md-icon.md-highlight.md-accent {      color: '{{accent-color}}'; }md-menu-content.md-THEME_NAME-theme {  background-color: '{{background-color}}'; }  md-menu-content.md-THEME_NAME-theme md-menu-divider {    background-color: '{{foreground-4}}'; }md-progress-circular.md-THEME_NAME-theme {  background-color: transparent; }  md-progress-circular.md-THEME_NAME-theme .md-inner .md-gap {    border-top-color: '{{primary-color}}';    border-bottom-color: '{{primary-color}}'; }  md-progress-circular.md-THEME_NAME-theme .md-inner .md-left .md-half-circle, md-progress-circular.md-THEME_NAME-theme .md-inner .md-right .md-half-circle {    border-top-color: '{{primary-color}}'; }  md-progress-circular.md-THEME_NAME-theme .md-inner .md-right .md-half-circle {    border-right-color: '{{primary-color}}'; }  md-progress-circular.md-THEME_NAME-theme .md-inner .md-left .md-half-circle {    border-left-color: '{{primary-color}}'; }  md-progress-circular.md-THEME_NAME-theme.md-warn .md-inner .md-gap {    border-top-color: '{{warn-color}}';    border-bottom-color: '{{warn-color}}'; }  md-progress-circular.md-THEME_NAME-theme.md-warn .md-inner .md-left .md-half-circle, md-progress-circular.md-THEME_NAME-theme.md-warn .md-inner .md-right .md-half-circle {    border-top-color: '{{warn-color}}'; }  md-progress-circular.md-THEME_NAME-theme.md-warn .md-inner .md-right .md-half-circle {    border-right-color: '{{warn-color}}'; }  md-progress-circular.md-THEME_NAME-theme.md-warn .md-inner .md-left .md-half-circle {    border-left-color: '{{warn-color}}'; }  md-progress-circular.md-THEME_NAME-theme.md-accent .md-inner .md-gap {    border-top-color: '{{accent-color}}';    border-bottom-color: '{{accent-color}}'; }  md-progress-circular.md-THEME_NAME-theme.md-accent .md-inner .md-left .md-half-circle, md-progress-circular.md-THEME_NAME-theme.md-accent .md-inner .md-right .md-half-circle {    border-top-color: '{{accent-color}}'; }  md-progress-circular.md-THEME_NAME-theme.md-accent .md-inner .md-right .md-half-circle {    border-right-color: '{{accent-color}}'; }  md-progress-circular.md-THEME_NAME-theme.md-accent .md-inner .md-left .md-half-circle {    border-left-color: '{{accent-color}}'; }md-menu-bar.md-THEME_NAME-theme > button.md-button {  color: '{{foreground-2}}';  border-radius: 2px; }md-menu-bar.md-THEME_NAME-theme md-menu.md-open > button, md-menu-bar.md-THEME_NAME-theme md-menu > button:focus {  outline: none;  background: '{{background-200}}'; }md-menu-bar.md-THEME_NAME-theme.md-open:not(.md-keyboard-mode) md-menu:hover > button {  background-color: '{{ background-500-0.2}}'; }md-menu-bar.md-THEME_NAME-theme:not(.md-keyboard-mode):not(.md-open) md-menu button:hover,md-menu-bar.md-THEME_NAME-theme:not(.md-keyboard-mode):not(.md-open) md-menu button:focus {  background: transparent; }md-menu-content.md-THEME_NAME-theme .md-menu > .md-button:after {  color: '{{foreground-2}}'; }md-menu-content.md-THEME_NAME-theme .md-menu.md-open > .md-button {  background-color: '{{ background-500-0.2}}'; }md-toolbar.md-THEME_NAME-theme.md-menu-toolbar {  background-color: '{{background-color}}';  color: '{{foreground-1}}'; }  md-toolbar.md-THEME_NAME-theme.md-menu-toolbar md-toolbar-filler {    background-color: '{{primary-color}}';    color: '{{primary-contrast}}'; }    md-toolbar.md-THEME_NAME-theme.md-menu-toolbar md-toolbar-filler md-icon {      color: '{{primary-contrast}}'; }md-progress-linear.md-THEME_NAME-theme .md-container {  background-color: '{{primary-100}}'; }md-progress-linear.md-THEME_NAME-theme .md-bar {  background-color: '{{primary-color}}'; }md-progress-linear.md-THEME_NAME-theme.md-warn .md-container {  background-color: '{{warn-100}}'; }md-progress-linear.md-THEME_NAME-theme.md-warn .md-bar {  background-color: '{{warn-color}}'; }md-progress-linear.md-THEME_NAME-theme.md-accent .md-container {  background-color: '{{accent-100}}'; }md-progress-linear.md-THEME_NAME-theme.md-accent .md-bar {  background-color: '{{accent-color}}'; }md-progress-linear.md-THEME_NAME-theme[md-mode=buffer].md-warn .md-bar1 {  background-color: '{{warn-100}}'; }md-progress-linear.md-THEME_NAME-theme[md-mode=buffer].md-warn .md-dashed:before {  background: radial-gradient(\"{{warn-100}}\" 0%, \"{{warn-100}}\" 16%, transparent 42%); }md-progress-linear.md-THEME_NAME-theme[md-mode=buffer].md-accent .md-bar1 {  background-color: '{{accent-100}}'; }md-progress-linear.md-THEME_NAME-theme[md-mode=buffer].md-accent .md-dashed:before {  background: radial-gradient(\"{{accent-100}}\" 0%, \"{{accent-100}}\" 16%, transparent 42%); }md-select.md-THEME_NAME-theme[disabled] .md-select-value {  border-bottom-color: transparent;  background-image: linear-gradient(to right, \"{{foreground-3}}\" 0%, \"{{foreground-3}}\" 33%, transparent 0%);  background-image: -ms-linear-gradient(left, transparent 0%, \"{{foreground-3}}\" 100%); }md-select.md-THEME_NAME-theme .md-select-value {  border-bottom-color: '{{foreground-4}}'; }  md-select.md-THEME_NAME-theme .md-select-value.md-select-placeholder {    color: '{{foreground-3}}'; }md-select.md-THEME_NAME-theme.ng-invalid.ng-dirty .md-select-value {  color: '{{warn-A700}}' !important;  border-bottom-color: '{{warn-A700}}' !important; }md-select.md-THEME_NAME-theme:not([disabled]):focus .md-select-value {  border-bottom-color: '{{primary-color}}';  color: '{{ foreground-1 }}'; }  md-select.md-THEME_NAME-theme:not([disabled]):focus .md-select-value.md-select-placeholder {    color: '{{ foreground-1 }}'; }md-select.md-THEME_NAME-theme:not([disabled]):focus.md-accent .md-select-value {  border-bottom-color: '{{accent-color}}'; }md-select.md-THEME_NAME-theme:not([disabled]):focus.md-warn .md-select-value {  border-bottom-color: '{{warn-color}}'; }md-select.md-THEME_NAME-theme[disabled] .md-select-value {  color: '{{foreground-3}}'; }  md-select.md-THEME_NAME-theme[disabled] .md-select-value.md-select-placeholder {    color: '{{foreground-3}}'; }md-select-menu.md-THEME_NAME-theme md-option[disabled] {  color: '{{foreground-3}}'; }md-select-menu.md-THEME_NAME-theme md-optgroup {  color: '{{foreground-2}}'; }  md-select-menu.md-THEME_NAME-theme md-optgroup md-option {    color: '{{foreground-1}}'; }md-select-menu.md-THEME_NAME-theme md-option[selected] {  color: '{{primary-500}}'; }  md-select-menu.md-THEME_NAME-theme md-option[selected]:focus {    color: '{{primary-600}}'; }  md-select-menu.md-THEME_NAME-theme md-option[selected].md-accent {    color: '{{accent-500}}'; }    md-select-menu.md-THEME_NAME-theme md-option[selected].md-accent:focus {      color: '{{accent-600}}'; }md-select-menu.md-THEME_NAME-theme md-option:focus:not([disabled]):not([selected]) {  background: '{{background-200}}'; }md-sidenav.md-THEME_NAME-theme {  background-color: '{{background-color}}'; }md-radio-button.md-THEME_NAME-theme .md-off {  border-color: '{{foreground-2}}'; }md-radio-button.md-THEME_NAME-theme .md-on {  background-color: '{{accent-color-0.87}}'; }md-radio-button.md-THEME_NAME-theme.md-checked .md-off {  border-color: '{{accent-color-0.87}}'; }md-radio-button.md-THEME_NAME-theme.md-checked .md-ink-ripple {  color: '{{accent-color-0.87}}'; }md-radio-button.md-THEME_NAME-theme .md-container .md-ripple {  color: '{{accent-600}}'; }md-radio-group.md-THEME_NAME-theme:not([disabled]) .md-primary .md-on, md-radio-group.md-THEME_NAME-theme:not([disabled]).md-primary .md-on,md-radio-button.md-THEME_NAME-theme:not([disabled]) .md-primary .md-on,md-radio-button.md-THEME_NAME-theme:not([disabled]).md-primary .md-on {  background-color: '{{primary-color-0.87}}'; }md-radio-group.md-THEME_NAME-theme:not([disabled]) .md-primary .md-checked .md-off, md-radio-group.md-THEME_NAME-theme:not([disabled]) .md-primary.md-checked .md-off, md-radio-group.md-THEME_NAME-theme:not([disabled]).md-primary .md-checked .md-off, md-radio-group.md-THEME_NAME-theme:not([disabled]).md-primary.md-checked .md-off,md-radio-button.md-THEME_NAME-theme:not([disabled]) .md-primary .md-checked .md-off,md-radio-button.md-THEME_NAME-theme:not([disabled]) .md-primary.md-checked .md-off,md-radio-button.md-THEME_NAME-theme:not([disabled]).md-primary .md-checked .md-off,md-radio-button.md-THEME_NAME-theme:not([disabled]).md-primary.md-checked .md-off {  border-color: '{{primary-color-0.87}}'; }md-radio-group.md-THEME_NAME-theme:not([disabled]) .md-primary .md-checked .md-ink-ripple, md-radio-group.md-THEME_NAME-theme:not([disabled]) .md-primary.md-checked .md-ink-ripple, md-radio-group.md-THEME_NAME-theme:not([disabled]).md-primary .md-checked .md-ink-ripple, md-radio-group.md-THEME_NAME-theme:not([disabled]).md-primary.md-checked .md-ink-ripple,md-radio-button.md-THEME_NAME-theme:not([disabled]) .md-primary .md-checked .md-ink-ripple,md-radio-button.md-THEME_NAME-theme:not([disabled]) .md-primary.md-checked .md-ink-ripple,md-radio-button.md-THEME_NAME-theme:not([disabled]).md-primary .md-checked .md-ink-ripple,md-radio-button.md-THEME_NAME-theme:not([disabled]).md-primary.md-checked .md-ink-ripple {  color: '{{primary-color-0.87}}'; }md-radio-group.md-THEME_NAME-theme:not([disabled]) .md-primary .md-container .md-ripple, md-radio-group.md-THEME_NAME-theme:not([disabled]).md-primary .md-container .md-ripple,md-radio-button.md-THEME_NAME-theme:not([disabled]) .md-primary .md-container .md-ripple,md-radio-button.md-THEME_NAME-theme:not([disabled]).md-primary .md-container .md-ripple {  color: '{{primary-600}}'; }md-radio-group.md-THEME_NAME-theme:not([disabled]) .md-warn .md-on, md-radio-group.md-THEME_NAME-theme:not([disabled]).md-warn .md-on,md-radio-button.md-THEME_NAME-theme:not([disabled]) .md-warn .md-on,md-radio-button.md-THEME_NAME-theme:not([disabled]).md-warn .md-on {  background-color: '{{warn-color-0.87}}'; }md-radio-group.md-THEME_NAME-theme:not([disabled]) .md-warn .md-checked .md-off, md-radio-group.md-THEME_NAME-theme:not([disabled]) .md-warn.md-checked .md-off, md-radio-group.md-THEME_NAME-theme:not([disabled]).md-warn .md-checked .md-off, md-radio-group.md-THEME_NAME-theme:not([disabled]).md-warn.md-checked .md-off,md-radio-button.md-THEME_NAME-theme:not([disabled]) .md-warn .md-checked .md-off,md-radio-button.md-THEME_NAME-theme:not([disabled]) .md-warn.md-checked .md-off,md-radio-button.md-THEME_NAME-theme:not([disabled]).md-warn .md-checked .md-off,md-radio-button.md-THEME_NAME-theme:not([disabled]).md-warn.md-checked .md-off {  border-color: '{{warn-color-0.87}}'; }md-radio-group.md-THEME_NAME-theme:not([disabled]) .md-warn .md-checked .md-ink-ripple, md-radio-group.md-THEME_NAME-theme:not([disabled]) .md-warn.md-checked .md-ink-ripple, md-radio-group.md-THEME_NAME-theme:not([disabled]).md-warn .md-checked .md-ink-ripple, md-radio-group.md-THEME_NAME-theme:not([disabled]).md-warn.md-checked .md-ink-ripple,md-radio-button.md-THEME_NAME-theme:not([disabled]) .md-warn .md-checked .md-ink-ripple,md-radio-button.md-THEME_NAME-theme:not([disabled]) .md-warn.md-checked .md-ink-ripple,md-radio-button.md-THEME_NAME-theme:not([disabled]).md-warn .md-checked .md-ink-ripple,md-radio-button.md-THEME_NAME-theme:not([disabled]).md-warn.md-checked .md-ink-ripple {  color: '{{warn-color-0.87}}'; }md-radio-group.md-THEME_NAME-theme:not([disabled]) .md-warn .md-container .md-ripple, md-radio-group.md-THEME_NAME-theme:not([disabled]).md-warn .md-container .md-ripple,md-radio-button.md-THEME_NAME-theme:not([disabled]) .md-warn .md-container .md-ripple,md-radio-button.md-THEME_NAME-theme:not([disabled]).md-warn .md-container .md-ripple {  color: '{{warn-600}}'; }md-radio-group.md-THEME_NAME-theme[disabled],md-radio-button.md-THEME_NAME-theme[disabled] {  color: '{{foreground-3}}'; }  md-radio-group.md-THEME_NAME-theme[disabled] .md-container .md-off,  md-radio-button.md-THEME_NAME-theme[disabled] .md-container .md-off {    border-color: '{{foreground-3}}'; }  md-radio-group.md-THEME_NAME-theme[disabled] .md-container .md-on,  md-radio-button.md-THEME_NAME-theme[disabled] .md-container .md-on {    border-color: '{{foreground-3}}'; }md-radio-group.md-THEME_NAME-theme .md-checked .md-ink-ripple {  color: '{{accent-color-0.26}}'; }md-radio-group.md-THEME_NAME-theme.md-primary .md-checked:not([disabled]) .md-ink-ripple, md-radio-group.md-THEME_NAME-theme .md-checked:not([disabled]).md-primary .md-ink-ripple {  color: '{{primary-color-0.26}}'; }md-radio-group.md-THEME_NAME-theme .md-checked.md-primary .md-ink-ripple {  color: '{{warn-color-0.26}}'; }md-radio-group.md-THEME_NAME-theme.md-focused:not(:empty) .md-checked .md-container:before {  background-color: '{{accent-color-0.26}}'; }md-radio-group.md-THEME_NAME-theme.md-focused:not(:empty).md-primary .md-checked .md-container:before,md-radio-group.md-THEME_NAME-theme.md-focused:not(:empty) .md-checked.md-primary .md-container:before {  background-color: '{{primary-color-0.26}}'; }md-radio-group.md-THEME_NAME-theme.md-focused:not(:empty).md-warn .md-checked .md-container:before,md-radio-group.md-THEME_NAME-theme.md-focused:not(:empty) .md-checked.md-warn .md-container:before {  background-color: '{{warn-color-0.26}}'; }md-slider.md-THEME_NAME-theme .md-track {  background-color: '{{foreground-3}}'; }md-slider.md-THEME_NAME-theme .md-track-ticks {  background-color: '{{foreground-4}}'; }md-slider.md-THEME_NAME-theme .md-focus-thumb {  background-color: '{{foreground-2}}'; }md-slider.md-THEME_NAME-theme .md-focus-ring {  background-color: '{{accent-color}}'; }md-slider.md-THEME_NAME-theme .md-disabled-thumb {  border-color: '{{background-color}}'; }md-slider.md-THEME_NAME-theme.md-min .md-thumb:after {  background-color: '{{background-color}}'; }md-slider.md-THEME_NAME-theme .md-track.md-track-fill {  background-color: '{{accent-color}}'; }md-slider.md-THEME_NAME-theme .md-thumb:after {  border-color: '{{accent-color}}';  background-color: '{{accent-color}}'; }md-slider.md-THEME_NAME-theme .md-sign {  background-color: '{{accent-color}}'; }  md-slider.md-THEME_NAME-theme .md-sign:after {    border-top-color: '{{accent-color}}'; }md-slider.md-THEME_NAME-theme .md-thumb-text {  color: '{{accent-contrast}}'; }md-slider.md-THEME_NAME-theme.md-warn .md-focus-ring {  background-color: '{{warn-color}}'; }md-slider.md-THEME_NAME-theme.md-warn .md-track.md-track-fill {  background-color: '{{warn-color}}'; }md-slider.md-THEME_NAME-theme.md-warn .md-thumb:after {  border-color: '{{warn-color}}';  background-color: '{{warn-color}}'; }md-slider.md-THEME_NAME-theme.md-warn .md-sign {  background-color: '{{warn-color}}'; }  md-slider.md-THEME_NAME-theme.md-warn .md-sign:after {    border-top-color: '{{warn-color}}'; }md-slider.md-THEME_NAME-theme.md-warn .md-thumb-text {  color: '{{warn-contrast}}'; }md-slider.md-THEME_NAME-theme.md-primary .md-focus-ring {  background-color: '{{primary-color}}'; }md-slider.md-THEME_NAME-theme.md-primary .md-track.md-track-fill {  background-color: '{{primary-color}}'; }md-slider.md-THEME_NAME-theme.md-primary .md-thumb:after {  border-color: '{{primary-color}}';  background-color: '{{primary-color}}'; }md-slider.md-THEME_NAME-theme.md-primary .md-sign {  background-color: '{{primary-color}}'; }  md-slider.md-THEME_NAME-theme.md-primary .md-sign:after {    border-top-color: '{{primary-color}}'; }md-slider.md-THEME_NAME-theme.md-primary .md-thumb-text {  color: '{{primary-contrast}}'; }md-slider.md-THEME_NAME-theme[disabled] .md-thumb:after {  border-color: '{{foreground-3}}'; }md-slider.md-THEME_NAME-theme[disabled]:not(.md-min) .md-thumb:after {  background-color: '{{foreground-3}}'; }.md-subheader.md-THEME_NAME-theme {  color: '{{ foreground-2-0.23 }}';  background-color: '{{background-color}}'; }  .md-subheader.md-THEME_NAME-theme.md-primary {    color: '{{primary-color}}'; }  .md-subheader.md-THEME_NAME-theme.md-accent {    color: '{{accent-color}}'; }  .md-subheader.md-THEME_NAME-theme.md-warn {    color: '{{warn-color}}'; }.mdtTable.md-THEME_NAME-theme {  background-color: #FFFFFF;  color: #323232; }  .mdtTable.md-THEME_NAME-theme .selectedRow {    background-color: #EEEEEE; }md-switch.md-THEME_NAME-theme .md-ink-ripple {  color: '{{background-500}}'; }md-switch.md-THEME_NAME-theme .md-thumb {  background-color: '{{background-50}}'; }md-switch.md-THEME_NAME-theme .md-bar {  background-color: '{{background-500}}'; }md-switch.md-THEME_NAME-theme.md-checked .md-ink-ripple {  color: '{{accent-color}}'; }md-switch.md-THEME_NAME-theme.md-checked .md-thumb {  background-color: '{{accent-color}}'; }md-switch.md-THEME_NAME-theme.md-checked .md-bar {  background-color: '{{accent-color-0.5}}'; }md-switch.md-THEME_NAME-theme.md-checked.md-focused .md-thumb:before {  background-color: '{{accent-color-0.26}}'; }md-switch.md-THEME_NAME-theme.md-checked.md-primary .md-ink-ripple {  color: '{{primary-color}}'; }md-switch.md-THEME_NAME-theme.md-checked.md-primary .md-thumb {  background-color: '{{primary-color}}'; }md-switch.md-THEME_NAME-theme.md-checked.md-primary .md-bar {  background-color: '{{primary-color-0.5}}'; }md-switch.md-THEME_NAME-theme.md-checked.md-primary.md-focused .md-thumb:before {  background-color: '{{primary-color-0.26}}'; }md-switch.md-THEME_NAME-theme.md-checked.md-warn .md-ink-ripple {  color: '{{warn-color}}'; }md-switch.md-THEME_NAME-theme.md-checked.md-warn .md-thumb {  background-color: '{{warn-color}}'; }md-switch.md-THEME_NAME-theme.md-checked.md-warn .md-bar {  background-color: '{{warn-color-0.5}}'; }md-switch.md-THEME_NAME-theme.md-checked.md-warn.md-focused .md-thumb:before {  background-color: '{{warn-color-0.26}}'; }md-switch.md-THEME_NAME-theme[disabled] .md-thumb {  background-color: '{{background-400}}'; }md-switch.md-THEME_NAME-theme[disabled] .md-bar {  background-color: '{{foreground-4}}'; }md-tabs.md-THEME_NAME-theme md-tabs-wrapper {  background-color: transparent;  border-color: '{{foreground-4}}'; }md-tabs.md-THEME_NAME-theme .md-paginator md-icon {  color: '{{primary-color}}'; }md-tabs.md-THEME_NAME-theme md-ink-bar {  color: '{{accent-color}}';  background: '{{accent-color}}'; }md-tabs.md-THEME_NAME-theme .md-tab {  color: '{{foreground-2}}'; }  md-tabs.md-THEME_NAME-theme .md-tab[disabled], md-tabs.md-THEME_NAME-theme .md-tab[disabled] md-icon {    color: '{{foreground-3}}'; }  md-tabs.md-THEME_NAME-theme .md-tab.md-active, md-tabs.md-THEME_NAME-theme .md-tab.md-active md-icon, md-tabs.md-THEME_NAME-theme .md-tab.md-focused, md-tabs.md-THEME_NAME-theme .md-tab.md-focused md-icon {    color: '{{primary-color}}'; }  md-tabs.md-THEME_NAME-theme .md-tab.md-focused {    background: '{{primary-color-0.1}}'; }  md-tabs.md-THEME_NAME-theme .md-tab .md-ripple-container {    color: '{{accent-100}}'; }md-tabs.md-THEME_NAME-theme.md-accent > md-tabs-wrapper {  background-color: '{{accent-color}}'; }  md-tabs.md-THEME_NAME-theme.md-accent > md-tabs-wrapper > md-tabs-canvas > md-pagination-wrapper > md-tab-item:not([disabled]) {    color: '{{accent-100}}'; }    md-tabs.md-THEME_NAME-theme.md-accent > md-tabs-wrapper > md-tabs-canvas > md-pagination-wrapper > md-tab-item:not([disabled]).md-active, md-tabs.md-THEME_NAME-theme.md-accent > md-tabs-wrapper > md-tabs-canvas > md-pagination-wrapper > md-tab-item:not([disabled]).md-active md-icon, md-tabs.md-THEME_NAME-theme.md-accent > md-tabs-wrapper > md-tabs-canvas > md-pagination-wrapper > md-tab-item:not([disabled]).md-focused, md-tabs.md-THEME_NAME-theme.md-accent > md-tabs-wrapper > md-tabs-canvas > md-pagination-wrapper > md-tab-item:not([disabled]).md-focused md-icon {      color: '{{accent-contrast}}'; }    md-tabs.md-THEME_NAME-theme.md-accent > md-tabs-wrapper > md-tabs-canvas > md-pagination-wrapper > md-tab-item:not([disabled]).md-focused {      background: '{{accent-contrast-0.1}}'; }  md-tabs.md-THEME_NAME-theme.md-accent > md-tabs-wrapper > md-tabs-canvas > md-pagination-wrapper > md-ink-bar {    color: '{{primary-600-1}}';    background: '{{primary-600-1}}'; }md-tabs.md-THEME_NAME-theme.md-primary > md-tabs-wrapper {  background-color: '{{primary-color}}'; }  md-tabs.md-THEME_NAME-theme.md-primary > md-tabs-wrapper > md-tabs-canvas > md-pagination-wrapper > md-tab-item:not([disabled]) {    color: '{{primary-100}}'; }    md-tabs.md-THEME_NAME-theme.md-primary > md-tabs-wrapper > md-tabs-canvas > md-pagination-wrapper > md-tab-item:not([disabled]).md-active, md-tabs.md-THEME_NAME-theme.md-primary > md-tabs-wrapper > md-tabs-canvas > md-pagination-wrapper > md-tab-item:not([disabled]).md-active md-icon, md-tabs.md-THEME_NAME-theme.md-primary > md-tabs-wrapper > md-tabs-canvas > md-pagination-wrapper > md-tab-item:not([disabled]).md-focused, md-tabs.md-THEME_NAME-theme.md-primary > md-tabs-wrapper > md-tabs-canvas > md-pagination-wrapper > md-tab-item:not([disabled]).md-focused md-icon {      color: '{{primary-contrast}}'; }    md-tabs.md-THEME_NAME-theme.md-primary > md-tabs-wrapper > md-tabs-canvas > md-pagination-wrapper > md-tab-item:not([disabled]).md-focused {      background: '{{primary-contrast-0.1}}'; }md-tabs.md-THEME_NAME-theme.md-warn > md-tabs-wrapper {  background-color: '{{warn-color}}'; }  md-tabs.md-THEME_NAME-theme.md-warn > md-tabs-wrapper > md-tabs-canvas > md-pagination-wrapper > md-tab-item:not([disabled]) {    color: '{{warn-100}}'; }    md-tabs.md-THEME_NAME-theme.md-warn > md-tabs-wrapper > md-tabs-canvas > md-pagination-wrapper > md-tab-item:not([disabled]).md-active, md-tabs.md-THEME_NAME-theme.md-warn > md-tabs-wrapper > md-tabs-canvas > md-pagination-wrapper > md-tab-item:not([disabled]).md-active md-icon, md-tabs.md-THEME_NAME-theme.md-warn > md-tabs-wrapper > md-tabs-canvas > md-pagination-wrapper > md-tab-item:not([disabled]).md-focused, md-tabs.md-THEME_NAME-theme.md-warn > md-tabs-wrapper > md-tabs-canvas > md-pagination-wrapper > md-tab-item:not([disabled]).md-focused md-icon {      color: '{{warn-contrast}}'; }    md-tabs.md-THEME_NAME-theme.md-warn > md-tabs-wrapper > md-tabs-canvas > md-pagination-wrapper > md-tab-item:not([disabled]).md-focused {      background: '{{warn-contrast-0.1}}'; }md-toolbar > md-tabs.md-THEME_NAME-theme > md-tabs-wrapper {  background-color: '{{primary-color}}'; }  md-toolbar > md-tabs.md-THEME_NAME-theme > md-tabs-wrapper > md-tabs-canvas > md-pagination-wrapper > md-tab-item:not([disabled]) {    color: '{{primary-100}}'; }    md-toolbar > md-tabs.md-THEME_NAME-theme > md-tabs-wrapper > md-tabs-canvas > md-pagination-wrapper > md-tab-item:not([disabled]).md-active, md-toolbar > md-tabs.md-THEME_NAME-theme > md-tabs-wrapper > md-tabs-canvas > md-pagination-wrapper > md-tab-item:not([disabled]).md-active md-icon, md-toolbar > md-tabs.md-THEME_NAME-theme > md-tabs-wrapper > md-tabs-canvas > md-pagination-wrapper > md-tab-item:not([disabled]).md-focused, md-toolbar > md-tabs.md-THEME_NAME-theme > md-tabs-wrapper > md-tabs-canvas > md-pagination-wrapper > md-tab-item:not([disabled]).md-focused md-icon {      color: '{{primary-contrast}}'; }    md-toolbar > md-tabs.md-THEME_NAME-theme > md-tabs-wrapper > md-tabs-canvas > md-pagination-wrapper > md-tab-item:not([disabled]).md-focused {      background: '{{primary-contrast-0.1}}'; }md-toolbar.md-accent > md-tabs.md-THEME_NAME-theme > md-tabs-wrapper {  background-color: '{{accent-color}}'; }  md-toolbar.md-accent > md-tabs.md-THEME_NAME-theme > md-tabs-wrapper > md-tabs-canvas > md-pagination-wrapper > md-tab-item:not([disabled]) {    color: '{{accent-100}}'; }    md-toolbar.md-accent > md-tabs.md-THEME_NAME-theme > md-tabs-wrapper > md-tabs-canvas > md-pagination-wrapper > md-tab-item:not([disabled]).md-active, md-toolbar.md-accent > md-tabs.md-THEME_NAME-theme > md-tabs-wrapper > md-tabs-canvas > md-pagination-wrapper > md-tab-item:not([disabled]).md-active md-icon, md-toolbar.md-accent > md-tabs.md-THEME_NAME-theme > md-tabs-wrapper > md-tabs-canvas > md-pagination-wrapper > md-tab-item:not([disabled]).md-focused, md-toolbar.md-accent > md-tabs.md-THEME_NAME-theme > md-tabs-wrapper > md-tabs-canvas > md-pagination-wrapper > md-tab-item:not([disabled]).md-focused md-icon {      color: '{{accent-contrast}}'; }    md-toolbar.md-accent > md-tabs.md-THEME_NAME-theme > md-tabs-wrapper > md-tabs-canvas > md-pagination-wrapper > md-tab-item:not([disabled]).md-focused {      background: '{{accent-contrast-0.1}}'; }  md-toolbar.md-accent > md-tabs.md-THEME_NAME-theme > md-tabs-wrapper > md-tabs-canvas > md-pagination-wrapper > md-ink-bar {    color: '{{primary-600-1}}';    background: '{{primary-600-1}}'; }md-toolbar.md-warn > md-tabs.md-THEME_NAME-theme > md-tabs-wrapper {  background-color: '{{warn-color}}'; }  md-toolbar.md-warn > md-tabs.md-THEME_NAME-theme > md-tabs-wrapper > md-tabs-canvas > md-pagination-wrapper > md-tab-item:not([disabled]) {    color: '{{warn-100}}'; }    md-toolbar.md-warn > md-tabs.md-THEME_NAME-theme > md-tabs-wrapper > md-tabs-canvas > md-pagination-wrapper > md-tab-item:not([disabled]).md-active, md-toolbar.md-warn > md-tabs.md-THEME_NAME-theme > md-tabs-wrapper > md-tabs-canvas > md-pagination-wrapper > md-tab-item:not([disabled]).md-active md-icon, md-toolbar.md-warn > md-tabs.md-THEME_NAME-theme > md-tabs-wrapper > md-tabs-canvas > md-pagination-wrapper > md-tab-item:not([disabled]).md-focused, md-toolbar.md-warn > md-tabs.md-THEME_NAME-theme > md-tabs-wrapper > md-tabs-canvas > md-pagination-wrapper > md-tab-item:not([disabled]).md-focused md-icon {      color: '{{warn-contrast}}'; }    md-toolbar.md-warn > md-tabs.md-THEME_NAME-theme > md-tabs-wrapper > md-tabs-canvas > md-pagination-wrapper > md-tab-item:not([disabled]).md-focused {      background: '{{warn-contrast-0.1}}'; }md-toast.md-THEME_NAME-theme .md-toast-content {  background-color: #323232;  color: '{{background-50}}'; }  md-toast.md-THEME_NAME-theme .md-toast-content .md-button {    color: '{{background-50}}'; }    md-toast.md-THEME_NAME-theme .md-toast-content .md-button.md-highlight {      color: '{{primary-A200}}'; }      md-toast.md-THEME_NAME-theme .md-toast-content .md-button.md-highlight.md-accent {        color: '{{accent-A200}}'; }      md-toast.md-THEME_NAME-theme .md-toast-content .md-button.md-highlight.md-warn {        color: '{{warn-A200}}'; }md-toolbar.md-THEME_NAME-theme:not(.md-menu-toolbar) {  background-color: '{{primary-color}}';  color: '{{primary-contrast}}'; }  md-toolbar.md-THEME_NAME-theme:not(.md-menu-toolbar) md-icon {    color: '{{primary-contrast}}'; }  md-toolbar.md-THEME_NAME-theme:not(.md-menu-toolbar) .md-button:not(.md-raised) {    color: '{{primary-contrast}}'; }  md-toolbar.md-THEME_NAME-theme:not(.md-menu-toolbar).md-accent {    background-color: '{{accent-color}}';    color: '{{accent-contrast}}'; }  md-toolbar.md-THEME_NAME-theme:not(.md-menu-toolbar).md-warn {    background-color: '{{warn-color}}';    color: '{{warn-contrast}}'; }md-tooltip.md-THEME_NAME-theme {  color: '{{background-A100}}'; }  md-tooltip.md-THEME_NAME-theme .md-content {    background-color: '{{foreground-2}}'; }"); 
 })();
 
 
