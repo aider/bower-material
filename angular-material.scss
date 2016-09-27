@@ -2896,131 +2896,6 @@ md-divider {
     border-right-style: solid;
   }
 }
-$button-fab-width: rem(5.600) !default;
-$icon-button-margin: rem(0.600) !default;
-
-md-fab-toolbar {
-  $icon-delay: 200ms;
-
-  // Include the top/left/bottom/right fab positions
-  @include fab-all-positions();
-
-  display: block;
-
-  /*
-   * Closed styling
-   */
-  ._md-fab-toolbar-wrapper {
-    display: block;
-    position: relative;
-    overflow: hidden;
-
-    // Account for the size of the trigger plus its margin/shadow
-    height: $button-fab-width + ($icon-button-margin * 2);
-  }
-
-  md-fab-trigger {
-    position: absolute;
-    z-index: $z-index-fab;
-
-    button {
-      overflow: visible !important;
-    }
-
-    ._md-fab-toolbar-background {
-      display: block;
-      position: absolute;
-      z-index: $z-index-fab + 1;
-
-      opacity: 1;
-      transition: $swift-ease-in;
-    }
-
-    md-icon {
-      position: relative;
-      z-index: $z-index-fab + 2;
-
-      opacity: 1;
-
-      // Hide the icon very quickly
-      transition: all $icon-delay ease-in;
-    }
-  }
-
-  &.md-left {
-    md-fab-trigger {
-      @include rtl-prop(right, left, 0);
-    }
-
-    .md-toolbar-tools {
-      flex-direction: row-reverse;
-
-      > .md-button:first-child {
-        @include rtl-prop(margin-right, margin-left, 0.6rem)
-      }
-
-      > .md-button:first-child {
-        @include rtl-prop(margin-left, margin-right, -0.8rem);
-      }
-
-
-      > .md-button:last-child {
-        @include rtl-prop(margin-right, margin-left, 8px);
-      }
-
-    }
-  }
-
-  &.md-right {
-    md-fab-trigger {
-      @include rtl-prop(left, right, 0);
-    }
-
-    .md-toolbar-tools {
-      flex-direction: row;
-    }
-  }
-
-  md-toolbar {
-    background-color: transparent !important;
-    pointer-events: none;
-    z-index: $z-index-fab + 3;
-
-    .md-toolbar-tools {
-      // Fix some spacing issues with the icons and the trigger
-      padding: 0 20px;
-      margin-top: 3px;
-    }
-
-    .md-fab-action-item {
-      opacity: 0;
-      transform: scale(0);
-      transition: $swift-ease-in;
-
-      // Cut the action item's animation time in half since we delay it in the JS
-      transition-duration: $swift-ease-in-duration / 2;
-    }
-  }
-
-  /*
-   * Hover styling
-   */
-  &.md-is-open {
-    md-fab-trigger > button {
-      box-shadow: none;
-
-      md-icon {
-        opacity: 0;
-      }
-    }
-
-    .md-fab-action-item {
-      opacity: 1;
-      transform: scale(1);
-    }
-  }
-}
-
 md-fab-speed-dial {
   position: relative;
   display: flex;
@@ -3162,6 +3037,131 @@ md-fab-speed-dial {
 
       // Make the scale animation a bit faster since we are delaying each item
       transition-duration: $swift-ease-in-duration / 2.1;
+    }
+  }
+}
+
+$button-fab-width: rem(5.600) !default;
+$icon-button-margin: rem(0.600) !default;
+
+md-fab-toolbar {
+  $icon-delay: 200ms;
+
+  // Include the top/left/bottom/right fab positions
+  @include fab-all-positions();
+
+  display: block;
+
+  /*
+   * Closed styling
+   */
+  ._md-fab-toolbar-wrapper {
+    display: block;
+    position: relative;
+    overflow: hidden;
+
+    // Account for the size of the trigger plus its margin/shadow
+    height: $button-fab-width + ($icon-button-margin * 2);
+  }
+
+  md-fab-trigger {
+    position: absolute;
+    z-index: $z-index-fab;
+
+    button {
+      overflow: visible !important;
+    }
+
+    ._md-fab-toolbar-background {
+      display: block;
+      position: absolute;
+      z-index: $z-index-fab + 1;
+
+      opacity: 1;
+      transition: $swift-ease-in;
+    }
+
+    md-icon {
+      position: relative;
+      z-index: $z-index-fab + 2;
+
+      opacity: 1;
+
+      // Hide the icon very quickly
+      transition: all $icon-delay ease-in;
+    }
+  }
+
+  &.md-left {
+    md-fab-trigger {
+      @include rtl-prop(right, left, 0);
+    }
+
+    .md-toolbar-tools {
+      flex-direction: row-reverse;
+
+      > .md-button:first-child {
+        @include rtl-prop(margin-right, margin-left, 0.6rem)
+      }
+
+      > .md-button:first-child {
+        @include rtl-prop(margin-left, margin-right, -0.8rem);
+      }
+
+
+      > .md-button:last-child {
+        @include rtl-prop(margin-right, margin-left, 8px);
+      }
+
+    }
+  }
+
+  &.md-right {
+    md-fab-trigger {
+      @include rtl-prop(left, right, 0);
+    }
+
+    .md-toolbar-tools {
+      flex-direction: row;
+    }
+  }
+
+  md-toolbar {
+    background-color: transparent !important;
+    pointer-events: none;
+    z-index: $z-index-fab + 3;
+
+    .md-toolbar-tools {
+      // Fix some spacing issues with the icons and the trigger
+      padding: 0 20px;
+      margin-top: 3px;
+    }
+
+    .md-fab-action-item {
+      opacity: 0;
+      transform: scale(0);
+      transition: $swift-ease-in;
+
+      // Cut the action item's animation time in half since we delay it in the JS
+      transition-duration: $swift-ease-in-duration / 2;
+    }
+  }
+
+  /*
+   * Hover styling
+   */
+  &.md-is-open {
+    md-fab-trigger > button {
+      box-shadow: none;
+
+      md-icon {
+        opacity: 0;
+      }
+    }
+
+    .md-fab-action-item {
+      opacity: 1;
+      transform: scale(1);
     }
   }
 }
@@ -6732,6 +6732,188 @@ md-toolbar + md-tabs {
   border-top-right-radius: 0;
 }
 
+// Standard/Desktop Heights
+$toolbar-tools-height: 64px !default;
+$toolbar-height: 64px !default;
+$toolbar-medium-tall-height: 88px !default;
+$toolbar-tall-height: 128px !default;
+
+// Mobile portrait heights
+$toolbar-tools-height-mobile-portrait: 56px !default;
+$toolbar-height-mobile-portrait: 56px !default;
+
+// Mobile landscape heights
+$toolbar-tools-height-mobile-landscape: 48px !default;
+$toolbar-height-mobile-landscape: 48px !default;
+
+
+$toolbar-indent-margin: 64px !default;
+$toolbar-padding: 16px !default;
+
+$icon-button-margin-offset: rem(-0.800) !default;
+
+md-toolbar {
+  box-sizing: border-box;
+  display: flex;
+  flex-direction: column;
+
+  position: relative;
+  z-index: 2;
+
+  font-size: rem(2.0);
+  min-height: $baseline-grid * 8;
+  width: 100%;
+
+  transition-duration: $swift-ease-in-out-duration;
+  transition-timing-function: $swift-ease-in-out-timing-function;
+  transition-property: background-color, fill, color;
+
+  &.md-whiteframe-z1-add, &.md-whiteframe-z1-remove {
+    transition: box-shadow $swift-ease-in-out-duration linear;
+  }
+
+  md-toolbar-filler {
+    width: 9 * $baseline-grid;
+  }
+
+  *,
+  *:before,
+  *:after {
+    box-sizing: border-box;
+  }
+
+  // By default $ngAnimate looks for transition durations on the element, when using ng-hide, ng-if, ng-show.
+  // The toolbar has a transition duration applied, which means, that $ngAnimate delays the hide process.
+  // To avoid this, we need to reset the transition, when $ngAnimate looks for the duration.
+  &.ng-animate {
+    transition: none;
+  }
+
+  &.md-tall {
+    height: $toolbar-tall-height;
+    min-height: $toolbar-tall-height;
+    max-height: $toolbar-tall-height;
+  }
+
+  &.md-medium-tall {
+    height: $toolbar-medium-tall-height;
+    min-height: $toolbar-medium-tall-height;
+    max-height: $toolbar-medium-tall-height;
+
+    .md-toolbar-tools {
+      height: 48px;
+      min-height: 48px;
+      max-height: 48px;
+    }
+  }
+
+  > .md-indent {
+    @include rtl-prop(margin-left, margin-right, $toolbar-indent-margin);
+  }
+
+  ~ md-content {
+    > md-list {
+      padding: 0;
+
+      md-list-item:last-child {
+        md-divider {
+          display: none;
+        }
+      }
+    }
+  }
+}
+
+.md-toolbar-tools {
+  font-size: $title-font-size-base;
+  letter-spacing: 0.005em;
+  box-sizing: border-box;
+  font-weight: 400;
+  display: flex;
+  align-items: center;
+  flex-direction: row;
+
+  width: 100%;
+  height: $toolbar-tools-height;
+  max-height: $toolbar-tools-height;
+  padding: 0 $toolbar-padding;
+  margin: 0;
+
+  h1, h2, h3 {
+    font-size: inherit;
+    font-weight: inherit;
+    margin: inherit;
+  }
+
+  a {
+    color: inherit;
+    text-decoration: none;
+  }
+  .fill-height {
+    display: flex;
+    align-items: center;
+  }
+  .md-button {
+    margin-top: 0;
+    margin-bottom: 0;
+
+    &, &.md-icon-button md-icon {
+      transition-duration: $swift-ease-in-out-duration;
+      transition-timing-function: $swift-ease-in-out-timing-function;
+      transition-property: background-color, fill, color;
+
+      // Normally .md-button is already resetting the transition, when $ngAnimate looks for the duration,
+      // but in this case, the selector has a higher specificity than the `reset selector`, which means, that
+      // we need to reset the transition our self.
+      &.ng-animate {
+        transition: none;
+      }
+    }
+  }
+  &> .md-button:first-child {
+    @include rtl-prop(margin-left, margin-right, $icon-button-margin-offset);
+  }
+  &> .md-button:last-child {
+    @include rtl-prop(margin-right, margin-left, $icon-button-margin-offset);
+  }
+
+  &> md-menu:last-child {
+    @include rtl-prop(margin-right, margin-left, $icon-button-margin-offset);
+    & > .md-button {
+      @include rtl-prop(margin-right, margin-left, 0);
+    }
+  }
+
+  @media screen and (-ms-high-contrast: active) {
+    border-bottom: 1px solid #fff;
+  }
+}
+
+// Handle mobile portrait
+@media (min-width: 0) and (max-width: $layout-breakpoint-sm - 1) and (orientation: portrait) {
+  md-toolbar {
+    min-height: $toolbar-height-mobile-portrait;
+  }
+
+  .md-toolbar-tools {
+    height: $toolbar-height-mobile-portrait;
+    max-height: $toolbar-height-mobile-portrait;
+  }
+}
+
+// Handle mobile landscape
+@media (min-width: 0) and (max-width: $layout-breakpoint-sm - 1) and (orientation: landscape) {
+  md-toolbar {
+    min-height: $toolbar-height-mobile-landscape;
+  }
+
+  .md-toolbar-tools {
+    height: $toolbar-height-mobile-landscape;
+    max-height: $toolbar-height-mobile-landscape;
+  }
+}
+
+
 // See height set globally, depended on by buttons
 
 $md-toast-content-padding: 3 * $baseline-grid - $button-left-right-padding !default;
@@ -6958,188 +7140,6 @@ md-toast {
 ._md-toast-animating {
   overflow: hidden !important;
 }
-
-// Standard/Desktop Heights
-$toolbar-tools-height: 64px !default;
-$toolbar-height: 64px !default;
-$toolbar-medium-tall-height: 88px !default;
-$toolbar-tall-height: 128px !default;
-
-// Mobile portrait heights
-$toolbar-tools-height-mobile-portrait: 56px !default;
-$toolbar-height-mobile-portrait: 56px !default;
-
-// Mobile landscape heights
-$toolbar-tools-height-mobile-landscape: 48px !default;
-$toolbar-height-mobile-landscape: 48px !default;
-
-
-$toolbar-indent-margin: 64px !default;
-$toolbar-padding: 16px !default;
-
-$icon-button-margin-offset: rem(-0.800) !default;
-
-md-toolbar {
-  box-sizing: border-box;
-  display: flex;
-  flex-direction: column;
-
-  position: relative;
-  z-index: 2;
-
-  font-size: rem(2.0);
-  min-height: $baseline-grid * 8;
-  width: 100%;
-
-  transition-duration: $swift-ease-in-out-duration;
-  transition-timing-function: $swift-ease-in-out-timing-function;
-  transition-property: background-color, fill, color;
-
-  &.md-whiteframe-z1-add, &.md-whiteframe-z1-remove {
-    transition: box-shadow $swift-ease-in-out-duration linear;
-  }
-
-  md-toolbar-filler {
-    width: 9 * $baseline-grid;
-  }
-
-  *,
-  *:before,
-  *:after {
-    box-sizing: border-box;
-  }
-
-  // By default $ngAnimate looks for transition durations on the element, when using ng-hide, ng-if, ng-show.
-  // The toolbar has a transition duration applied, which means, that $ngAnimate delays the hide process.
-  // To avoid this, we need to reset the transition, when $ngAnimate looks for the duration.
-  &.ng-animate {
-    transition: none;
-  }
-
-  &.md-tall {
-    height: $toolbar-tall-height;
-    min-height: $toolbar-tall-height;
-    max-height: $toolbar-tall-height;
-  }
-
-  &.md-medium-tall {
-    height: $toolbar-medium-tall-height;
-    min-height: $toolbar-medium-tall-height;
-    max-height: $toolbar-medium-tall-height;
-
-    .md-toolbar-tools {
-      height: 48px;
-      min-height: 48px;
-      max-height: 48px;
-    }
-  }
-
-  > .md-indent {
-    @include rtl-prop(margin-left, margin-right, $toolbar-indent-margin);
-  }
-
-  ~ md-content {
-    > md-list {
-      padding: 0;
-
-      md-list-item:last-child {
-        md-divider {
-          display: none;
-        }
-      }
-    }
-  }
-}
-
-.md-toolbar-tools {
-  font-size: $title-font-size-base;
-  letter-spacing: 0.005em;
-  box-sizing: border-box;
-  font-weight: 400;
-  display: flex;
-  align-items: center;
-  flex-direction: row;
-
-  width: 100%;
-  height: $toolbar-tools-height;
-  max-height: $toolbar-tools-height;
-  padding: 0 $toolbar-padding;
-  margin: 0;
-
-  h1, h2, h3 {
-    font-size: inherit;
-    font-weight: inherit;
-    margin: inherit;
-  }
-
-  a {
-    color: inherit;
-    text-decoration: none;
-  }
-  .fill-height {
-    display: flex;
-    align-items: center;
-  }
-  .md-button {
-    margin-top: 0;
-    margin-bottom: 0;
-
-    &, &.md-icon-button md-icon {
-      transition-duration: $swift-ease-in-out-duration;
-      transition-timing-function: $swift-ease-in-out-timing-function;
-      transition-property: background-color, fill, color;
-
-      // Normally .md-button is already resetting the transition, when $ngAnimate looks for the duration,
-      // but in this case, the selector has a higher specificity than the `reset selector`, which means, that
-      // we need to reset the transition our self.
-      &.ng-animate {
-        transition: none;
-      }
-    }
-  }
-  &> .md-button:first-child {
-    @include rtl-prop(margin-left, margin-right, $icon-button-margin-offset);
-  }
-  &> .md-button:last-child {
-    @include rtl-prop(margin-right, margin-left, $icon-button-margin-offset);
-  }
-
-  &> md-menu:last-child {
-    @include rtl-prop(margin-right, margin-left, $icon-button-margin-offset);
-    & > .md-button {
-      @include rtl-prop(margin-right, margin-left, 0);
-    }
-  }
-
-  @media screen and (-ms-high-contrast: active) {
-    border-bottom: 1px solid #fff;
-  }
-}
-
-// Handle mobile portrait
-@media (min-width: 0) and (max-width: $layout-breakpoint-sm - 1) and (orientation: portrait) {
-  md-toolbar {
-    min-height: $toolbar-height-mobile-portrait;
-  }
-
-  .md-toolbar-tools {
-    height: $toolbar-height-mobile-portrait;
-    max-height: $toolbar-height-mobile-portrait;
-  }
-}
-
-// Handle mobile landscape
-@media (min-width: 0) and (max-width: $layout-breakpoint-sm - 1) and (orientation: landscape) {
-  md-toolbar {
-    min-height: $toolbar-height-mobile-landscape;
-  }
-
-  .md-toolbar-tools {
-    height: $toolbar-height-mobile-landscape;
-    max-height: $toolbar-height-mobile-landscape;
-  }
-}
-
 
 $tooltip-fontsize-lg: rem(1) !default;
 $tooltip-fontsize-sm: rem(1.4) !default;

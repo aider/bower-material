@@ -1820,124 +1820,6 @@ md-divider {
   border-right-width: 1px;
   border-right-style: solid; }
 
-md-fab-toolbar {
-  display: block;
-  /*
-   * Closed styling
-   */
-  /*
-   * Hover styling
-   */ }
-  md-fab-toolbar.md-fab-bottom-right {
-    top: auto;
-    right: 20px;
-    bottom: 20px;
-    left: auto;
-    position: absolute; }
-  md-fab-toolbar.md-fab-bottom-left {
-    top: auto;
-    right: auto;
-    bottom: 20px;
-    left: 20px;
-    position: absolute; }
-  md-fab-toolbar.md-fab-top-right {
-    top: 20px;
-    right: 20px;
-    bottom: auto;
-    left: auto;
-    position: absolute; }
-  md-fab-toolbar.md-fab-top-left {
-    top: 20px;
-    right: auto;
-    bottom: auto;
-    left: 20px;
-    position: absolute; }
-  md-fab-toolbar ._md-fab-toolbar-wrapper {
-    display: block;
-    position: relative;
-    overflow: hidden;
-    height: 68px; }
-  md-fab-toolbar md-fab-trigger {
-    position: absolute;
-    z-index: 20; }
-    md-fab-toolbar md-fab-trigger button {
-      overflow: visible !important; }
-    md-fab-toolbar md-fab-trigger ._md-fab-toolbar-background {
-      display: block;
-      position: absolute;
-      z-index: 21;
-      opacity: 1;
-      transition: all 0.3s cubic-bezier(0.55, 0, 0.55, 0.2); }
-    md-fab-toolbar md-fab-trigger md-icon {
-      position: relative;
-      z-index: 22;
-      opacity: 1;
-      transition: all 200ms ease-in; }
-  md-fab-toolbar.md-left md-fab-trigger {
-    right: 0; }
-    [dir=rtl] md-fab-toolbar.md-left md-fab-trigger {
-      right: 0;
-      right: auto;
-      right: initial;
-      left: 0; }
-  md-fab-toolbar.md-left .md-toolbar-tools {
-    -webkit-flex-direction: row-reverse;
-        -ms-flex-direction: row-reverse;
-            flex-direction: row-reverse; }
-    md-fab-toolbar.md-left .md-toolbar-tools > .md-button:first-child {
-      margin-right: 0.6rem; }
-      [dir=rtl] md-fab-toolbar.md-left .md-toolbar-tools > .md-button:first-child {
-        margin-right: 0;
-        margin-right: auto;
-        margin-right: initial;
-        margin-left: 0.6rem; }
-    md-fab-toolbar.md-left .md-toolbar-tools > .md-button:first-child {
-      margin-left: -0.8rem; }
-      [dir=rtl] md-fab-toolbar.md-left .md-toolbar-tools > .md-button:first-child {
-        margin-left: 0;
-        margin-left: auto;
-        margin-left: initial;
-        margin-right: -0.8rem; }
-    md-fab-toolbar.md-left .md-toolbar-tools > .md-button:last-child {
-      margin-right: 8px; }
-      [dir=rtl] md-fab-toolbar.md-left .md-toolbar-tools > .md-button:last-child {
-        margin-right: 0;
-        margin-right: auto;
-        margin-right: initial;
-        margin-left: 8px; }
-  md-fab-toolbar.md-right md-fab-trigger {
-    left: 0; }
-    [dir=rtl] md-fab-toolbar.md-right md-fab-trigger {
-      left: 0;
-      left: auto;
-      left: initial;
-      right: 0; }
-  md-fab-toolbar.md-right .md-toolbar-tools {
-    -webkit-flex-direction: row;
-        -ms-flex-direction: row;
-            flex-direction: row; }
-  md-fab-toolbar md-toolbar {
-    background-color: transparent !important;
-    pointer-events: none;
-    z-index: 23; }
-    md-fab-toolbar md-toolbar .md-toolbar-tools {
-      padding: 0 20px;
-      margin-top: 3px; }
-    md-fab-toolbar md-toolbar .md-fab-action-item {
-      opacity: 0;
-      -webkit-transform: scale(0);
-              transform: scale(0);
-      transition: all 0.3s cubic-bezier(0.55, 0, 0.55, 0.2);
-      transition-duration: 0.15s; }
-  md-fab-toolbar.md-is-open md-fab-trigger > button {
-    box-shadow: none; }
-    md-fab-toolbar.md-is-open md-fab-trigger > button md-icon {
-      opacity: 0; }
-  md-fab-toolbar.md-is-open .md-fab-action-item {
-    opacity: 1;
-    -webkit-transform: scale(1);
-            transform: scale(1); }
-
 md-fab-speed-dial {
   position: relative;
   display: -webkit-flex;
@@ -2072,6 +1954,124 @@ md-fab-speed-dial {
             transform: scale(0);
     transition: all 0.3s cubic-bezier(0.55, 0, 0.55, 0.2);
     transition-duration: 0.14286s; }
+
+md-fab-toolbar {
+  display: block;
+  /*
+   * Closed styling
+   */
+  /*
+   * Hover styling
+   */ }
+  md-fab-toolbar.md-fab-bottom-right {
+    top: auto;
+    right: 20px;
+    bottom: 20px;
+    left: auto;
+    position: absolute; }
+  md-fab-toolbar.md-fab-bottom-left {
+    top: auto;
+    right: auto;
+    bottom: 20px;
+    left: 20px;
+    position: absolute; }
+  md-fab-toolbar.md-fab-top-right {
+    top: 20px;
+    right: 20px;
+    bottom: auto;
+    left: auto;
+    position: absolute; }
+  md-fab-toolbar.md-fab-top-left {
+    top: 20px;
+    right: auto;
+    bottom: auto;
+    left: 20px;
+    position: absolute; }
+  md-fab-toolbar ._md-fab-toolbar-wrapper {
+    display: block;
+    position: relative;
+    overflow: hidden;
+    height: 68px; }
+  md-fab-toolbar md-fab-trigger {
+    position: absolute;
+    z-index: 20; }
+    md-fab-toolbar md-fab-trigger button {
+      overflow: visible !important; }
+    md-fab-toolbar md-fab-trigger ._md-fab-toolbar-background {
+      display: block;
+      position: absolute;
+      z-index: 21;
+      opacity: 1;
+      transition: all 0.3s cubic-bezier(0.55, 0, 0.55, 0.2); }
+    md-fab-toolbar md-fab-trigger md-icon {
+      position: relative;
+      z-index: 22;
+      opacity: 1;
+      transition: all 200ms ease-in; }
+  md-fab-toolbar.md-left md-fab-trigger {
+    right: 0; }
+    [dir=rtl] md-fab-toolbar.md-left md-fab-trigger {
+      right: 0;
+      right: auto;
+      right: initial;
+      left: 0; }
+  md-fab-toolbar.md-left .md-toolbar-tools {
+    -webkit-flex-direction: row-reverse;
+        -ms-flex-direction: row-reverse;
+            flex-direction: row-reverse; }
+    md-fab-toolbar.md-left .md-toolbar-tools > .md-button:first-child {
+      margin-right: 0.6rem; }
+      [dir=rtl] md-fab-toolbar.md-left .md-toolbar-tools > .md-button:first-child {
+        margin-right: 0;
+        margin-right: auto;
+        margin-right: initial;
+        margin-left: 0.6rem; }
+    md-fab-toolbar.md-left .md-toolbar-tools > .md-button:first-child {
+      margin-left: -0.8rem; }
+      [dir=rtl] md-fab-toolbar.md-left .md-toolbar-tools > .md-button:first-child {
+        margin-left: 0;
+        margin-left: auto;
+        margin-left: initial;
+        margin-right: -0.8rem; }
+    md-fab-toolbar.md-left .md-toolbar-tools > .md-button:last-child {
+      margin-right: 8px; }
+      [dir=rtl] md-fab-toolbar.md-left .md-toolbar-tools > .md-button:last-child {
+        margin-right: 0;
+        margin-right: auto;
+        margin-right: initial;
+        margin-left: 8px; }
+  md-fab-toolbar.md-right md-fab-trigger {
+    left: 0; }
+    [dir=rtl] md-fab-toolbar.md-right md-fab-trigger {
+      left: 0;
+      left: auto;
+      left: initial;
+      right: 0; }
+  md-fab-toolbar.md-right .md-toolbar-tools {
+    -webkit-flex-direction: row;
+        -ms-flex-direction: row;
+            flex-direction: row; }
+  md-fab-toolbar md-toolbar {
+    background-color: transparent !important;
+    pointer-events: none;
+    z-index: 23; }
+    md-fab-toolbar md-toolbar .md-toolbar-tools {
+      padding: 0 20px;
+      margin-top: 3px; }
+    md-fab-toolbar md-toolbar .md-fab-action-item {
+      opacity: 0;
+      -webkit-transform: scale(0);
+              transform: scale(0);
+      transition: all 0.3s cubic-bezier(0.55, 0, 0.55, 0.2);
+      transition-duration: 0.15s; }
+  md-fab-toolbar.md-is-open md-fab-trigger > button {
+    box-shadow: none; }
+    md-fab-toolbar.md-is-open md-fab-trigger > button md-icon {
+      opacity: 0; }
+  md-fab-toolbar.md-is-open .md-fab-action-item {
+    opacity: 1;
+    -webkit-transform: scale(1);
+            transform: scale(1); }
 
 md-grid-list {
   box-sizing: border-box;
@@ -5181,6 +5181,144 @@ md-toolbar + md-tabs {
   border-top-left-radius: 0;
   border-top-right-radius: 0; }
 
+md-toolbar {
+  box-sizing: border-box;
+  display: -webkit-flex;
+  display: -ms-flexbox;
+  display: flex;
+  -webkit-flex-direction: column;
+      -ms-flex-direction: column;
+          flex-direction: column;
+  position: relative;
+  z-index: 2;
+  font-size: 20px;
+  min-height: 64px;
+  width: 100%;
+  transition-duration: 0.5s;
+  transition-timing-function: cubic-bezier(0.35, 0, 0.25, 1);
+  transition-property: background-color, fill, color; }
+  md-toolbar.md-whiteframe-z1-add, md-toolbar.md-whiteframe-z1-remove {
+    transition: box-shadow 0.5s linear; }
+  md-toolbar md-toolbar-filler {
+    width: 72px; }
+  md-toolbar *,
+  md-toolbar *:before,
+  md-toolbar *:after {
+    box-sizing: border-box; }
+  md-toolbar.ng-animate {
+    transition: none; }
+  md-toolbar.md-tall {
+    height: 128px;
+    min-height: 128px;
+    max-height: 128px; }
+  md-toolbar.md-medium-tall {
+    height: 88px;
+    min-height: 88px;
+    max-height: 88px; }
+    md-toolbar.md-medium-tall .md-toolbar-tools {
+      height: 48px;
+      min-height: 48px;
+      max-height: 48px; }
+  md-toolbar > .md-indent {
+    margin-left: 64px; }
+    [dir=rtl] md-toolbar > .md-indent {
+      margin-left: 0;
+      margin-left: auto;
+      margin-left: initial;
+      margin-right: 64px; }
+  md-toolbar ~ md-content > md-list {
+    padding: 0; }
+    md-toolbar ~ md-content > md-list md-list-item:last-child md-divider {
+      display: none; }
+
+.md-toolbar-tools {
+  font-size: 20px;
+  letter-spacing: 0.005em;
+  box-sizing: border-box;
+  font-weight: 400;
+  display: -webkit-flex;
+  display: -ms-flexbox;
+  display: flex;
+  -webkit-align-items: center;
+      -ms-flex-align: center;
+          align-items: center;
+  -webkit-flex-direction: row;
+      -ms-flex-direction: row;
+          flex-direction: row;
+  width: 100%;
+  height: 64px;
+  max-height: 64px;
+  padding: 0 16px;
+  margin: 0; }
+  .md-toolbar-tools h1, .md-toolbar-tools h2, .md-toolbar-tools h3 {
+    font-size: inherit;
+    font-weight: inherit;
+    margin: inherit; }
+  .md-toolbar-tools a {
+    color: inherit;
+    text-decoration: none; }
+  .md-toolbar-tools .fill-height {
+    display: -webkit-flex;
+    display: -ms-flexbox;
+    display: flex;
+    -webkit-align-items: center;
+        -ms-flex-align: center;
+            align-items: center; }
+  .md-toolbar-tools .md-button {
+    margin-top: 0;
+    margin-bottom: 0; }
+    .md-toolbar-tools .md-button, .md-toolbar-tools .md-button.md-icon-button md-icon {
+      transition-duration: 0.5s;
+      transition-timing-function: cubic-bezier(0.35, 0, 0.25, 1);
+      transition-property: background-color, fill, color; }
+      .md-toolbar-tools .md-button.ng-animate, .md-toolbar-tools .md-button.md-icon-button md-icon.ng-animate {
+        transition: none; }
+  .md-toolbar-tools > .md-button:first-child {
+    margin-left: -8px; }
+    [dir=rtl] .md-toolbar-tools > .md-button:first-child {
+      margin-left: 0;
+      margin-left: auto;
+      margin-left: initial;
+      margin-right: -8px; }
+  .md-toolbar-tools > .md-button:last-child {
+    margin-right: -8px; }
+    [dir=rtl] .md-toolbar-tools > .md-button:last-child {
+      margin-right: 0;
+      margin-right: auto;
+      margin-right: initial;
+      margin-left: -8px; }
+  .md-toolbar-tools > md-menu:last-child {
+    margin-right: -8px; }
+    [dir=rtl] .md-toolbar-tools > md-menu:last-child {
+      margin-right: 0;
+      margin-right: auto;
+      margin-right: initial;
+      margin-left: -8px; }
+    .md-toolbar-tools > md-menu:last-child > .md-button {
+      margin-right: 0; }
+      [dir=rtl] .md-toolbar-tools > md-menu:last-child > .md-button {
+        margin-right: 0;
+        margin-right: auto;
+        margin-right: initial;
+        margin-left: 0; }
+  @media screen and (-ms-high-contrast: active) {
+    .md-toolbar-tools {
+      border-bottom: 1px solid #fff; } }
+
+@media (min-width: 0) and (max-width: 959px) and (orientation: portrait) {
+  md-toolbar {
+    min-height: 56px; }
+  .md-toolbar-tools {
+    height: 56px;
+    max-height: 56px; } }
+
+@media (min-width: 0) and (max-width: 959px) and (orientation: landscape) {
+  md-toolbar {
+    min-height: 48px; }
+  .md-toolbar-tools {
+    height: 48px;
+    max-height: 48px; } }
+
 .md-toast-text {
   padding: 0 6px; }
 
@@ -5341,144 +5479,6 @@ md-toast {
 
 ._md-toast-animating {
   overflow: hidden !important; }
-
-md-toolbar {
-  box-sizing: border-box;
-  display: -webkit-flex;
-  display: -ms-flexbox;
-  display: flex;
-  -webkit-flex-direction: column;
-      -ms-flex-direction: column;
-          flex-direction: column;
-  position: relative;
-  z-index: 2;
-  font-size: 20px;
-  min-height: 64px;
-  width: 100%;
-  transition-duration: 0.5s;
-  transition-timing-function: cubic-bezier(0.35, 0, 0.25, 1);
-  transition-property: background-color, fill, color; }
-  md-toolbar.md-whiteframe-z1-add, md-toolbar.md-whiteframe-z1-remove {
-    transition: box-shadow 0.5s linear; }
-  md-toolbar md-toolbar-filler {
-    width: 72px; }
-  md-toolbar *,
-  md-toolbar *:before,
-  md-toolbar *:after {
-    box-sizing: border-box; }
-  md-toolbar.ng-animate {
-    transition: none; }
-  md-toolbar.md-tall {
-    height: 128px;
-    min-height: 128px;
-    max-height: 128px; }
-  md-toolbar.md-medium-tall {
-    height: 88px;
-    min-height: 88px;
-    max-height: 88px; }
-    md-toolbar.md-medium-tall .md-toolbar-tools {
-      height: 48px;
-      min-height: 48px;
-      max-height: 48px; }
-  md-toolbar > .md-indent {
-    margin-left: 64px; }
-    [dir=rtl] md-toolbar > .md-indent {
-      margin-left: 0;
-      margin-left: auto;
-      margin-left: initial;
-      margin-right: 64px; }
-  md-toolbar ~ md-content > md-list {
-    padding: 0; }
-    md-toolbar ~ md-content > md-list md-list-item:last-child md-divider {
-      display: none; }
-
-.md-toolbar-tools {
-  font-size: 20px;
-  letter-spacing: 0.005em;
-  box-sizing: border-box;
-  font-weight: 400;
-  display: -webkit-flex;
-  display: -ms-flexbox;
-  display: flex;
-  -webkit-align-items: center;
-      -ms-flex-align: center;
-          align-items: center;
-  -webkit-flex-direction: row;
-      -ms-flex-direction: row;
-          flex-direction: row;
-  width: 100%;
-  height: 64px;
-  max-height: 64px;
-  padding: 0 16px;
-  margin: 0; }
-  .md-toolbar-tools h1, .md-toolbar-tools h2, .md-toolbar-tools h3 {
-    font-size: inherit;
-    font-weight: inherit;
-    margin: inherit; }
-  .md-toolbar-tools a {
-    color: inherit;
-    text-decoration: none; }
-  .md-toolbar-tools .fill-height {
-    display: -webkit-flex;
-    display: -ms-flexbox;
-    display: flex;
-    -webkit-align-items: center;
-        -ms-flex-align: center;
-            align-items: center; }
-  .md-toolbar-tools .md-button {
-    margin-top: 0;
-    margin-bottom: 0; }
-    .md-toolbar-tools .md-button, .md-toolbar-tools .md-button.md-icon-button md-icon {
-      transition-duration: 0.5s;
-      transition-timing-function: cubic-bezier(0.35, 0, 0.25, 1);
-      transition-property: background-color, fill, color; }
-      .md-toolbar-tools .md-button.ng-animate, .md-toolbar-tools .md-button.md-icon-button md-icon.ng-animate {
-        transition: none; }
-  .md-toolbar-tools > .md-button:first-child {
-    margin-left: -8px; }
-    [dir=rtl] .md-toolbar-tools > .md-button:first-child {
-      margin-left: 0;
-      margin-left: auto;
-      margin-left: initial;
-      margin-right: -8px; }
-  .md-toolbar-tools > .md-button:last-child {
-    margin-right: -8px; }
-    [dir=rtl] .md-toolbar-tools > .md-button:last-child {
-      margin-right: 0;
-      margin-right: auto;
-      margin-right: initial;
-      margin-left: -8px; }
-  .md-toolbar-tools > md-menu:last-child {
-    margin-right: -8px; }
-    [dir=rtl] .md-toolbar-tools > md-menu:last-child {
-      margin-right: 0;
-      margin-right: auto;
-      margin-right: initial;
-      margin-left: -8px; }
-    .md-toolbar-tools > md-menu:last-child > .md-button {
-      margin-right: 0; }
-      [dir=rtl] .md-toolbar-tools > md-menu:last-child > .md-button {
-        margin-right: 0;
-        margin-right: auto;
-        margin-right: initial;
-        margin-left: 0; }
-  @media screen and (-ms-high-contrast: active) {
-    .md-toolbar-tools {
-      border-bottom: 1px solid #fff; } }
-
-@media (min-width: 0) and (max-width: 959px) and (orientation: portrait) {
-  md-toolbar {
-    min-height: 56px; }
-  .md-toolbar-tools {
-    height: 56px;
-    max-height: 56px; } }
-
-@media (min-width: 0) and (max-width: 959px) and (orientation: landscape) {
-  md-toolbar {
-    min-height: 48px; }
-  .md-toolbar-tools {
-    height: 48px;
-    max-height: 48px; } }
 
 md-tooltip {
   position: absolute;
