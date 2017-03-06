@@ -1205,6 +1205,65 @@ input {
     @include layout-for-name($name);
 }
 
+// !!Important - Theme-based Background-color can be configured in backdrop-theme.scss
+//             - Animate background-color opacity only for `.md-opaque` styles
+
+md-backdrop {
+  transition: opacity 450ms;
+
+  position: absolute;
+  top:0;
+  bottom:0;
+  left: 0;
+  right: 0;
+
+  z-index: $z-index-backdrop;
+
+  &.md-menu-backdrop {
+    position: fixed !important;
+    z-index: $z-index-menu - 1;
+  }
+  &.md-select-backdrop {
+    z-index: $z-index-dialog + 1;
+    transition-duration: 0;
+  }
+  &.md-dialog-backdrop {
+    z-index: $z-index-dialog - 1;
+  }
+  &.md-bottom-sheet-backdrop {
+    z-index: $z-index-bottom-sheet - 1;
+  }
+  &.md-sidenav-backdrop {
+    z-index: $z-index-sidenav - 1;
+  }
+
+
+  &.md-click-catcher {
+    position: absolute;
+  }
+
+  &.md-opaque {
+
+    opacity: .48;
+
+    &.ng-enter {
+      opacity: 0;
+    }
+    &.ng-enter.md-opaque.ng-enter-active {
+      opacity: .48;
+    }
+    &.ng-leave {
+      opacity: .48;
+      transition: opacity 400ms;
+    }
+    &.ng-leave.md-opaque.ng-leave-active {
+      opacity: 0;
+    }
+  }
+
+}
+
+
 // The default item height is also specified in the JavaScript.
 $md-autocomplete-item-height: 48px !default;
 
@@ -1450,65 +1509,6 @@ md-autocomplete {
   }
 }
 
-// !!Important - Theme-based Background-color can be configured in backdrop-theme.scss
-//             - Animate background-color opacity only for `.md-opaque` styles
-
-md-backdrop {
-  transition: opacity 450ms;
-
-  position: absolute;
-  top:0;
-  bottom:0;
-  left: 0;
-  right: 0;
-
-  z-index: $z-index-backdrop;
-
-  &.md-menu-backdrop {
-    position: fixed !important;
-    z-index: $z-index-menu - 1;
-  }
-  &.md-select-backdrop {
-    z-index: $z-index-dialog + 1;
-    transition-duration: 0;
-  }
-  &.md-dialog-backdrop {
-    z-index: $z-index-dialog - 1;
-  }
-  &.md-bottom-sheet-backdrop {
-    z-index: $z-index-bottom-sheet - 1;
-  }
-  &.md-sidenav-backdrop {
-    z-index: $z-index-sidenav - 1;
-  }
-
-
-  &.md-click-catcher {
-    position: absolute;
-  }
-
-  &.md-opaque {
-
-    opacity: .48;
-
-    &.ng-enter {
-      opacity: 0;
-    }
-    &.ng-enter.md-opaque.ng-enter-active {
-      opacity: .48;
-    }
-    &.ng-leave {
-      opacity: .48;
-      transition: opacity 400ms;
-    }
-    &.ng-leave.md-opaque.ng-leave-active {
-      opacity: 0;
-    }
-  }
-
-}
-
-
 $bottom-sheet-horizontal-padding: 2 * $baseline-grid !default;
 $bottom-sheet-vertical-padding: 1 * $baseline-grid !default;
 $bottom-sheet-icon-after-margin: 4 * $baseline-grid !default;
@@ -1682,261 +1682,6 @@ md-bottom-sheet {
 // IE only
 @media screen and (-ms-high-contrast: active) {
   md-bottom-sheet {
-    border: 1px solid #fff;
-  }
-}
-
-$button-border-radius: 3px !default;
-$button-fab-border-radius: 50% !default;
-$button-icon-border-radius: $button-fab-border-radius !default;
-
-$button-line-height: rem(3.60) !default;
-$button-margin: rem(0.600) rem(0.800) !default;
-$button-min-width: rem(8.800) !default;
-$button-padding: 0 $button-left-right-padding !default;
-
-
-// Fab buttons
-$button-fab-line-height: rem(5.600) !default;
-$button-fab-mini-width: rem(4.00) !default;
-$button-fab-mini-height: rem(4.00) !default;
-$button-fab-mini-line-height: rem(4.00) !default;
-
-$button-fab-toast-offset: $button-fab-height * 0.75 !default;
-
-$icon-button-height: rem(4.000) !default;
-$icon-button-width: rem(4.000) !default;
-$icon-button-margin: rem(0.600) !default;
-
-// Fix issue causing buttons in Firefox to be 2px bigger than they should
-button.md-button::-moz-focus-inner {
-  border: 0;
-}
-
-.md-button {
-  display: inline-block;
-  position: relative; // Required for absolute canvas child elements.
-  cursor: pointer;
-
-  /** Alignment adjustments */
-  min-height: $button-line-height;
-  min-width: $button-min-width;
-  line-height: $button-line-height;
-
-  vertical-align: middle;
-  align-items: center;
-  text-align: center;
-
-  border-radius: $button-border-radius;
-  box-sizing: border-box;
-
-  /* Reset default button appearance */
-  user-select: none;
-  outline: none;
-  border: 0;
-
-  /** Custom styling for button */
-  padding: $button-padding;
-  margin: $button-margin;
-
-  background: transparent;
-  color: currentColor;
-  white-space: nowrap;
-
-  /* Uppercase text content */
-  text-transform: uppercase;
-  font-weight: 500;
-  font-size: $body-font-size-base;
-  font-style: inherit;
-  font-variant: inherit;
-  font-family: inherit;
-  text-decoration: none;
-
-  // Ink Ripple should not create any overflow.
-  overflow: hidden;
-
-  transition: box-shadow $swift-ease-out-duration $swift-ease-out-timing-function,
-              background-color $swift-ease-out-duration $swift-ease-out-timing-function;
-
-  &:focus {
-    outline: none;
-  }
-
-  &:hover, &:focus {
-    text-decoration: none;
-  }
-
-  // By default $ngAnimate looks for transition durations on the element, when using ng-hide, ng-if, ng-show.
-  // The .md-button has a transition duration applied, which means, that $ngAnimate delays the hide process.
-  // To avoid this, we need to reset the transition, when $ngAnimate looks for the duration.
-  &.ng-hide, &.ng-leave {
-    transition: none;
-  }
-
-  &.md-cornered {
-    border-radius: 0;
-  }
-
-  &.md-icon {
-    padding: 0;
-    background: none;
-  }
-
-  &.md-raised {
-    &:not([disabled]) {
-      @include md-shadow-bottom-z-1();
-    }
-  }
-
-  &.md-icon-button {
-    margin: 0 $icon-button-margin;
-    height: $icon-button-height;
-    min-width: 0;
-    line-height: $icon-size;
-    padding: $baseline-grid;
-    width: $icon-button-width;
-    border-radius: $button-icon-border-radius;
-    .md-ripple-container {
-      border-radius: $button-icon-border-radius;
-      background-clip: padding-box;
-      overflow: hidden;
-      // The following hack causes Safari/Chrome to respect overflow hidden for ripples
-      -webkit-mask-image: url('data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAIAAACQd1PeAAAAGXRFWHRTb2Z0d2FyZQBBZG9iZSBJbWFnZVJlYWR5ccllPAAAAA5JREFUeNpiYGBgAAgwAAAEAAGbA+oJAAAAAElFTkSuQmCC');
-    }
-  }
-
-  &.md-fab {
-
-    // Include the top/left/bottom/right fab positions
-    @include fab-all-positions();
-
-    z-index: $z-index-fab;
-
-    line-height: $button-fab-line-height;
-
-    min-width: 0;
-    width: $button-fab-width;
-    height: $button-fab-height;
-    vertical-align: middle;
-
-    @include md-shadow-bottom-z-1();
-    border-radius: $button-fab-border-radius;
-    background-clip: padding-box;
-    overflow: hidden;
-
-    transition: $swift-ease-in;
-    transition-property: background-color, box-shadow, transform;
-    .md-ripple-container {
-      border-radius: $button-fab-border-radius;
-      background-clip: padding-box;
-      overflow: hidden;
-      // The following hack causes Safari/Chrome to respect overflow hidden for ripples
-      -webkit-mask-image: url('data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAIAAACQd1PeAAAAGXRFWHRTb2Z0d2FyZQBBZG9iZSBJbWFnZVJlYWR5ccllPAAAAA5JREFUeNpiYGBgAAgwAAAEAAGbA+oJAAAAAElFTkSuQmCC');
-    }
-
-    &.md-mini {
-      line-height: $button-fab-mini-line-height;
-      width: $button-fab-mini-width;
-      height: $button-fab-mini-height;
-    }
-
-    &.ng-hide, &.ng-leave {
-      transition: none;
-    }
-  }
-
-  &:not([disabled]) {
-    &.md-raised,
-    &.md-fab {
-      &.md-focused {
-        @include md-shadow-bottom-z-1();
-      }
-      &:active {
-        @include md-shadow-bottom-z-2();
-      }
-    }
-  }
-
-  .md-ripple-container {
-    border-radius: $button-border-radius;
-    background-clip: padding-box;
-    overflow: hidden;
-    // The following hack causes Safari/Chrome to respect overflow hidden for ripples
-    -webkit-mask-image: url('data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAIAAACQd1PeAAAAGXRFWHRTb2Z0d2FyZQBBZG9iZSBJbWFnZVJlYWR5ccllPAAAAA5JREFUeNpiYGBgAAgwAAAEAAGbA+oJAAAAAElFTkSuQmCC');
-  }
-}
-
-// Using `display:block;` is required for correct vertical alignment
-// because '.md-button' uses `display:inline-block;`.
-.md-button.md-icon-button,
-button.md-button.md-fab {
-  md-icon {
-    display: block;
-  }
-}
-
-.md-toast-open-top {
-  .md-button.md-fab-top-left,
-  .md-button.md-fab-top-right {
-    transition: $swift-ease-out;
-    transform: translate3d(0, $button-fab-toast-offset, 0);
-    &:not([disabled]) {
-      &.md-focused,
-      &:hover {
-        transform: translate3d(0, $button-fab-toast-offset - 1, 0);
-      }
-    }
-  }
-}
-
-.md-toast-open-bottom {
-  .md-button.md-fab-bottom-left,
-  .md-button.md-fab-bottom-right {
-    transition: $swift-ease-out;
-    transform: translate3d(0, -$button-fab-toast-offset, 0);
-    &:not([disabled]) {
-      &.md-focused,
-      &:hover {
-        transform: translate3d(0, -$button-fab-toast-offset - 1, 0);
-      }
-    }
-  }
-}
-
-.md-button-group {
-  display: flex;
-  flex: 1;
-  width: 100%;
-
-  & > .md-button {
-    flex: 1;
-
-    display: block;
-
-    overflow: hidden;
-
-    width: 0;
-
-    border-width: 1px 0px 1px 1px;
-    border-radius: 0;
-
-    text-align: center;
-    text-overflow: ellipsis;
-    white-space: nowrap;
-
-    &:first-child {
-      border-radius: 2px 0px 0px 2px;
-    }
-    &:last-child {
-      border-right-width: 1px;
-      border-radius: 0px 2px 2px 0px;
-    }
-  }
-}
-// IE only
-@media screen and (-ms-high-contrast: active) {
-  .md-button.md-raised,
-  .md-button.md-fab {
     border: 1px solid #fff;
   }
 }
@@ -2470,6 +2215,154 @@ md-content {
 
 
 
+md-divider {
+  display: block;
+  border-top-width: 1px;
+  border-top-style: solid;
+  margin: 0;
+
+  &[md-inset] {
+    @include rtl-prop(margin-left, margin-right, $baseline-grid * 10, auto);
+  }
+}
+
+.layout-row,
+.layout-xs-row, .layout-gt-xs-row,
+.layout-sm-row, .layout-gt-sm-row,
+.layout-md-row, .layout-gt-md-row,
+.layout-lg-row, .layout-gt-lg-row,
+.layout-xl-row {
+  & > md-divider {
+    border-top-width: 0;
+    border-right-width: 1px;
+    border-right-style: solid;
+  }
+}
+
+$dialog-padding: $baseline-grid * 3 !default;
+
+.md-dialog-is-showing {
+  max-height: 100%;
+}
+
+.md-dialog-container {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  z-index: $z-index-dialog;
+  overflow: hidden;
+}
+
+md-dialog {
+
+  &.md-transition-in {
+    opacity: 1;
+    transition: $swift-ease-out;
+    transform: translate(0,0) scale(1.0);
+  }
+  &.md-transition-out {
+    opacity: 0;
+    transition: $swift-ease-out;
+    transform: translate(0,100%) scale(0.2);
+  }
+
+  opacity: 0;
+  min-width: 240px;
+  max-width: 80%;
+  max-height: 80%;
+  position: relative;
+  overflow: auto; // stop content from leaking out of dialog parent and fix IE
+
+  box-shadow: $whiteframe-shadow-13dp;
+
+  display: flex;
+  flex-direction: column;
+
+  &> form {
+    display: flex;
+    flex-direction: column;
+    overflow: auto;
+  }
+
+  .md-dialog-content {
+    padding: $dialog-padding;
+  }
+
+  md-dialog-content {
+    order: 1;
+    flex-direction: column;
+    overflow: auto;
+    -webkit-overflow-scrolling: touch;
+
+    &:not([layout=row]) > *:first-child:not(.md-subheader) {
+      margin-top: 0;
+    }
+
+    &:focus {
+      outline: none;
+    }
+
+    .md-subheader {
+      margin: 0;
+    }
+
+    .md-dialog-content-body {
+      width:100%;
+    }
+
+    .md-prompt-input-container {
+      width: 100%;
+      box-sizing: border-box;
+    }
+  }
+
+  .md-actions, md-dialog-actions {
+    display: flex;
+    order: 2;
+    box-sizing: border-box;
+    align-items: center;
+    justify-content: flex-end;
+    margin-bottom: 0;
+    @include rtl(padding-right, $baseline-grid, $baseline-grid * 2);
+    @include rtl(padding-left, $baseline-grid * 2, $baseline-grid);
+    min-height: $baseline-grid * 6.5;
+    overflow: hidden;
+
+    .md-button {
+      margin-bottom: $baseline-grid;
+      @include rtl(margin-left, $baseline-grid, 0);
+      @include rtl(margin-right, 0, $baseline-grid);
+      margin-top: $baseline-grid;
+    }
+  }
+  &.md-content-overflow {
+    .md-actions, md-dialog-actions {
+      border-top-width: 1px;
+      border-top-style: solid;
+    }
+  }
+
+}
+
+@media screen and (-ms-high-contrast: active) {
+  md-dialog {
+    border: 1px solid #fff;
+  }
+}
+
+@media (max-width: $layout-breakpoint-sm - 1) {
+  md-dialog.md-dialog-fullscreen {
+    min-height: 100%;
+    min-width: 100%;
+    border-radius: 0;
+  }
+}
+
 /** Styles for mdCalendar. */
 $md-calendar-cell-size: 44px !default;
 $md-calendar-header-height: 40px !default;
@@ -2908,153 +2801,87 @@ md-datepicker[disabled] {
   }
 }
 
-$dialog-padding: $baseline-grid * 3 !default;
-
-.md-dialog-is-showing {
-  max-height: 100%;
-}
-
-.md-dialog-container {
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  position: absolute;
-  top: 0;
-  left: 0;
-  width: 100%;
-  height: 100%;
-  z-index: $z-index-dialog;
-  overflow: hidden;
-}
-
-md-dialog {
-
-  &.md-transition-in {
-    opacity: 1;
-    transition: $swift-ease-out;
-    transform: translate(0,0) scale(1.0);
-  }
-  &.md-transition-out {
-    opacity: 0;
-    transition: $swift-ease-out;
-    transform: translate(0,100%) scale(0.2);
-  }
-
-  opacity: 0;
-  min-width: 240px;
-  max-width: 80%;
-  max-height: 80%;
+md-grid-list {
+  box-sizing: border-box;
+  display: block;
   position: relative;
-  overflow: auto; // stop content from leaking out of dialog parent and fix IE
 
-  box-shadow: $whiteframe-shadow-13dp;
-
-  display: flex;
-  flex-direction: column;
-
-  &> form {
-    display: flex;
-    flex-direction: column;
-    overflow: auto;
+  md-grid-tile,
+  md-grid-tile > figure,
+  md-grid-tile-header,
+  md-grid-tile-footer {
+    box-sizing: border-box;
   }
 
-  .md-dialog-content {
-    padding: $dialog-padding;
-  }
+  md-grid-tile {
+    display: block;
+    position: absolute;
 
-  md-dialog-content {
-    order: 1;
-    flex-direction: column;
-    overflow: auto;
-    -webkit-overflow-scrolling: touch;
-
-    &:not([layout=row]) > *:first-child:not(.md-subheader) {
-      margin-top: 0;
-    }
-
-    &:focus {
-      outline: none;
-    }
-
-    .md-subheader {
+    figure {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      height: 100%;
+      position: absolute;
+      top: 0;
+      right: 0;
+      bottom: 0;
+      left: 0;
+      padding: 0;
       margin: 0;
     }
 
-    .md-dialog-content-body {
-      width:100%;
+    // Headers & footers
+    md-grid-tile-header,
+    md-grid-tile-footer {
+      display: flex;
+      flex-direction: row;
+      align-items: center;
+      height: 48px;
+      color: #fff;
+      background: rgba(0, 0, 0, 0.18);
+      overflow: hidden;
+
+      // Positioning
+      position: absolute;
+      left: 0;
+      right: 0;
+
+      h3,
+      h4 {
+        font-weight: 400;
+        margin: 0 0 0 16px;
+      }
+
+      h3 {
+        font-size: 14px;
+      }
+
+      h4 {
+        font-size: 12px;
+      }
     }
 
-    .md-prompt-input-container {
-      width: 100%;
-      box-sizing: border-box;
+    md-grid-tile-header {
+      top: 0;
     }
-  }
 
-  .md-actions, md-dialog-actions {
-    display: flex;
-    order: 2;
-    box-sizing: border-box;
-    align-items: center;
-    justify-content: flex-end;
-    margin-bottom: 0;
-    @include rtl(padding-right, $baseline-grid, $baseline-grid * 2);
-    @include rtl(padding-left, $baseline-grid * 2, $baseline-grid);
-    min-height: $baseline-grid * 6.5;
-    overflow: hidden;
-
-    .md-button {
-      margin-bottom: $baseline-grid;
-      @include rtl(margin-left, $baseline-grid, 0);
-      @include rtl(margin-right, 0, $baseline-grid);
-      margin-top: $baseline-grid;
-    }
-  }
-  &.md-content-overflow {
-    .md-actions, md-dialog-actions {
-      border-top-width: 1px;
-      border-top-style: solid;
+    md-grid-tile-footer {
+      bottom: 0;
     }
   }
 
 }
 
 @media screen and (-ms-high-contrast: active) {
-  md-dialog {
+  md-grid-tile {
     border: 1px solid #fff;
   }
-}
-
-@media (max-width: $layout-breakpoint-sm - 1) {
-  md-dialog.md-dialog-fullscreen {
-    min-height: 100%;
-    min-width: 100%;
-    border-radius: 0;
+  md-grid-tile-footer {
+    border-top: 1px solid #fff;
   }
 }
 
-md-divider {
-  display: block;
-  border-top-width: 1px;
-  border-top-style: solid;
-  margin: 0;
-
-  &[md-inset] {
-    @include rtl-prop(margin-left, margin-right, $baseline-grid * 10, auto);
-  }
-}
-
-.layout-row,
-.layout-xs-row, .layout-gt-xs-row,
-.layout-sm-row, .layout-gt-sm-row,
-.layout-md-row, .layout-gt-md-row,
-.layout-lg-row, .layout-gt-lg-row,
-.layout-xl-row {
-  & > md-divider {
-    border-top-width: 0;
-    border-right-width: 1px;
-    border-right-style: solid;
-  }
-}
 
 md-fab-speed-dial {
   position: relative;
@@ -3326,147 +3153,260 @@ md-fab-toolbar {
   }
 }
 
-md-grid-list {
-  box-sizing: border-box;
-  display: block;
-  position: relative;
+$button-border-radius: 3px !default;
+$button-fab-border-radius: 50% !default;
+$button-icon-border-radius: $button-fab-border-radius !default;
 
-  md-grid-tile,
-  md-grid-tile > figure,
-  md-grid-tile-header,
-  md-grid-tile-footer {
-    box-sizing: border-box;
-  }
+$button-line-height: rem(3.60) !default;
+$button-margin: rem(0.600) rem(0.800) !default;
+$button-min-width: rem(8.800) !default;
+$button-padding: 0 $button-left-right-padding !default;
 
-  md-grid-tile {
-    display: block;
-    position: absolute;
 
-    figure {
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      height: 100%;
-      position: absolute;
-      top: 0;
-      right: 0;
-      bottom: 0;
-      left: 0;
-      padding: 0;
-      margin: 0;
-    }
+// Fab buttons
+$button-fab-line-height: rem(5.600) !default;
+$button-fab-mini-width: rem(4.00) !default;
+$button-fab-mini-height: rem(4.00) !default;
+$button-fab-mini-line-height: rem(4.00) !default;
 
-    // Headers & footers
-    md-grid-tile-header,
-    md-grid-tile-footer {
-      display: flex;
-      flex-direction: row;
-      align-items: center;
-      height: 48px;
-      color: #fff;
-      background: rgba(0, 0, 0, 0.18);
-      overflow: hidden;
+$button-fab-toast-offset: $button-fab-height * 0.75 !default;
 
-      // Positioning
-      position: absolute;
-      left: 0;
-      right: 0;
+$icon-button-height: rem(4.000) !default;
+$icon-button-width: rem(4.000) !default;
+$icon-button-margin: rem(0.600) !default;
 
-      h3,
-      h4 {
-        font-weight: 400;
-        margin: 0 0 0 16px;
-      }
-
-      h3 {
-        font-size: 14px;
-      }
-
-      h4 {
-        font-size: 12px;
-      }
-    }
-
-    md-grid-tile-header {
-      top: 0;
-    }
-
-    md-grid-tile-footer {
-      bottom: 0;
-    }
-  }
-
+// Fix issue causing buttons in Firefox to be 2px bigger than they should
+button.md-button::-moz-focus-inner {
+  border: 0;
 }
 
+.md-button {
+  display: inline-block;
+  position: relative; // Required for absolute canvas child elements.
+  cursor: pointer;
+
+  /** Alignment adjustments */
+  min-height: $button-line-height;
+  min-width: $button-min-width;
+  line-height: $button-line-height;
+
+  vertical-align: middle;
+  align-items: center;
+  text-align: center;
+
+  border-radius: $button-border-radius;
+  box-sizing: border-box;
+
+  /* Reset default button appearance */
+  user-select: none;
+  outline: none;
+  border: 0;
+
+  /** Custom styling for button */
+  padding: $button-padding;
+  margin: $button-margin;
+
+  background: transparent;
+  color: currentColor;
+  white-space: nowrap;
+
+  /* Uppercase text content */
+  text-transform: uppercase;
+  font-weight: 500;
+  font-size: $body-font-size-base;
+  font-style: inherit;
+  font-variant: inherit;
+  font-family: inherit;
+  text-decoration: none;
+
+  // Ink Ripple should not create any overflow.
+  overflow: hidden;
+
+  transition: box-shadow $swift-ease-out-duration $swift-ease-out-timing-function,
+              background-color $swift-ease-out-duration $swift-ease-out-timing-function;
+
+  &:focus {
+    outline: none;
+  }
+
+  &:hover, &:focus {
+    text-decoration: none;
+  }
+
+  // By default $ngAnimate looks for transition durations on the element, when using ng-hide, ng-if, ng-show.
+  // The .md-button has a transition duration applied, which means, that $ngAnimate delays the hide process.
+  // To avoid this, we need to reset the transition, when $ngAnimate looks for the duration.
+  &.ng-hide, &.ng-leave {
+    transition: none;
+  }
+
+  &.md-cornered {
+    border-radius: 0;
+  }
+
+  &.md-icon {
+    padding: 0;
+    background: none;
+  }
+
+  &.md-raised {
+    &:not([disabled]) {
+      @include md-shadow-bottom-z-1();
+    }
+  }
+
+  &.md-icon-button {
+    margin: 0 $icon-button-margin;
+    height: $icon-button-height;
+    min-width: 0;
+    line-height: $icon-size;
+    padding: $baseline-grid;
+    width: $icon-button-width;
+    border-radius: $button-icon-border-radius;
+    .md-ripple-container {
+      border-radius: $button-icon-border-radius;
+      background-clip: padding-box;
+      overflow: hidden;
+      // The following hack causes Safari/Chrome to respect overflow hidden for ripples
+      -webkit-mask-image: url('data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAIAAACQd1PeAAAAGXRFWHRTb2Z0d2FyZQBBZG9iZSBJbWFnZVJlYWR5ccllPAAAAA5JREFUeNpiYGBgAAgwAAAEAAGbA+oJAAAAAElFTkSuQmCC');
+    }
+  }
+
+  &.md-fab {
+
+    // Include the top/left/bottom/right fab positions
+    @include fab-all-positions();
+
+    z-index: $z-index-fab;
+
+    line-height: $button-fab-line-height;
+
+    min-width: 0;
+    width: $button-fab-width;
+    height: $button-fab-height;
+    vertical-align: middle;
+
+    @include md-shadow-bottom-z-1();
+    border-radius: $button-fab-border-radius;
+    background-clip: padding-box;
+    overflow: hidden;
+
+    transition: $swift-ease-in;
+    transition-property: background-color, box-shadow, transform;
+    .md-ripple-container {
+      border-radius: $button-fab-border-radius;
+      background-clip: padding-box;
+      overflow: hidden;
+      // The following hack causes Safari/Chrome to respect overflow hidden for ripples
+      -webkit-mask-image: url('data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAIAAACQd1PeAAAAGXRFWHRTb2Z0d2FyZQBBZG9iZSBJbWFnZVJlYWR5ccllPAAAAA5JREFUeNpiYGBgAAgwAAAEAAGbA+oJAAAAAElFTkSuQmCC');
+    }
+
+    &.md-mini {
+      line-height: $button-fab-mini-line-height;
+      width: $button-fab-mini-width;
+      height: $button-fab-mini-height;
+    }
+
+    &.ng-hide, &.ng-leave {
+      transition: none;
+    }
+  }
+
+  &:not([disabled]) {
+    &.md-raised,
+    &.md-fab {
+      &.md-focused {
+        @include md-shadow-bottom-z-1();
+      }
+      &:active {
+        @include md-shadow-bottom-z-2();
+      }
+    }
+  }
+
+  .md-ripple-container {
+    border-radius: $button-border-radius;
+    background-clip: padding-box;
+    overflow: hidden;
+    // The following hack causes Safari/Chrome to respect overflow hidden for ripples
+    -webkit-mask-image: url('data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAIAAACQd1PeAAAAGXRFWHRTb2Z0d2FyZQBBZG9iZSBJbWFnZVJlYWR5ccllPAAAAA5JREFUeNpiYGBgAAgwAAAEAAGbA+oJAAAAAElFTkSuQmCC');
+  }
+}
+
+// Using `display:block;` is required for correct vertical alignment
+// because '.md-button' uses `display:inline-block;`.
+.md-button.md-icon-button,
+button.md-button.md-fab {
+  md-icon {
+    display: block;
+  }
+}
+
+.md-toast-open-top {
+  .md-button.md-fab-top-left,
+  .md-button.md-fab-top-right {
+    transition: $swift-ease-out;
+    transform: translate3d(0, $button-fab-toast-offset, 0);
+    &:not([disabled]) {
+      &.md-focused,
+      &:hover {
+        transform: translate3d(0, $button-fab-toast-offset - 1, 0);
+      }
+    }
+  }
+}
+
+.md-toast-open-bottom {
+  .md-button.md-fab-bottom-left,
+  .md-button.md-fab-bottom-right {
+    transition: $swift-ease-out;
+    transform: translate3d(0, -$button-fab-toast-offset, 0);
+    &:not([disabled]) {
+      &.md-focused,
+      &:hover {
+        transform: translate3d(0, -$button-fab-toast-offset - 1, 0);
+      }
+    }
+  }
+}
+
+.md-button-group {
+  display: flex;
+  flex: 1;
+  width: 100%;
+
+  & > .md-button {
+    flex: 1;
+
+    display: block;
+
+    overflow: hidden;
+
+    width: 0;
+
+    border-width: 1px 0px 1px 1px;
+    border-radius: 0;
+
+    text-align: center;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+
+    &:first-child {
+      border-radius: 2px 0px 0px 2px;
+    }
+    &:last-child {
+      border-right-width: 1px;
+      border-radius: 0px 2px 2px 0px;
+    }
+  }
+}
+// IE only
 @media screen and (-ms-high-contrast: active) {
-  md-grid-tile {
+  .md-button.md-raised,
+  .md-button.md-fab {
     border: 1px solid #fff;
   }
-  md-grid-tile-footer {
-    border-top: 1px solid #fff;
-  }
 }
-
-
-md-icon {
-  margin: auto;
-  background-repeat: no-repeat no-repeat;
-  display: inline-block;
-  vertical-align: middle;
-  fill: currentColor;
-  height: $icon-size;
-  width: $icon-size;
-
-  // The icons should not shrink on smaller viewports.
-  min-height: $icon-size;
-  min-width: $icon-size;
-
-  svg {
-    pointer-events: none;
-    display: block;
-  }
-
-  &[md-font-icon] {
-    line-height: $icon-size;
-    width: auto;
-  }
-}
-
-//
-//@font-face {
-//  font-family:"material";
-//  src:url("/dist/material-font/material.eot");
-//  font-weight:normal;
-//  font-style:normal;
-//}
-//
-//@font-face {
-//  font-family:"material";
-//  src:url("/dist/material-font/material.eot");
-//  src:url("/dist/material-font/material.eot?#iefix") format("embedded-opentype"),
-//    url("/dist/material-font/material.woff") format("woff"),
-//    url("/dist/material-font/material.ttf") format("truetype"),
-//    url("/dist/material-font/material.svg?#material") format("svg");
-//  font-weight:normal;
-//  font-style:normal;
-//}
-//
-///* Bootstrap Overrides */
-//[class^="icon-"]:before,
-//[class*=" icon-"]:before {
-//  font-family:"material";
-//  display:inline-block;
-//  vertical-align:middle;
-//  line-height:1;
-//  font-weight:normal;
-//  font-style:normal;
-//  speak:none;
-//  text-decoration:inherit;
-//  text-transform:none;
-//  text-rendering:optimizeLegibility;
-//  -webkit-font-smoothing:antialiased;
-//  -moz-osx-font-smoothing:grayscale;
-//}
 
 $input-container-padding: 2px !default;
 
@@ -3865,6 +3805,66 @@ md-input-container {
     fill: #fff;
   }
 }
+
+md-icon {
+  margin: auto;
+  background-repeat: no-repeat no-repeat;
+  display: inline-block;
+  vertical-align: middle;
+  fill: currentColor;
+  height: $icon-size;
+  width: $icon-size;
+
+  // The icons should not shrink on smaller viewports.
+  min-height: $icon-size;
+  min-width: $icon-size;
+
+  svg {
+    pointer-events: none;
+    display: block;
+  }
+
+  &[md-font-icon] {
+    line-height: $icon-size;
+    width: auto;
+  }
+}
+
+//
+//@font-face {
+//  font-family:"material";
+//  src:url("/dist/material-font/material.eot");
+//  font-weight:normal;
+//  font-style:normal;
+//}
+//
+//@font-face {
+//  font-family:"material";
+//  src:url("/dist/material-font/material.eot");
+//  src:url("/dist/material-font/material.eot?#iefix") format("embedded-opentype"),
+//    url("/dist/material-font/material.woff") format("woff"),
+//    url("/dist/material-font/material.ttf") format("truetype"),
+//    url("/dist/material-font/material.svg?#material") format("svg");
+//  font-weight:normal;
+//  font-style:normal;
+//}
+//
+///* Bootstrap Overrides */
+//[class^="icon-"]:before,
+//[class*=" icon-"]:before {
+//  font-family:"material";
+//  display:inline-block;
+//  vertical-align:middle;
+//  line-height:1;
+//  font-weight:normal;
+//  font-style:normal;
+//  speak:none;
+//  text-decoration:inherit;
+//  text-transform:none;
+//  text-rendering:optimizeLegibility;
+//  -webkit-font-smoothing:antialiased;
+//  -moz-osx-font-smoothing:grayscale;
+//}
 
 $dense-baseline-grid: $baseline-grid / 2 !default;
 
@@ -4445,6 +4445,73 @@ md-toolbar {
 }
 
 
+/** Matches "md-tabs md-tabs-wrapper" style. */
+$md-nav-bar-height: 48px;
+
+.md-nav-bar {
+  border-style: solid;
+  border-width: 0 0 1px;
+  height: $md-nav-bar-height;
+  position: relative;
+}
+
+._md-nav-bar-list {
+  outline: none;
+  list-style: none;
+  margin: 0;
+  padding: 0;
+
+  // Layout [layout='row']
+  box-sizing: border-box;
+  display: flex;
+  flex-direction: row;
+}
+
+.md-nav-item:first-of-type {
+  margin-left: 8px;
+}
+
+// override button styles to look more like tabs
+.md-button._md-nav-button {
+  line-height: 24px;
+  margin: 0 4px;
+  padding: 12px 16px;
+  transition: background-color 0.35s $swift-ease-in-out-timing-function;
+
+  &:focus {
+    outline: none;
+  }
+
+  &:hover {
+    background-color: inherit;
+  }
+}
+
+md-nav-ink-bar {
+  $duration: $swift-ease-in-out-duration * 0.5;
+  $multiplier: 0.5;
+  bottom: 0;
+  height: 2px;
+  left: auto;
+  position: absolute;
+  right: auto;
+  background-color: black;
+
+  &._md-left {
+    transition: left ($duration * $multiplier) $swift-ease-in-out-timing-function,
+        right $duration $swift-ease-in-out-timing-function;
+  }
+  &._md-right {
+    transition: left $duration $swift-ease-in-out-timing-function,
+        right ($duration * $multiplier) $swift-ease-in-out-timing-function;
+  }
+}
+
+md-nav-extra-content {
+  min-height: 48px;
+  padding-right: 12px;
+}
+
 md-toolbar {
   &.md-menu-toolbar {
     h2.md-toolbar-tools {
@@ -4545,73 +4612,6 @@ md-menu-content.md-menu-bar-menu.md-dense {
       }
     }
   }
-}
-
-/** Matches "md-tabs md-tabs-wrapper" style. */
-$md-nav-bar-height: 48px;
-
-.md-nav-bar {
-  border-style: solid;
-  border-width: 0 0 1px;
-  height: $md-nav-bar-height;
-  position: relative;
-}
-
-._md-nav-bar-list {
-  outline: none;
-  list-style: none;
-  margin: 0;
-  padding: 0;
-
-  // Layout [layout='row']
-  box-sizing: border-box;
-  display: flex;
-  flex-direction: row;
-}
-
-.md-nav-item:first-of-type {
-  margin-left: 8px;
-}
-
-// override button styles to look more like tabs
-.md-button._md-nav-button {
-  line-height: 24px;
-  margin: 0 4px;
-  padding: 12px 16px;
-  transition: background-color 0.35s $swift-ease-in-out-timing-function;
-
-  &:focus {
-    outline: none;
-  }
-
-  &:hover {
-    background-color: inherit;
-  }
-}
-
-md-nav-ink-bar {
-  $duration: $swift-ease-in-out-duration * 0.5;
-  $multiplier: 0.5;
-  bottom: 0;
-  height: 2px;
-  left: auto;
-  position: absolute;
-  right: auto;
-  background-color: black;
-
-  &._md-left {
-    transition: left ($duration * $multiplier) $swift-ease-in-out-timing-function,
-        right $duration $swift-ease-in-out-timing-function;
-  }
-  &._md-right {
-    transition: left $duration $swift-ease-in-out-timing-function,
-        right ($duration * $multiplier) $swift-ease-in-out-timing-function;
-  }
-}
-
-md-nav-extra-content {
-  min-height: 48px;
-  padding-right: 12px;
 }
 
 .md-panel-outer-wrapper {
@@ -4920,191 +4920,6 @@ md-progress-linear {
 }
 
 
-
-$radio-width: 20px !default;
-$radio-height: $radio-width !default;
-$radio-text-margin: 10px !default;
-$radio-top-left: 12px !default;
-$radio-margin: 16px !default;
-
-@mixin md-radio-button-disabled {
-  cursor: default;
-
-  .md-container {
-    cursor: default;
-  }
-}
-
-md-radio-button {
-  box-sizing: border-box;
-  display: block;
-  margin-bottom: $radio-margin;
-  white-space: nowrap;
-  cursor: pointer;
-  position: relative;
-
-  // When the radio-button is disabled.
-  &[disabled] {
-    @include md-radio-button-disabled();
-  }
-
-  .md-container {
-    position: absolute;
-    top: 50%;
-    transform: translateY(-50%);
-    box-sizing: border-box;
-    display: inline-block;
-    width: $radio-width;
-    height: $radio-width;
-    cursor: pointer;
-    @include rtl(left, 0, auto);
-    @include rtl(right, auto, 0);
-
-    .md-ripple-container {
-      position: absolute;
-      display: block;
-      width: auto;
-      height: auto;
-      left: -15px;
-      top: -15px;
-      right: -15px;
-      bottom: -15px;
-    }
-
-    &:before {
-      box-sizing: border-box;
-      background-color: transparent;
-      border-radius: 50%;
-      content: '';
-      position: absolute;
-      display: block;
-      height: auto;
-      left: 0;
-      top: 0;
-      right: 0;
-      bottom: 0;
-      transition: all 0.5s;
-      width: auto;
-    }
-  }
-
-  &.md-align-top-left > div.md-container {
-     top: $radio-top-left;
-   }
-
-  .md-off {
-    box-sizing: border-box;
-    position: absolute;
-    top: 0;
-    left: 0;
-    width: $radio-width;
-    height: $radio-width;
-    border-style: solid;
-    border-width: 2px;
-    border-radius: 50%;
-    transition: border-color ease 0.28s;
-  }
-
-  .md-on {
-    box-sizing: border-box;
-    position: absolute;
-    top: 0;
-    left: 0;
-    width: $radio-width;
-    height: $radio-width;
-    border-radius: 50%;
-    transition: transform ease 0.28s;
-    transform: scale(0);
-  }
-
-  &.md-checked .md-on {
-    transform: scale(0.50);
-  }
-
-  .md-label {
-    box-sizing: border-box;
-    position: relative;
-    display: inline-block;
-
-    @include rtl(margin-left, $radio-text-margin + $radio-width, 0);
-    @include rtl(margin-right, 0, $radio-text-margin + $radio-width);
-
-    vertical-align: middle;
-    white-space: normal;
-    pointer-events: none;
-    width: auto;
-  }
-}
-
-md-radio-group {
-  /** Layout adjustments for the radio group. */
-  &.layout-column,
-  &.layout-xs-column, &.layout-gt-xs-column,
-  &.layout-sm-column, &.layout-gt-sm-column,
-  &.layout-md-column, &.layout-gt-md-column,
-  &.layout-lg-column, &.layout-gt-lg-column,
-  &.layout-xl-column {
-    md-radio-button {
-      margin-bottom: $radio-margin;
-    }
-  }
-
-  &.layout-row,
-  &.layout-xs-row, &.layout-gt-xs-row,
-  &.layout-sm-row, &.layout-gt-sm-row,
-  &.layout-md-row, &.layout-gt-md-row,
-  &.layout-lg-row, &.layout-gt-lg-row,
-  &.layout-xl-row {
-    md-radio-button {
-      margin-top: 0;
-      margin-bottom: 0;
-      @include rtl(margin-left, 0, $radio-margin);
-      @include rtl(margin-right, $radio-margin, 0);
-
-      &:last-of-type {
-        margin-left: 0;
-        margin-right: 0;
-      }
-    }
-  }
-
-  &:focus {
-    outline: none;
-  }
-
-  &.md-focused {
-    .md-checked .md-container:before {
-      left: -8px;
-      top: -8px;
-      right: -8px;
-      bottom: -8px;
-    }
-  }
-
-  &[disabled] md-radio-button {
-    @include md-radio-button-disabled();
-  }
-}
-
-.md-inline-form {
-  md-radio-group {
-    margin: 18px 0 19px;
-    md-radio-button {
-      display: inline-block;
-      height: 30px;
-      padding: 2px;
-      box-sizing: border-box;
-      margin-top: 0;
-      margin-bottom: 0;
-    }
-  }
-}
-
-@media screen and (-ms-high-contrast: active) {
-  md-radio-button.md-default-theme .md-on {
-    background-color: #fff;
-  }
-}
 
 $select-checkbox-border-radius: 2px !default;
 $select-checkbox-border-width: 2px !default;
@@ -5540,6 +5355,208 @@ md-sidenav {
   }
   .md-sidenav-right {
     border-left: 1px solid #fff;
+  }
+}
+
+$radio-width: 20px !default;
+$radio-height: $radio-width !default;
+$radio-text-margin: 10px !default;
+$radio-top-left: 12px !default;
+$radio-margin: 16px !default;
+
+@mixin md-radio-button-disabled {
+  cursor: default;
+
+  .md-container {
+    cursor: default;
+  }
+}
+
+md-radio-button {
+  box-sizing: border-box;
+  display: block;
+  margin-bottom: $radio-margin;
+  white-space: nowrap;
+  cursor: pointer;
+  position: relative;
+
+  // When the radio-button is disabled.
+  &[disabled] {
+    @include md-radio-button-disabled();
+  }
+
+  .md-container {
+    position: absolute;
+    top: 50%;
+    transform: translateY(-50%);
+    box-sizing: border-box;
+    display: inline-block;
+    width: $radio-width;
+    height: $radio-width;
+    cursor: pointer;
+    @include rtl(left, 0, auto);
+    @include rtl(right, auto, 0);
+
+    .md-ripple-container {
+      position: absolute;
+      display: block;
+      width: auto;
+      height: auto;
+      left: -15px;
+      top: -15px;
+      right: -15px;
+      bottom: -15px;
+    }
+
+    &:before {
+      box-sizing: border-box;
+      background-color: transparent;
+      border-radius: 50%;
+      content: '';
+      position: absolute;
+      display: block;
+      height: auto;
+      left: 0;
+      top: 0;
+      right: 0;
+      bottom: 0;
+      transition: all 0.5s;
+      width: auto;
+    }
+  }
+
+  &.md-align-top-left > div.md-container {
+     top: $radio-top-left;
+   }
+
+  .md-off {
+    box-sizing: border-box;
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: $radio-width;
+    height: $radio-width;
+    border-style: solid;
+    border-width: 2px;
+    border-radius: 50%;
+    transition: border-color ease 0.28s;
+  }
+
+  .md-on {
+    box-sizing: border-box;
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: $radio-width;
+    height: $radio-width;
+    border-radius: 50%;
+    transition: transform ease 0.28s;
+    transform: scale(0);
+  }
+
+  &.md-checked .md-on {
+    transform: scale(0.50);
+  }
+
+  .md-label {
+    box-sizing: border-box;
+    position: relative;
+    display: inline-block;
+
+    @include rtl(margin-left, $radio-text-margin + $radio-width, 0);
+    @include rtl(margin-right, 0, $radio-text-margin + $radio-width);
+
+    vertical-align: middle;
+    white-space: normal;
+    pointer-events: none;
+    width: auto;
+  }
+}
+
+md-radio-group {
+  /** Layout adjustments for the radio group. */
+  &.layout-column,
+  &.layout-xs-column, &.layout-gt-xs-column,
+  &.layout-sm-column, &.layout-gt-sm-column,
+  &.layout-md-column, &.layout-gt-md-column,
+  &.layout-lg-column, &.layout-gt-lg-column,
+  &.layout-xl-column {
+    md-radio-button {
+      margin-bottom: $radio-margin;
+    }
+  }
+
+  &.layout-row,
+  &.layout-xs-row, &.layout-gt-xs-row,
+  &.layout-sm-row, &.layout-gt-sm-row,
+  &.layout-md-row, &.layout-gt-md-row,
+  &.layout-lg-row, &.layout-gt-lg-row,
+  &.layout-xl-row {
+    md-radio-button {
+      margin-top: 0;
+      margin-bottom: 0;
+      @include rtl(margin-left, 0, $radio-margin);
+      @include rtl(margin-right, $radio-margin, 0);
+
+      &:last-of-type {
+        margin-left: 0;
+        margin-right: 0;
+      }
+    }
+  }
+
+  &:focus {
+    outline: none;
+  }
+
+  &.md-focused {
+    .md-checked .md-container:before {
+      left: -8px;
+      top: -8px;
+      right: -8px;
+      bottom: -8px;
+    }
+  }
+
+  &[disabled] md-radio-button {
+    @include md-radio-button-disabled();
+  }
+}
+
+.md-inline-form {
+  md-radio-group {
+    margin: 18px 0 19px;
+    md-radio-button {
+      display: inline-block;
+      height: 30px;
+      padding: 2px;
+      box-sizing: border-box;
+      margin-top: 0;
+      margin-bottom: 0;
+    }
+  }
+}
+
+@media screen and (-ms-high-contrast: active) {
+  md-radio-button.md-default-theme .md-on {
+    background-color: #fff;
+  }
+}
+
+.md-sticky-clone {
+  z-index: 2;
+  top: 0;
+  left: 0;
+  right: 0;
+  position: absolute !important;
+
+  transform: translate3d(-9999px,-9999px,0);
+
+  &[sticky-state="active"] {
+    transform: translate3d(0, 0, 0);
+    &:not(.md-sticky-no-effect) .md-subheader-inner {
+      animation: subheaderStickyHoverIn 0.3s ease-out both;
+    }
   }
 }
 
@@ -6040,91 +6057,6 @@ md-slider-container {
 }
 
 
-.md-sticky-clone {
-  z-index: 2;
-  top: 0;
-  left: 0;
-  right: 0;
-  position: absolute !important;
-
-  transform: translate3d(-9999px,-9999px,0);
-
-  &[sticky-state="active"] {
-    transform: translate3d(0, 0, 0);
-    &:not(.md-sticky-no-effect) .md-subheader-inner {
-      animation: subheaderStickyHoverIn 0.3s ease-out both;
-    }
-  }
-}
-
-$subheader-line-height: 1em !default;
-$subheader-font-size: rem(1.4) !default;
-$subheader-padding: ($baseline-grid * 2) !default;
-$subheader-font-weight: 500 !default;
-$subheader-margin: 0 0 0 0 !default;
-$subheader-sticky-shadow: 0px 2px 4px 0 rgba(0,0,0,0.16) !default;
-
-@keyframes subheaderStickyHoverIn {
-  0% {
-    box-shadow: 0 0 0 0 transparent;
-  }
-  100% {
-    box-shadow: $subheader-sticky-shadow;
-  }
-}
-@keyframes subheaderStickyHoverOut {
-  0% {
-    box-shadow: $subheader-sticky-shadow;
-  }
-  100% {
-    box-shadow: 0 0 0 0 transparent;
-  }
-}
-
-.md-subheader-wrapper {
-
-  &:not(.md-sticky-no-effect) {
-    .md-subheader {
-      margin: 0;
-    }
-
-    transition: 0.2s ease-out margin;
-
-    &.md-sticky-clone {
-      z-index: 2;
-    }
-
-    &[sticky-state="active"] {
-      margin-top: -2px;
-    }
-
-    &:not(.md-sticky-clone)[sticky-prev-state="active"] .md-subheader-inner:after {
-      animation: subheaderStickyHoverOut 0.3s ease-out both;
-    }
-  }
-
-}
-
-.md-subheader {
-  display: block;
-  font-size: $subheader-font-size;
-  font-weight: $subheader-font-weight;
-  line-height: $subheader-line-height;
-  margin: $subheader-margin;
-  position: relative;
-
-  .md-subheader-inner {
-    display: block;
-    padding: $subheader-padding;
-  }
-
-  .md-subheader-content {
-    display: block;
-    z-index: 1;
-    position: relative;
-  }
-}
-
 $switch-width: 36px !default;
 $switch-height: $baseline-grid * 3 !default;
 $switch-bar-height: 14px !default;
@@ -6287,6 +6219,74 @@ md-switch {
   }
   md-switch.md-default-theme .md-thumb {
     background-color: #fff;
+  }
+}
+
+$subheader-line-height: 1em !default;
+$subheader-font-size: rem(1.4) !default;
+$subheader-padding: ($baseline-grid * 2) !default;
+$subheader-font-weight: 500 !default;
+$subheader-margin: 0 0 0 0 !default;
+$subheader-sticky-shadow: 0px 2px 4px 0 rgba(0,0,0,0.16) !default;
+
+@keyframes subheaderStickyHoverIn {
+  0% {
+    box-shadow: 0 0 0 0 transparent;
+  }
+  100% {
+    box-shadow: $subheader-sticky-shadow;
+  }
+}
+@keyframes subheaderStickyHoverOut {
+  0% {
+    box-shadow: $subheader-sticky-shadow;
+  }
+  100% {
+    box-shadow: 0 0 0 0 transparent;
+  }
+}
+
+.md-subheader-wrapper {
+
+  &:not(.md-sticky-no-effect) {
+    .md-subheader {
+      margin: 0;
+    }
+
+    transition: 0.2s ease-out margin;
+
+    &.md-sticky-clone {
+      z-index: 2;
+    }
+
+    &[sticky-state="active"] {
+      margin-top: -2px;
+    }
+
+    &:not(.md-sticky-clone)[sticky-prev-state="active"] .md-subheader-inner:after {
+      animation: subheaderStickyHoverOut 0.3s ease-out both;
+    }
+  }
+
+}
+
+.md-subheader {
+  display: block;
+  font-size: $subheader-font-size;
+  font-weight: $subheader-font-weight;
+  line-height: $subheader-line-height;
+  margin: $subheader-margin;
+  position: relative;
+
+  .md-subheader-inner {
+    display: block;
+    padding: $subheader-padding;
+  }
+
+  .md-subheader-content {
+    display: block;
+    z-index: 1;
+    position: relative;
   }
 }
 
@@ -7002,6 +7002,184 @@ md-toolbar + md-tabs {
   border-top-right-radius: 0;
 }
 
+// Standard/Desktop Heights
+$md-toolbar-height: $baseline-grid * 8 !default;
+$md-toolbar-medium-tall-height: 88px !default;
+$md-toolbar-tall-height: 128px !default;
+
+// Mobile device heights
+$md-toolbar-height-mobile-portrait: 56px !default;
+$md-toolbar-height-mobile-landscape: 48px !default;
+
+$md-toolbar-indent-margin: 64px !default;
+$md-toolbar-padding: 16px !default;
+
+$icon-button-margin-offset: rem(-0.800) !default;
+
+md-toolbar {
+  box-sizing: border-box;
+  display: flex;
+  flex-direction: column;
+
+  position: relative;
+  z-index: 2;
+
+  font-size: rem(2.0);
+  min-height: $md-toolbar-height;
+  width: 100%;
+
+  &._md-toolbar-transitions {
+    transition-duration: $swift-ease-in-out-duration;
+    transition-timing-function: $swift-ease-in-out-timing-function;
+    transition-property: background-color, fill, color;
+  }
+
+  &.md-whiteframe-z1-add, &.md-whiteframe-z1-remove {
+    transition: box-shadow $swift-ease-in-out-duration linear;
+  }
+
+  md-toolbar-filler {
+    width: 9 * $baseline-grid;
+  }
+
+  *,
+  *:before,
+  *:after {
+    box-sizing: border-box;
+  }
+
+  // By default $ngAnimate looks for transition durations on the element, when using ng-hide, ng-if, ng-show.
+  // The toolbar has a transition duration applied, which means, that $ngAnimate delays the hide process.
+  // To avoid this, we need to reset the transition, when $ngAnimate looks for the duration.
+  &.ng-animate {
+    transition: none;
+  }
+
+  &.md-tall {
+    height: $md-toolbar-tall-height;
+    min-height: $md-toolbar-tall-height;
+    max-height: $md-toolbar-tall-height;
+  }
+
+  &.md-medium-tall {
+    height: $md-toolbar-medium-tall-height;
+    min-height: $md-toolbar-medium-tall-height;
+    max-height: $md-toolbar-medium-tall-height;
+
+    .md-toolbar-tools {
+      height: 48px;
+      min-height: 48px;
+      max-height: 48px;
+    }
+  }
+
+  > .md-indent {
+    @include rtl-prop(margin-left, margin-right, $md-toolbar-indent-margin, auto);
+  }
+
+  ~ md-content {
+    > md-list {
+      padding: 0;
+
+      md-list-item:last-child {
+        md-divider {
+          display: none;
+        }
+      }
+    }
+  }
+}
+
+.md-toolbar-tools {
+  font-size: $title-font-size-base;
+  letter-spacing: 0.005em;
+  box-sizing: border-box;
+  font-weight: 400;
+  display: flex;
+  align-items: center;
+  flex-direction: row;
+
+  width: 100%;
+  height: $md-toolbar-height;
+  max-height: $md-toolbar-height;
+  padding: 0 $md-toolbar-padding;
+  margin: 0;
+
+  h1, h2, h3 {
+    font-size: inherit;
+    font-weight: inherit;
+    margin: inherit;
+  }
+
+  a {
+    color: inherit;
+    text-decoration: none;
+  }
+  .fill-height {
+    display: flex;
+    align-items: center;
+  }
+  .md-button {
+    margin-top: 0;
+    margin-bottom: 0;
+
+    &, &.md-icon-button md-icon {
+      transition-duration: $swift-ease-in-out-duration;
+      transition-timing-function: $swift-ease-in-out-timing-function;
+      transition-property: background-color, fill, color;
+
+      // Normally .md-button is already resetting the transition, when $ngAnimate looks for the duration,
+      // but in this case, the selector has a higher specificity than the `reset selector`, which means, that
+      // we need to reset the transition our self.
+      &.ng-animate {
+        transition: none;
+      }
+    }
+  }
+  &> .md-button:first-child {
+    @include rtl-prop(margin-left, margin-right, $icon-button-margin-offset, auto);
+  }
+  &> .md-button:last-child {
+    @include rtl-prop(margin-right, margin-left, $icon-button-margin-offset, auto);
+  }
+
+  &> md-menu:last-child {
+    @include rtl-prop(margin-right, margin-left, $icon-button-margin-offset, auto);
+    & > .md-button {
+      @include rtl-prop(margin-right, margin-left, 0, auto);
+    }
+  }
+
+  @media screen and (-ms-high-contrast: active) {
+    border-bottom: 1px solid #fff;
+  }
+}
+
+// Handle mobile portrait
+@media (min-width: 0) and (max-width: $layout-breakpoint-sm - 1) and (orientation: portrait) {
+  md-toolbar {
+    min-height: $md-toolbar-height-mobile-portrait;
+  }
+
+  .md-toolbar-tools {
+    height: $md-toolbar-height-mobile-portrait;
+    max-height: $md-toolbar-height-mobile-portrait;
+  }
+}
+
+// Handle mobile landscape
+@media (min-width: 0) and (max-width: $layout-breakpoint-sm - 1) and (orientation: landscape) {
+  md-toolbar {
+    min-height: $md-toolbar-height-mobile-landscape;
+  }
+
+  .md-toolbar-tools {
+    height: $md-toolbar-height-mobile-landscape;
+    max-height: $md-toolbar-height-mobile-landscape;
+  }
+}
+
+
 // See height set globally, depended on by buttons
 
 $md-toast-content-padding: 3 * $baseline-grid - $button-left-right-padding !default;
@@ -7237,183 +7415,63 @@ md-toast {
   overflow: hidden !important;
 }
 
-// Standard/Desktop Heights
-$md-toolbar-height: $baseline-grid * 8 !default;
-$md-toolbar-medium-tall-height: 88px !default;
-$md-toolbar-tall-height: 128px !default;
+$virtual-repeat-scrollbar-width: 16px !default;
 
-// Mobile device heights
-$md-toolbar-height-mobile-portrait: 56px !default;
-$md-toolbar-height-mobile-landscape: 48px !default;
-
-$md-toolbar-indent-margin: 64px !default;
-$md-toolbar-padding: 16px !default;
-
-$icon-button-margin-offset: rem(-0.800) !default;
-
-md-toolbar {
+.md-virtual-repeat-container {
   box-sizing: border-box;
-  display: flex;
-  flex-direction: column;
-
-  position: relative;
-  z-index: 2;
-
-  font-size: rem(2.0);
-  min-height: $md-toolbar-height;
-  width: 100%;
-
-  &._md-toolbar-transitions {
-    transition-duration: $swift-ease-in-out-duration;
-    transition-timing-function: $swift-ease-in-out-timing-function;
-    transition-property: background-color, fill, color;
-  }
-
-  &.md-whiteframe-z1-add, &.md-whiteframe-z1-remove {
-    transition: box-shadow $swift-ease-in-out-duration linear;
-  }
-
-  md-toolbar-filler {
-    width: 9 * $baseline-grid;
-  }
-
-  *,
-  *:before,
-  *:after {
-    box-sizing: border-box;
-  }
-
-  // By default $ngAnimate looks for transition durations on the element, when using ng-hide, ng-if, ng-show.
-  // The toolbar has a transition duration applied, which means, that $ngAnimate delays the hide process.
-  // To avoid this, we need to reset the transition, when $ngAnimate looks for the duration.
-  &.ng-animate {
-    transition: none;
-  }
-
-  &.md-tall {
-    height: $md-toolbar-tall-height;
-    min-height: $md-toolbar-tall-height;
-    max-height: $md-toolbar-tall-height;
-  }
-
-  &.md-medium-tall {
-    height: $md-toolbar-medium-tall-height;
-    min-height: $md-toolbar-medium-tall-height;
-    max-height: $md-toolbar-medium-tall-height;
-
-    .md-toolbar-tools {
-      height: 48px;
-      min-height: 48px;
-      max-height: 48px;
-    }
-  }
-
-  > .md-indent {
-    @include rtl-prop(margin-left, margin-right, $md-toolbar-indent-margin, auto);
-  }
-
-  ~ md-content {
-    > md-list {
-      padding: 0;
-
-      md-list-item:last-child {
-        md-divider {
-          display: none;
-        }
-      }
-    }
-  }
-}
-
-.md-toolbar-tools {
-  font-size: $title-font-size-base;
-  letter-spacing: 0.005em;
-  box-sizing: border-box;
-  font-weight: 400;
-  display: flex;
-  align-items: center;
-  flex-direction: row;
-
-  width: 100%;
-  height: $md-toolbar-height;
-  max-height: $md-toolbar-height;
-  padding: 0 $md-toolbar-padding;
+  display: block;
   margin: 0;
+  overflow: hidden;
+  padding: 0;
+  position: relative;
 
-  h1, h2, h3 {
-    font-size: inherit;
-    font-weight: inherit;
-    margin: inherit;
-  }
-
-  a {
-    color: inherit;
-    text-decoration: none;
-  }
-  .fill-height {
-    display: flex;
-    align-items: center;
-  }
-  .md-button {
-    margin-top: 0;
-    margin-bottom: 0;
-
-    &, &.md-icon-button md-icon {
-      transition-duration: $swift-ease-in-out-duration;
-      transition-timing-function: $swift-ease-in-out-timing-function;
-      transition-property: background-color, fill, color;
-
-      // Normally .md-button is already resetting the transition, when $ngAnimate looks for the duration,
-      // but in this case, the selector has a higher specificity than the `reset selector`, which means, that
-      // we need to reset the transition our self.
-      &.ng-animate {
-        transition: none;
-      }
-    }
-  }
-  &> .md-button:first-child {
-    @include rtl-prop(margin-left, margin-right, $icon-button-margin-offset, auto);
-  }
-  &> .md-button:last-child {
-    @include rtl-prop(margin-right, margin-left, $icon-button-margin-offset, auto);
+  .md-virtual-repeat-scroller {
+    bottom: 0;
+    box-sizing: border-box;
+    left: 0;
+    margin: 0;
+    overflow-x: hidden;
+    padding: 0;
+    position: absolute;
+    right: 0;
+    top: 0;
+    -webkit-overflow-scrolling: touch;
   }
 
-  &> md-menu:last-child {
-    @include rtl-prop(margin-right, margin-left, $icon-button-margin-offset, auto);
-    & > .md-button {
-      @include rtl-prop(margin-right, margin-left, 0, auto);
-    }
+  .md-virtual-repeat-sizer {
+    box-sizing: border-box;
+    height: 1px;
+    display: block;
+    margin: 0;
+    padding: 0;
+    width: 1px;
   }
 
-  @media screen and (-ms-high-contrast: active) {
-    border-bottom: 1px solid #fff;
+  .md-virtual-repeat-offsetter {
+    box-sizing: border-box;
+    left: 0;
+    margin: 0;
+    padding: 0;
+    position: absolute;
+    right: 0;
+    top: 0;
   }
 }
 
-// Handle mobile portrait
-@media (min-width: 0) and (max-width: $layout-breakpoint-sm - 1) and (orientation: portrait) {
-  md-toolbar {
-    min-height: $md-toolbar-height-mobile-portrait;
+.md-virtual-repeat-container.md-orient-horizontal {
+  .md-virtual-repeat-scroller {
+    overflow-x: auto;
+    overflow-y: hidden;
   }
 
-  .md-toolbar-tools {
-    height: $md-toolbar-height-mobile-portrait;
-    max-height: $md-toolbar-height-mobile-portrait;
-  }
-}
-
-// Handle mobile landscape
-@media (min-width: 0) and (max-width: $layout-breakpoint-sm - 1) and (orientation: landscape) {
-  md-toolbar {
-    min-height: $md-toolbar-height-mobile-landscape;
-  }
-
-  .md-toolbar-tools {
-    height: $md-toolbar-height-mobile-landscape;
-    max-height: $md-toolbar-height-mobile-landscape;
+  .md-virtual-repeat-offsetter {
+    // Leave room for the scroll bar.
+    // TODO: Will probably need to perform measurements at runtime.
+    bottom: $virtual-repeat-scrollbar-width;
+    @include rtl-prop(right, left, auto, auto);
+    white-space: nowrap;
   }
 }
-
 
 $tooltip-fontsize-lg: rem(1) !default;
 $tooltip-fontsize-sm: rem(1.4) !default;
@@ -7484,64 +7542,6 @@ md-tooltip {
   &.md-show {
     transition: $swift-ease-out;
     pointer-events: auto;
-  }
-}
-
-$virtual-repeat-scrollbar-width: 16px !default;
-
-.md-virtual-repeat-container {
-  box-sizing: border-box;
-  display: block;
-  margin: 0;
-  overflow: hidden;
-  padding: 0;
-  position: relative;
-
-  .md-virtual-repeat-scroller {
-    bottom: 0;
-    box-sizing: border-box;
-    left: 0;
-    margin: 0;
-    overflow-x: hidden;
-    padding: 0;
-    position: absolute;
-    right: 0;
-    top: 0;
-    -webkit-overflow-scrolling: touch;
-  }
-
-  .md-virtual-repeat-sizer {
-    box-sizing: border-box;
-    height: 1px;
-    display: block;
-    margin: 0;
-    padding: 0;
-    width: 1px;
-  }
-
-  .md-virtual-repeat-offsetter {
-    box-sizing: border-box;
-    left: 0;
-    margin: 0;
-    padding: 0;
-    position: absolute;
-    right: 0;
-    top: 0;
-  }
-}
-
-.md-virtual-repeat-container.md-orient-horizontal {
-  .md-virtual-repeat-scroller {
-    overflow-x: auto;
-    overflow-y: hidden;
-  }
-
-  .md-virtual-repeat-offsetter {
-    // Leave room for the scroll bar.
-    // TODO: Will probably need to perform measurements at runtime.
-    bottom: $virtual-repeat-scrollbar-width;
-    @include rtl-prop(right, left, auto, auto);
-    white-space: nowrap;
   }
 }
 
